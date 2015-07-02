@@ -2,17 +2,8 @@
 # Filename: my_tmw.py
 
 """
-# Topic Modeling Workflow as used for the following paper: 
-# Christof Schöch, "Topic Modeling French Crime Fiction", DH2015.
+# Topic Modeling Workflow in Python.
 """
-
-### Usage ###
-# 0. Make sure you have Python3, TreeTagger and Mallet installed.
-# 1. Make sure all necessary files are in the working directory
-# 2. Set working directory below
-# 3. Select series of functions below by un-commenting them as needed
-# 4. Set parameters for each function.
-# 5. Run the workflow.
 
 
 import tmw

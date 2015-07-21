@@ -8,8 +8,9 @@ tmw is a python module for topic modeling, including some preprocessing and some
 ## Usage
 
 * Make sure you have Python 3, TreeTagger and Mallet installed.
+* Make sure you have the Python 3 packages numpy, pandas, matplotlib, seaborn, wordcloud. 
 * Make sure all necessary files (documents, stoplist) are in the working directory
-* Optionally, adapt the module itself in the "tmw.py" file. 
+* (Optionally, adapt the module itself in the "tmw.py" file.) 
 * Set working directory in the settings file called "my_tmw.py"
 * Select series of functions there by un-commenting them as needed
 * Set parameters for each function.

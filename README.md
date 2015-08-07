@@ -13,8 +13,9 @@ tmw is a python module for topic modeling, including some preprocessing of texts
 
 ## Usage
 
-* Download the files tmw.py (the module) and my_tmw.py (the configuration file) to a convenient location
-* Make sure all necessary files (documents, stoplist) are in one directory (your working directory)
+* Download the module files tmw.py (the module) and my_tmw.py (the configuration file) to a convenient location
+* Make sure all your document files are in one directory (your working directory)
+* If you would like to use a stoplist when using Mallet, add this to a subdirectory called "extras"
 * The workflow accepts TEI-encoded or plain text documents as input and expects each file to contain one document
 * Set the working directory ("wdir") in the configuration file
 * (Optionally, you may adapt the module itself in the "tmw.py" file.) 

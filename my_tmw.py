@@ -19,18 +19,18 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/rp_Sydney/an10/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf500/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
-inpath = wdir + "0_tei/*.xml"
+inpath = wdir + "master/*.xml"
 outfolder = wdir + "1_txt/"
-#tmw.tei5reader_fulldocs(inpath,outfolder)
+tmw.tei5reader_fulldocs(inpath,outfolder)
 
 ### 1b - segmenter
 inpath = wdir + "1_txt/*.txt"
 outpath = wdir + "2_segs/"
 segment_length = 2000
-#tmw.segmenter(inpath,outpath,segment_length)
+tmw.segmenter(inpath,outpath,segment_length)
 
 ### 1c - segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"

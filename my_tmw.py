@@ -2,17 +2,12 @@
 # Filename: my_tmw.py
 
 """
-# Topic Modeling Workflow as used for the following paper: 
-# Christof Schöch, "Topic Modeling French Crime Fiction", DH2015.
+# Python module for a Topic Modeling Workflow 
 """
-
-### Usage ###
-# 0. Make sure you have Python3, TreeTagger and Mallet installed.
-# 1. Make sure all necessary files are in the working directory
-# 2. Set working directory below
-# 3. Select series of functions below by un-commenting them as needed
-# 4. Set parameters for each function.
-# 5. Run the workflow.
+ 
+# Used in the following paper: Christof Schöch, "Topic Modeling French Crime Fiction"
+# presented at the Digital Humanities Conference, Sydney, 2015.
+# For information on requirements and usage, see the README file.
 
 
 import tmw
@@ -58,13 +53,15 @@ outfolder = wdir + "5_lemmata/"
 
 
 ### 3a - call_mallet_import
+mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
 stoplist = "stopwords_fr.txt" # put in tmw folder!
-#tmw.call_mallet_import(infolder,outfolder,outfile,stoplist)
+#tmw.call_mallet_import(mallet_path, infolder,outfolder,outfile,stoplist)
 
 ### 3b - call_mallet_model
+mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "100"
@@ -73,7 +70,7 @@ num_iterations = "1000"
 num_top_words = "100"
 doc_topics_max = "100"
 num_threads = "4"
-#tmw.call_mallet_modeling(inputfile,outfolder,num_topics,optimize_interval,num_iterations,num_top_words,doc_topics_max)
+#tmw.call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_interval,num_iterations,num_top_words,doc_topics_max)
 
 
 

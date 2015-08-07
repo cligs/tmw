@@ -393,7 +393,7 @@ def make_lemmatext(inpath,outfolder):
 
 
 
-def call_mallet_import(infolder,outfolder, outfile, stoplist):
+def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist):
     """Function to import text data into Mallet."""
     print("\nLaunched call_mallet_import.")
     
@@ -404,7 +404,6 @@ def call_mallet_import(infolder,outfolder, outfile, stoplist):
         os.makedirs(outfolder)
     
     ### Fixed parameters.
-    mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
     token_regex = "'\p{L}[\p{L}\p{P}]*\p{L}'"
     
     command = mallet_path + " import-dir --input " + infolder + " --output " + outfile + " --keep-sequence --token-regex " + token_regex + " --remove-stopwords TRUE --stoplist-file " + stoplist
@@ -414,7 +413,7 @@ def call_mallet_import(infolder,outfolder, outfile, stoplist):
 
 
 
-def call_mallet_modeling(inputfile,outfolder,num_topics,optimize_interval,num_iterations,num_top_words,doc_topics_max):
+def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_interval,num_iterations,num_top_words,doc_topics_max):
     """Function to perform topic modeling with Mallet."""
     print("\nLaunched call_mallet_modeling.")
 
@@ -426,7 +425,6 @@ def call_mallet_modeling(inputfile,outfolder,num_topics,optimize_interval,num_it
         os.makedirs(outfolder)
 
     ### Fixed parameters    
-    mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
     word_topics_counts_file = outfolder + "words-by-topics.txt"
     topic_word_weights_file = outfolder + "word-weights.txt"
     output_topic_keys = outfolder + "topics-with-words.csv"

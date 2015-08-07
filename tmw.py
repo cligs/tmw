@@ -493,7 +493,9 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder,dpi):
         text = get_wordlewords(words,topic)
         #print(text)
         ## Generates, recolors and saves the wordcloud.
-        wordcloud = WordCloud(background_color="white", margin=5).generate(text)
+        #original# wordcloud = WordCloud(background_color="white", margin=5).generate(text)
+        font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
+        wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
         default_colors = wordcloud.to_array()
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
         plt.imshow(default_colors)
@@ -708,6 +710,85 @@ def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metad
 
 # TODO: not necessary to write bin id onto filename (in "scenes_to_bins"), since it can be (and is) looked up in the bindatafile.
 # TODO: Actually, this is even a problem when switching between scene-based and segment-based aggregation. Solution needed. 
+
+
+"""
+# Generate topic score heatmap from CSV data.
+"""
+
+import os
+import glob
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+wdir = "/home/christof/Dropbox/0-Analysen/2015/rp_Sydney/an7"
+
+def make_topic_distribution_heatmap(aggregate,outfolder,topicwordfile,rows_shown,font_scale,dpi):
+    """Function to coordinate creation of topic distribution heatmap."""
+    ## Create output folder if needed
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Get topic score distribution for each aggregation file (calling a function).
+    topicscores = get_topicscores(aggregate, rows_shown)
+    ## For each topic appearing in topicscores, get the first three words (calling a function).
+    allfirstwords = get_firstwords(topicwordfile, topicscores)
+    ## Set the first three words as the index of the topicscores
+    topicscores["firstwords"] = allfirstwords
+    topicscores = topicscores.set_index("firstwords")
+    ## Use acquired data to do actual visualisation.
+    create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
+
+def get_topicscores(aggregate, rows_shown):
+    with open(aggregate, "r") as infile:
+        topicscores = pd.DataFrame.from_csv(infile, sep="\t")
+        topicscores = topicscores.T
+        stdevs = topicscores.std(axis=1)
+        topicscores = pd.concat([topicscores, stdevs], axis=1)
+        topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
+        # column: 0=stdev; "seg1" = beginning, "Comédie", etc.
+        topicscores = topicscores.iloc[:rows_shown,:-1] #rows,columns
+        return topicscores
+
+def get_firstwords(topicwordfile, topicscores):
+    """Get three (or n) most important words for given topic."""
+    #allfirstwords = pd.Series(name="allfirstwords")
+    allfirstwords = []
+    with open(topicwordfile, "r") as infile:
+        topicwords = pd.read_csv(infile, sep="\t")
+        topics = topicscores.index.tolist()
+        for topic in topics:
+            topic = int(topic[2:])-1
+            firstwords = topicwords.loc[topic]
+            firstwords = firstwords[2].split(" ")
+            topic = topic+1
+            firstwords = str(firstwords[0]+"-"+firstwords[1]+"-"+firstwords[2]+" "+str(topic)+"")
+            allfirstwords.append(firstwords)   
+        #allfirstwords["tp"+str(topic)] = firstwords
+        return(allfirstwords)
+
+def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
+    """Visualize topic score distribution data as heatmap. """
+    sns.set_context("poster", font_scale=font_scale)
+    sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
+    # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
+    plt.title("Distribution of topic scores", fontsize=24)
+    #plt.xlabel("Categories", fontsize=16)
+    plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
+    plt.setp(plt.xticks()[1], rotation=00, fontsize = 20)   
+    data_filename = os.path.basename(aggregate)[:-7]
+    figure_filename = outfolder + "heatmap_" + data_filename + ".png"
+    plt.tight_layout() 
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+    
+def main(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
+    for aggregate in glob.glob(aggregates):
+        make_topic_distribution_heatmap(aggregate,outfolder,topicwordfile,rows_shown,font_scale,dpi)
+    print("Done.")
+
+main(wdir+"/7_aggregates/topics_by_SUBGENRE*.csv", "/home/christof/Desktop/", wdir+"/6_mallet/topics-with-words.csv", 12, 1.0, 300)
+
 
 
 

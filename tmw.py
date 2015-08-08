@@ -443,7 +443,7 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
 
 
 
-def make_wordle_from_mallet(word_weights_file,topics,words,outfolder,dpi):
+def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path, dpi):
     """Generate wordles from Mallet output, using the wordcloud module."""
     print("\nLaunched make_wordle_from_mallet.")
     
@@ -494,7 +494,7 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder,dpi):
         #print(text)
         ## Generates, recolors and saves the wordcloud.
         #original# wordcloud = WordCloud(background_color="white", margin=5).generate(text)
-        font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
+        #font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
         wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
         default_colors = wordcloud.to_array()
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
@@ -722,22 +722,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-wdir = "/home/christof/Dropbox/0-Analysen/2015/rp_Sydney/an7"
-
-def make_topic_distribution_heatmap(aggregate,outfolder,topicwordfile,rows_shown,font_scale,dpi):
+def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
     """Function to coordinate creation of topic distribution heatmap."""
-    ## Create output folder if needed
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    ## Get topic score distribution for each aggregation file (calling a function).
-    topicscores = get_topicscores(aggregate, rows_shown)
-    ## For each topic appearing in topicscores, get the first three words (calling a function).
-    allfirstwords = get_firstwords(topicwordfile, topicscores)
-    ## Set the first three words as the index of the topicscores
-    topicscores["firstwords"] = allfirstwords
-    topicscores = topicscores.set_index("firstwords")
-    ## Use acquired data to do actual visualisation.
-    create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
+    for aggregate in glob.glob(aggregates):
+        ## Create output folder if needed
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)
+        ## Get topic score distribution for each aggregation file (calling a function).
+            topicscores = get_topicscores(aggregate, rows_shown)
+            ## For each topic appearing in topicscores, get the first three words (calling a function).
+            allfirstwords = get_firstwords(topicwordfile, topicscores)
+            ## Set the first three words as the index of the topicscores
+            topicscores["firstwords"] = allfirstwords
+            topicscores = topicscores.set_index("firstwords")
+            ## Use acquired data to do actual visualisation.
+            create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
+    print("Done.")
 
 def get_topicscores(aggregate, rows_shown):
     with open(aggregate, "r") as infile:
@@ -782,15 +782,7 @@ def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
     
-def main(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
-    for aggregate in glob.glob(aggregates):
-        make_topic_distribution_heatmap(aggregate,outfolder,topicwordfile,rows_shown,font_scale,dpi)
-    print("Done.")
-
-main(wdir+"/7_aggregates/topics_by_SUBGENRE*.csv", "/home/christof/Desktop/", wdir+"/6_mallet/topics-with-words.csv", 12, 1.0, 300)
-
-
-
+    
 
 def create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi):
     """Generate topic score heatmap from CSV data."""

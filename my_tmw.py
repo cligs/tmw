@@ -37,18 +37,18 @@ outfile = wdir + "segs-and-bins.csv"
 ### 2a - pretokenize
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_tokens/"
-tmw.pretokenize(inpath,outfolder)
+#tmw.pretokenize(inpath,outfolder)
 
 ### 2b - call_treetagger
 infolder = wdir + "3_tokens/"
 outfolder = wdir + "4_tagged/"
 tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
-tmw.call_treetagger(infolder, outfolder, tagger) 
+#tmw.call_treetagger(infolder, outfolder, tagger) 
 
 ### 2c - make_lemmatext
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
-tmw.make_lemmatext(inpath,outfolder)
+#tmw.make_lemmatext(inpath,outfolder)
 
 
 
@@ -64,9 +64,9 @@ stoplist = "./extras/stopwords_fr.txt" # put in tmw folder!
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
-num_topics = "100"
-optimize_interval = "200"
-num_iterations = "1000"
+num_topics = "200"
+optimize_interval = "100"
+num_iterations = "5000"
 num_top_words = "100"
 doc_topics_max = "100"
 num_threads = "4"
@@ -79,8 +79,9 @@ word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
 topics = 100
 words = 40
 outfolder = wdir + "8_visuals/wordles/"
+font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,dpi)
+tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
 

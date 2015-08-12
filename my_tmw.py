@@ -5,7 +5,7 @@
 # Python module for a Topic Modeling Workflow 
 """
  
-# Used in the following paper: Christof Schöch, "Topic Modeling French Crime Fiction"
+# Used in the following paper: Christof Schoech, "Topic Modeling French Crime Fiction"
 # presented at the Digital Humanities Conference, Sydney, 2015.
 # For information on requirements and usage, see the README file.
 
@@ -14,7 +14,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf650/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf665/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
 inpath = wdir + "master/*.xml"
@@ -81,7 +81,7 @@ words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
 
@@ -96,7 +96,7 @@ targets = ["decade"] # USER: set depending on available metadata
 #tmw.aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,targets)
 
 ### 5b - create_topicscores_heatmap
-inpath = wdir + "7_aggregates/*DECADE-hm.csv"
+inpath = wdir + "7_aggregates/*.csv"
 outfolder = wdir + "8_visuals/heatmaps/"
 rows_shown = 20
 font_scale = 1.0
@@ -104,14 +104,13 @@ dpi = 300
 #tmw.create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi)
 
 ### 5c make_topic_distribution_heatmap
-aggregates = wdir + "/7_aggregates/topics_by_SUBGENRE*.csv"
-outfolder = "/home/christof/Desktop/" 
-topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
+aggregates = wdir + "7_aggregates/topicscoremeans_by-subgenre.csv"
+outfolder = wdir + "8_visuals/heatmaps/" 
+topicwordfile = wdir+ "6_mallet/topics-with-words.csv"
 rows_shown = 20
 font_scale = 1.0
 dpi = 300
-#tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
-
+tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
 
 
 

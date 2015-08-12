@@ -729,19 +729,19 @@ def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_show
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         ## Get topic score distribution for each aggregation file (calling a function).
-            topicscores = get_topicscores(aggregate, rows_shown)
-            ## For each topic appearing in topicscores, get the first three words (calling a function).
-            allfirstwords = get_firstwords(topicwordfile, topicscores)
-            ## Set the first three words as the index of the topicscores
-            topicscores["firstwords"] = allfirstwords
-            topicscores = topicscores.set_index("firstwords")
-            ## Use acquired data to do actual visualisation.
-            create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
+        topicscores = get_topicscores(aggregate, rows_shown)
+        ## For each topic appearing in topicscores, get the first three words (calling a function).
+        allfirstwords = get_firstwords(topicwordfile, topicscores)
+        ## Set the first three words as the index of the topicscores
+        topicscores["firstwords"] = allfirstwords
+        topicscores = topicscores.set_index("firstwords")
+        ## Use acquired data to do actual visualisation.
+        create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
     print("Done.")
 
 def get_topicscores(aggregate, rows_shown):
     with open(aggregate, "r") as infile:
-        topicscores = pd.DataFrame.from_csv(infile, sep="\t")
+        topicscores = pd.DataFrame.from_csv(infile, sep=",")
         topicscores = topicscores.T
         stdevs = topicscores.std(axis=1)
         topicscores = pd.concat([topicscores, stdevs], axis=1)
@@ -775,9 +775,9 @@ def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     plt.title("Distribution of topic scores", fontsize=24)
     #plt.xlabel("Categories", fontsize=16)
     plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
-    plt.setp(plt.xticks()[1], rotation=00, fontsize = 20)   
-    data_filename = os.path.basename(aggregate)[:-7]
-    figure_filename = outfolder + "heatmap_" + data_filename + ".png"
+    plt.setp(plt.xticks()[1], rotation=40, fontsize = 20)   
+    data_filename = os.path.basename(aggregate)[:-4]
+    figure_filename = outfolder + data_filename + ".png"
     plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()

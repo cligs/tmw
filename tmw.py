@@ -711,9 +711,8 @@ def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metad
 # TODO: Actually, this is even a problem when switching between scene-based and segment-based aggregation. Solution needed. 
 
 
-"""
-# Generate topic score heatmap from CSV data.
-"""
+#!/usr/bin/env python3
+# Filename: generate_topic_heatmaps.py
 
 import os
 import glob
@@ -721,33 +720,37 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
+def make_topic_distribution_heatmap(wdir,aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
     """Function to coordinate creation of topic distribution heatmap."""
-    print("Launched make_topic_distribution_heatmap")
+    print("Launched make_topic_distribution_heatmap.")
+
+
+    ## Create output folder if needed
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+
     for aggregate in glob.glob(aggregates):
-        ## Create output folder if needed
-        if not os.path.exists(outfolder):
-            os.makedirs(outfolder)
-        ## Get topic score distribution for each aggregation file (calling a function).
+        ## Get topic score distribution for each aggregation file.
         topicscores = get_topicscores(aggregate, rows_shown)
-        ## For each topic appearing in topicscores, get the first three words (calling a function).
+        ## For each topic appearing in topicscores, get the first three words.
         allfirstwords = get_firstwords(topicwordfile, topicscores)
         ## Set the first three words as the index of the topicscores
         topicscores["firstwords"] = allfirstwords
         topicscores = topicscores.set_index("firstwords")
         ## Use acquired data to do actual visualisation.
-        create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
+        create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)
     print("Done.")
 
 def get_topicscores(aggregate, rows_shown):
     with open(aggregate, "r") as infile:
-        topicscores = pd.DataFrame.from_csv(infile, sep="\t")
+        topicscores = pd.DataFrame.from_csv(infile, sep=",")
         topicscores = topicscores.T
         stdevs = topicscores.std(axis=1)
         topicscores = pd.concat([topicscores, stdevs], axis=1)
         topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
         # column: 0=stdev; "seg1" = beginning, "Comédie", etc.
         topicscores = topicscores.iloc[:rows_shown,:-1] #rows,columns
+        #print(topicscores)
         return topicscores
 
 def get_firstwords(topicwordfile, topicscores):
@@ -756,15 +759,18 @@ def get_firstwords(topicwordfile, topicscores):
     allfirstwords = []
     with open(topicwordfile, "r") as infile:
         topicwords = pd.read_csv(infile, sep="\t")
+        #print(topicwords)
         topics = topicscores.index.tolist()
         for topic in topics:
-            topic = int(topic[2:])-1
+            #topic = int(topic[2:])-1
+            topic = int(topic)-1
             firstwords = topicwords.loc[topic]
             firstwords = firstwords[2].split(" ")
             topic = topic+1
             firstwords = str(firstwords[0]+"-"+firstwords[1]+"-"+firstwords[2]+" "+str(topic)+"")
             allfirstwords.append(firstwords)   
         #allfirstwords["tp"+str(topic)] = firstwords
+        #print(allfirstwords)
         return(allfirstwords)
 
 def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
@@ -775,54 +781,12 @@ def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     plt.title("Distribution of topic scores", fontsize=24)
     #plt.xlabel("Categories", fontsize=16)
     plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
-    plt.setp(plt.xticks()[1], rotation=40, fontsize = 20)   
-    data_filename = os.path.basename(aggregate)[:-7]
-    figure_filename = outfolder + "heatmap_" + data_filename + ".png"
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
+    data_filename = os.path.basename(aggregate)[:-4]
+    figure_filename = outfolder + data_filename + ".png"
     plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
-    
-    
-
-def create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi):
-    """Generate topic score heatmap from CSV data."""
-    print("\nLaunched create_topicscores_heatmap.")
-
-    import os
-    import glob
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-
-    for file in glob.glob(inpath):
-        topicscores = pd.DataFrame.from_csv(file, sep="\t")
-        #print(topicscores.head())
-        topicscores = topicscores.T
-        stdevs = topicscores.std(axis=1)
-        topicscores = pd.concat([topicscores, stdevs], axis=1)
-        topicscores = topicscores.sort(columns="1900s", axis=0, ascending=False)
-        # column: 0=stdev; "seg1" = beginning, "Comédie", etc.
-        topicscores = topicscores.iloc[:rows_shown,:-1] #rows,columns
-
-        sns.set_context("poster", font_scale=font_scale)
-        sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
-        # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
-        plt.title("Distribution of topic scores")
-        plt.xlabel("Subtypes of crime fiction")
-        plt.ylabel("Top topics (sorted by stdev)")
-        plt.setp(plt.xticks()[1], rotation=40, fontsize = 16)   
-
-        #plt.show()
-        data_filename = os.path.basename(file)[:-7]
-        figure_filename = outfolder + "hm_" + data_filename + ".png"
-        plt.tight_layout() 
-        plt.savefig(figure_filename, dpi=dpi)
-        plt.close()
-
-    print("Done.")
 
 # TODO: Optionally replace list of topics by list of topic-labels.
 # TODO: Add overall topic score for sorting by overall importance.

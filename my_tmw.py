@@ -5,7 +5,7 @@
 # Python module for a Topic Modeling Workflow 
 """
  
-# Used in the following paper: Christof Schöch, "Topic Modeling French Crime Fiction"
+# Used in the following paper: Christof Schoech, "Topic Modeling French Crime Fiction"
 # presented at the Digital Humanities Conference, Sydney, 2015.
 # For information on requirements and usage, see the README file.
 
@@ -96,7 +96,7 @@ targets = ["decade","subgenre","author"] # USER: set depending on available meta
 #tmw.aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,targets)
 
 ### 5b - create_topicscores_heatmap
-inpath = wdir + "7_aggregates/*DECADE-hm.csv"
+inpath = wdir + "7_aggregates/*.csv"
 outfolder = wdir + "8_visuals/heatmaps/"
 rows_shown = 20
 font_scale = 1.0
@@ -104,16 +104,13 @@ dpi = 300
 #tmw.create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi)
 
 ### 5c make_topic_distribution_heatmap
-aggregates = wdir + "/7_aggregates/topics_by*.csv"
-outfolder = wdir + "/8_visuals/heatmaps/" 
+aggregates = wdir+"/7_aggregates/avgtopicscores*.csv"
+outfolder = wdir+"/8_visuals/heatmaps/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-rows_shown = 20
+rows_shown = 12
 font_scale = 1.0
 dpi = 300
 tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
-
-
-
 
 ### 6a - aggregate_using_bins_and_metadata
 corpuspath = wdir + "5_segs"

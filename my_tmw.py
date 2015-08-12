@@ -84,16 +84,16 @@ dpi = 300
 #tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
-
-### 5a - aggregate_using_metadata
-corpuspath = wdir + "2_segs"
-outfolder = wdir + "7_aggregates/"
-topics_in_texts = wdir + "6_mallet/topics-in-texts.csv"
-metadatafile = wdir + "metadata.csv"
-#target = "subgenre" # USER: set depending on available metadata
-#targets = ["idno","author","decade","subgenre","label","narr"] # USER: set depending on available metadata
-targets = ["decade","subgenre","author"] # USER: set depending on available metadata
-#tmw.aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,targets)
+### 5a - average_topicscores
+corpuspath = wdir+"/2_segs/*.txt"
+mastermatrixfile = wdir+"/6_mallet/mastermatrix.csv"
+metadatafile = wdir+"/metadata.csv"
+topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
+targets = ["author","decade","subgenre"]
+mode = "load" # load|create
+number_of_topics = 200
+outfolder = wdir+"7_aggregates/"
+#tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
 ### 5b - create_topicscores_heatmap
 inpath = wdir + "7_aggregates/*.csv"
@@ -104,7 +104,7 @@ dpi = 300
 #tmw.create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi)
 
 ### 5c make_topic_distribution_heatmap
-aggregates = wdir+"/7_aggregates/avgtopicscores*.csv"
+aggregates = wdir+"/7_aggregates/avg*.csv"
 outfolder = wdir+"/8_visuals/heatmaps/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
 rows_shown = 12

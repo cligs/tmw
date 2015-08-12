@@ -504,9 +504,148 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
         plt.axis("off")
         plt.savefig(outfolder + figure_filename, dpi=dpi)
         plt.close()
-   
+    print("Done.")
+    
+
+"""
+# Average topicscores based on metadata
+"""
+
+import numpy as np
+import pandas as pd
+import os
+import glob
+
+def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder):
+    """Function to calculate average topic scores based on metadata."""
+    print("\nLaunched average_topicscores.")
+
+    ## Get the matrix of all data, either by creating a new one or by loading an existing one.
+    if mode == "create": 
+        print("  Creating new mastermatrix from data. This could take a while.")
+        mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile)
+    elif mode == "load":
+        print("  Loading existing mastermatrix.")
+        with open(mastermatrixfile, "r") as infile:
+            mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
+
+    print("  Performing calculations...")
+    ## Group by author, get median publication year and stdev per author.        
+    #grouped = mastermatrix.groupby(target, axis=0)
+    #publicationstats = grouped["year"].agg([np.median,np.std])
+    #print(publicationstats)
+
+    ## Calculate average topic scores for each target category 
+    for target in targets:
+        grouped = mastermatrix.groupby(target, axis=0)
+        avg_topicscores = grouped.agg(np.mean)
+        avg_topicscores = avg_topicscores.drop(["year"], axis=1)
+        #print(avg_topicscores.head())
+  
+        ## Save grouped averages to CSV file for visualization.
+        resultfilename = "avgtopicscores_by-"+target+".csv"
+        resultfilepath = outfolder+resultfilename
+        ## TODO: Some reformatting here, or adapt make_heatmaps.
+        avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
+        print("  Saved average topic scores for:", target)    
     print("Done.")
 
+def get_metadata(metadatafile):
+    print("  Getting metadata...")
+    """Read metadata file and create DataFrame."""
+    metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=",")
+    #print("metadata\n", metadata)
+    return metadata
+
+def get_topicscores(topics_in_texts, number_of_topics): 
+    """Create a matrix of segments x topics, with topic score values, from Mallet output.""" 
+    print("  Getting topicscores...")   
+    ## TODO: Delete first line of Mallet table here.
+    ## Load Mallet output (strange format)
+    topicsintexts = pd.DataFrame.from_csv(topics_in_texts, header=None, sep="\t", index_col=0)
+    #topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
+    #print(topicsintexts)
+    #number_of_segments = len(topicsintexts)
+    listofsegmentscores = []
+    idnos = []
+    ## Iterate through Mallet table, collecting scores per segment and topic.
+    #for i in range(0,number_of_segments):
+    #for i in range(0,10):
+    i = -1
+    for row_index, row in topicsintexts.iterrows():
+        segment = row[1][-15:-4]
+        idno = row[1][-15:-9]
+        #print(segment, idno)
+        idnos.append(idno)
+        topics = []
+        scores = []
+        ## For each segment, get the topic number and its score
+        i +=1
+        for j in range(1,number_of_topics,2):
+            k = j+1
+            topic = topicsintexts.iloc[i,j]
+            score = topicsintexts.iloc[i,k]
+            #score = round(score, 4) ## round off for smaller file.
+            topics.append(topic)
+            scores.append(score)
+        ## Create dictionary of topics and scores for one segment
+        persegment = dict(zip(topics, scores))
+        segmentscores = pd.DataFrame.from_dict(persegment, orient="index")
+        segmentscores.columns = [segment]
+        segmentscores = segmentscores.T
+        listofsegmentscores.append(segmentscores)
+    ## Putting it all together
+    topicscores = pd.concat(listofsegmentscores)
+    topicscores["segmentID"] = topicscores.index
+    topicscores.fillna(0,inplace=True)
+    #print("topicscores\n", topicscores)
+    return topicscores
+        
+def get_docmatrix(corpuspath):
+    """Create a matrix containing segments with their idnos."""
+    print("  Getting docmatrix...")
+    ## Create dataframe with filenames of segments and corresponding idnos.
+    segs = []
+    idnos = []
+    for file in glob.glob(corpuspath): 
+        seg,ext = os.path.basename(file).split(".")
+        segs.append(seg)
+        idno = seg[0:6]
+        idnos.append(idno)
+    docmatrix = pd.DataFrame(segs)
+    docmatrix["idno"] = idnos
+    docmatrix.rename(columns={0:"segmentID"}, inplace=True)
+    #print("docmatrix\n", docmatrix)
+    return docmatrix
+    
+def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile):
+    """Merges the three dataframes into one mastermatrix."""
+    print("  Getting data...")
+
+    ## Get all necessary data.
+    metadata = get_metadata(metadatafile)
+    docmatrix = get_docmatrix(corpuspath)
+    topicscores = get_topicscores(topics_in_texts)
+
+    print("  Merging data...")    
+    ## Merge metadata and docmatrix, matching each segment to its metadata.
+    mastermatrix = pd.merge(docmatrix, metadata, how="inner", on="idno")  
+    print("mastermatrix: metadata and docmatrix\n", mastermatrix)
+    ## Merge mastermatrix and topicscores, matching each segment to its topic scores.
+    #print(mastermatrix.columns)
+    #print(topicscores.columns)
+    print(topicscores)
+    mastermatrix = pd.merge(mastermatrix, topicscores, on="segmentID", how="inner")
+    #print("mastermatrix: all three\n", mastermatrix)
+    mastermatrix.to_csv(mastermatrixfile, sep=",", encoding="utf-8")
+    print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
+    return mastermatrix
+
+
+
+"""
+# Previous version: aggregate topic scores using metadata.
+"""
 
 
 def aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,targets):
@@ -711,8 +850,9 @@ def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metad
 # TODO: Actually, this is even a problem when switching between scene-based and segment-based aggregation. Solution needed. 
 
 
-#!/usr/bin/env python3
-# Filename: generate_topic_heatmaps.py
+"""
+# create_topicscores_heatmap
+"""
 
 import os
 import glob
@@ -720,10 +860,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def make_topic_distribution_heatmap(wdir,aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
+def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
     """Function to coordinate creation of topic distribution heatmap."""
     print("Launched make_topic_distribution_heatmap.")
-
 
     ## Create output folder if needed
     if not os.path.exists(outfolder):
@@ -731,7 +870,7 @@ def make_topic_distribution_heatmap(wdir,aggregates,outfolder,topicwordfile,rows
 
     for aggregate in glob.glob(aggregates):
         ## Get topic score distribution for each aggregation file.
-        topicscores = get_topicscores(aggregate, rows_shown)
+        topicscores = get_topicscoredistribution(aggregate, rows_shown)
         ## For each topic appearing in topicscores, get the first three words.
         allfirstwords = get_firstwords(topicwordfile, topicscores)
         ## Set the first three words as the index of the topicscores
@@ -741,7 +880,7 @@ def make_topic_distribution_heatmap(wdir,aggregates,outfolder,topicwordfile,rows
         create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)
     print("Done.")
 
-def get_topicscores(aggregate, rows_shown):
+def get_topicscoredistribution(aggregate, rows_shown):
     with open(aggregate, "r") as infile:
         topicscores = pd.DataFrame.from_csv(infile, sep=",")
         topicscores = topicscores.T
@@ -775,6 +914,8 @@ def get_firstwords(topicwordfile, topicscores):
 
 def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     """Visualize topic score distribution data as heatmap. """
+    data_filename = os.path.basename(aggregate)[:-4]
+    print("   Creating heatmap for: "+data_filename)
     sns.set_context("poster", font_scale=font_scale)
     sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
@@ -782,13 +923,11 @@ def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     #plt.xlabel("Categories", fontsize=16)
     plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
-    data_filename = os.path.basename(aggregate)[:-4]
     figure_filename = outfolder + data_filename + ".png"
     plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-# TODO: Optionally replace list of topics by list of topic-labels.
 # TODO: Add overall topic score for sorting by overall importance.
 
 

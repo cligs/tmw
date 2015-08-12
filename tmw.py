@@ -507,8 +507,9 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
     print("Done.")
     
 
+
 """
-# Average topicscores based on metadata
+# Average topicscores based on metadata.
 """
 
 import numpy as np
@@ -642,109 +643,6 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile):
     return mastermatrix
 
 
-
-"""
-# Previous version: aggregate topic scores using metadata.
-"""
-
-
-def aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,targets):
-    """Function to aggregate topic scores based on metadata about segments."""
-    print("\nLaunched aggregate_using_metadata.")
-
-    import numpy as np
-    import itertools
-    import operator
-    import os
-    import pandas as pd
-
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-
-    for target in targets:
-        CORPUS_PATH = os.path.join(corpuspath)
-        filenames = sorted([os.path.join(CORPUS_PATH, fn) for fn in os.listdir(CORPUS_PATH)])
-        #print("Number of files to treat: ", len(filenames)) #ok
-        #print("First three filenames: ", filenames[:3]) #ok
-
-        def grouper(n, iterable, fillvalue=None):
-            "Collect data into fixed-length chunks or blocks"
-            args = [iter(iterable)] * n
-            return itertools.zip_longest(*args, fillvalue=fillvalue)
-
-        doctopic_triples = []
-        mallet_docnames = []
-        ### USER: Set path to results from Mallet.
-        with open(topics_in_texts) as f:
-            f.readline()
-            for line in f:
-                docnum, docname, *values = line.rstrip().split('\t')
-                mallet_docnames.append(docname)
-                for topic, share in grouper(2, values):
-                    triple = (docname, int(topic), float(share))
-                    doctopic_triples.append(triple)
-
-        doctopic_triples = sorted(doctopic_triples, key=operator.itemgetter(0,1))
-        mallet_docnames = sorted(mallet_docnames)
-        num_docs = len(mallet_docnames)
-        num_topics = len(doctopic_triples) // len(mallet_docnames)
-        #print("Number of documents: ", num_docs)
-        #print("Number of topics: ", num_topics)
-
-        doctopic = np.zeros((num_docs, num_topics))
-        counter = 0
-        for triple in doctopic_triples:
-            docname, topic, share = triple
-            row_num = mallet_docnames.index(docname)
-            doctopic[row_num, topic] = share
-            counter += 1
-            if counter % 50000 == 0:
-                print("Iterations done:", counter)
-        print("Uff. Done creating doctopic triples")
-
-        #### Define aggregation criterion ####
-        ### Read metadata from CSV file and create DataFrame
-        metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=",")
-        print(metadata.head())
-        print("Starting with building the set of label names")
-
-        label_names = []
-        for fn in filenames:
-            basename = os.path.basename(fn)
-            filename, ext = os.path.splitext(basename)
-            idno = filename[:6]
-            #print(idno)
-            label_name = metadata.loc[idno,target]
-            #label_name = label_name[0:3]
-            print("idno and label: ", idno, label_name)
-            outputfilename = outfolder + "topics_by_" + target.upper() + "-hm.csv"
-            label_names.append(label_name)
-        label_names = np.asarray(label_names)
-        num_groups_labels = len(set(label_names))
-        #print("Number of entries in list of labels: ", len(label_names))
-        #print("Number of different labels:", len(label_names_set))
-        #print("All different label names: ", sorted(label_names_set))
-
-        #### Group topic scores according to label ####
-        doctopic_grouped = np.zeros((num_groups_labels, num_topics))
-        for i, name in enumerate(sorted(set(label_names))):
-            #print(i, name)
-            doctopic_grouped[i, :] = np.mean(doctopic[label_names == name, :], axis=0)
-        doctopic = doctopic_grouped
-        #print(len(doctopic)) #ok
-        #np.savetxt("doctopic.csv", doctopic, delimiter=",")
-    
-        rownames = sorted(set(label_names))
-        colnames = ["tp" + "{:02d}".format(i) for i in range(doctopic.shape[1])]
-        df = pd.DataFrame(doctopic, index=rownames, columns=colnames)
-        df.to_csv(outputfilename, sep='\t', encoding='utf-8')
-
-    print("Done.")
-
-# TODO: Loop only over aggregation phase (save time)
-
-
-
 def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,bindatafile,target):
     """Aggregate topic scores based on positional bins and metadata."""
     print("\nLaunched aggregate_using_bins_and_metadata.")
@@ -850,8 +748,9 @@ def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metad
 # TODO: Actually, this is even a problem when switching between scene-based and segment-based aggregation. Solution needed. 
 
 
+
 """
-# create_topicscores_heatmap
+# make_topic_distribution_heatmap
 """
 
 import os

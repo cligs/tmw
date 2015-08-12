@@ -84,6 +84,7 @@ dpi = 300
 #tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
+
 ### 5a - average_topicscores
 corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/6_mallet/mastermatrix.csv"
@@ -95,15 +96,7 @@ number_of_topics = 200
 outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
-### 5b - create_topicscores_heatmap
-inpath = wdir + "7_aggregates/*.csv"
-outfolder = wdir + "8_visuals/heatmaps/"
-rows_shown = 20
-font_scale = 1.0
-dpi = 300
-#tmw.create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi)
-
-### 5c make_topic_distribution_heatmap
+### 5b make_topic_distribution_heatmap
 aggregates = wdir+"/7_aggregates/avg*.csv"
 outfolder = wdir+"/8_visuals/heatmaps/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
@@ -111,6 +104,10 @@ rows_shown = 12
 font_scale = 1.0
 dpi = 300
 tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
+
+
+
+
 
 ### 6a - aggregate_using_bins_and_metadata
 corpuspath = wdir + "5_segs"

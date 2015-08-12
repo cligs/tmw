@@ -500,7 +500,7 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
-        plt.title(figure_title)
+        plt.title(figure_title, fontsize=24)
         plt.axis("off")
         plt.savefig(outfolder + figure_filename, dpi=dpi)
         plt.close()
@@ -521,7 +521,6 @@ def aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,t
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    
 
     for target in targets:
         CORPUS_PATH = os.path.join(corpuspath)
@@ -724,19 +723,20 @@ import seaborn as sns
 
 def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
     """Function to coordinate creation of topic distribution heatmap."""
+    print("Launched make_topic_distribution_heatmap")
     for aggregate in glob.glob(aggregates):
         ## Create output folder if needed
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         ## Get topic score distribution for each aggregation file (calling a function).
-            topicscores = get_topicscores(aggregate, rows_shown)
-            ## For each topic appearing in topicscores, get the first three words (calling a function).
-            allfirstwords = get_firstwords(topicwordfile, topicscores)
-            ## Set the first three words as the index of the topicscores
-            topicscores["firstwords"] = allfirstwords
-            topicscores = topicscores.set_index("firstwords")
-            ## Use acquired data to do actual visualisation.
-            create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
+        topicscores = get_topicscores(aggregate, rows_shown)
+        ## For each topic appearing in topicscores, get the first three words (calling a function).
+        allfirstwords = get_firstwords(topicwordfile, topicscores)
+        ## Set the first three words as the index of the topicscores
+        topicscores["firstwords"] = allfirstwords
+        topicscores = topicscores.set_index("firstwords")
+        ## Use acquired data to do actual visualisation.
+        create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)    
     print("Done.")
 
 def get_topicscores(aggregate, rows_shown):
@@ -775,7 +775,7 @@ def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     plt.title("Distribution of topic scores", fontsize=24)
     #plt.xlabel("Categories", fontsize=16)
     plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
-    plt.setp(plt.xticks()[1], rotation=00, fontsize = 20)   
+    plt.setp(plt.xticks()[1], rotation=40, fontsize = 20)   
     data_filename = os.path.basename(aggregate)[:-7]
     figure_filename = outfolder + "heatmap_" + data_filename + ".png"
     plt.tight_layout() 

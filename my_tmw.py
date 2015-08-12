@@ -14,7 +14,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf650/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf665/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
 inpath = wdir + "master/*.xml"
@@ -68,7 +68,7 @@ num_topics = "200"
 optimize_interval = "100"
 num_iterations = "5000"
 num_top_words = "100"
-doc_topics_max = "100"
+doc_topics_max = num_topics
 num_threads = "4"
 #tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
 
@@ -76,23 +76,23 @@ num_threads = "4"
 
 ### 4 - make_wordle_from_mallet
 word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
-topics = 100
+topics = 200
 words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
 
 ### 5a - aggregate_using_metadata
-corpuspath = wdir + "5_segs"
+corpuspath = wdir + "2_segs"
 outfolder = wdir + "7_aggregates/"
 topics_in_texts = wdir + "6_mallet/topics-in-texts.csv"
 metadatafile = wdir + "metadata.csv"
 #target = "subgenre" # USER: set depending on available metadata
 #targets = ["idno","author","decade","subgenre","label","narr"] # USER: set depending on available metadata
-targets = ["decade"] # USER: set depending on available metadata
+targets = ["decade","subgenre","author"] # USER: set depending on available metadata
 #tmw.aggregate_using_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,targets)
 
 ### 5b - create_topicscores_heatmap
@@ -104,13 +104,13 @@ dpi = 300
 #tmw.create_topicscores_heatmap(inpath,outfolder,rows_shown,font_scale,dpi)
 
 ### 5c make_topic_distribution_heatmap
-aggregates = wdir + "/7_aggregates/topics_by_SUBGENRE*.csv"
-outfolder = "/home/christof/Desktop/" 
+aggregates = wdir + "/7_aggregates/topics_by*.csv"
+outfolder = wdir + "/8_visuals/heatmaps/" 
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
 rows_shown = 20
 font_scale = 1.0
 dpi = 300
-#tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
+tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
 
 
 

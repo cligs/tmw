@@ -14,7 +14,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf665/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf10/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
 inpath = wdir + "master/*.xml"
@@ -64,9 +64,9 @@ stoplist = "./extras/stopwords_fr.txt" # put in tmw folder!
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
-num_topics = "200"
+num_topics = "10"
 optimize_interval = "100"
-num_iterations = "5000"
+num_iterations = "500"
 num_top_words = "100"
 doc_topics_max = num_topics
 num_threads = "4"
@@ -76,7 +76,7 @@ num_threads = "4"
 
 ### 4 - make_wordle_from_mallet
 word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
-topics = 200
+topics = 10
 words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
@@ -90,9 +90,9 @@ corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/6_mallet/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-targets = ["author","decade","subgenre"]
-mode = "load" # load|create
-number_of_topics = 200
+targets = ["author","decade","subgenre","gender"]
+mode = "create" # load|create
+number_of_topics = 10
 outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
@@ -100,7 +100,7 @@ outfolder = wdir+"7_aggregates/"
 aggregates = wdir+"/7_aggregates/avg*.csv"
 outfolder = wdir+"/8_visuals/heatmaps/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-rows_shown = 12
+rows_shown = 20
 font_scale = 1.0
 dpi = 300
 tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)

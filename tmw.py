@@ -521,10 +521,13 @@ def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_te
     """Function to calculate average topic scores based on metadata."""
     print("\nLaunched average_topicscores.")
 
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+
     ## Get the matrix of all data, either by creating a new one or by loading an existing one.
     if mode == "create": 
         print("  Creating new mastermatrix from data. This could take a while.")
-        mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile)
+        mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics)
     elif mode == "load":
         print("  Loading existing mastermatrix.")
         with open(mastermatrixfile, "r") as infile:
@@ -561,7 +564,7 @@ def get_metadata(metadatafile):
 def get_topicscores(topics_in_texts, number_of_topics): 
     """Create a matrix of segments x topics, with topic score values, from Mallet output.""" 
     print("  Getting topicscores...")   
-    ## TODO: Delete first line of Mallet table here.
+    ## TODO: Delete first line of Mallet table here. ################################
     ## Load Mallet output (strange format)
     topicsintexts = pd.DataFrame.from_csv(topics_in_texts, header=None, sep="\t", index_col=0)
     #topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
@@ -619,28 +622,31 @@ def get_docmatrix(corpuspath):
     #print("docmatrix\n", docmatrix)
     return docmatrix
     
-def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile):
+def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics):
     """Merges the three dataframes into one mastermatrix."""
     print("  Getting data...")
 
     ## Get all necessary data.
     metadata = get_metadata(metadatafile)
     docmatrix = get_docmatrix(corpuspath)
-    topicscores = get_topicscores(topics_in_texts)
+    topicscores = get_topicscores(topics_in_texts, number_of_topics)
 
     print("  Merging data...")    
     ## Merge metadata and docmatrix, matching each segment to its metadata.
     mastermatrix = pd.merge(docmatrix, metadata, how="inner", on="idno")  
-    print("mastermatrix: metadata and docmatrix\n", mastermatrix)
+    #print("mastermatrix: metadata and docmatrix\n", mastermatrix)
     ## Merge mastermatrix and topicscores, matching each segment to its topic scores.
     #print(mastermatrix.columns)
     #print(topicscores.columns)
-    print(topicscores)
+    #print(topicscores)
     mastermatrix = pd.merge(mastermatrix, topicscores, on="segmentID", how="inner")
     #print("mastermatrix: all three\n", mastermatrix)
     mastermatrix.to_csv(mastermatrixfile, sep=",", encoding="utf-8")
     print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
     return mastermatrix
+
+
+
 
 
 def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metadatafile,bindatafile,target):
@@ -793,18 +799,18 @@ def get_topicscoredistribution(aggregate, rows_shown):
 
 def get_firstwords(topicwordfile, topicscores):
     """Get three (or n) most important words for given topic."""
-    #allfirstwords = pd.Series(name="allfirstwords")
     allfirstwords = []
     with open(topicwordfile, "r") as infile:
-        topicwords = pd.read_csv(infile, sep="\t")
+        topicwords = pd.read_csv(infile, sep="\t", header=None)
         #print(topicwords)
         topics = topicscores.index.tolist()
         for topic in topics:
             #topic = int(topic[2:])-1
-            topic = int(topic)-1
+            #topic = int(topic)-1
+            topic = int(topic)
             firstwords = topicwords.loc[topic]
             firstwords = firstwords[2].split(" ")
-            topic = topic+1
+            #topic = topic+1
             firstwords = str(firstwords[0]+"-"+firstwords[1]+"-"+firstwords[2]+" "+str(topic)+"")
             allfirstwords.append(firstwords)   
         #allfirstwords["tp"+str(topic)] = firstwords

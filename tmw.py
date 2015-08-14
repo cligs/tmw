@@ -564,18 +564,14 @@ def get_metadata(metadatafile):
 def get_topicscores(topics_in_texts, number_of_topics): 
     """Create a matrix of segments x topics, with topic score values, from Mallet output.""" 
     print("  Getting topicscores...")   
-    ## TODO: Delete first line of Mallet table here. ################################
     ## Load Mallet output (strange format)
-    topicsintexts = pd.DataFrame.from_csv(topics_in_texts, header=None, sep="\t", index_col=0)
+    topicsintexts = pd.read_csv(topics_in_texts, header=None, skiprows=[0], sep="\t", index_col=0)
     #topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
-    #print(topicsintexts)
-    #number_of_segments = len(topicsintexts)
+    #print("topicsintexts\n", topicsintexts.head())
     listofsegmentscores = []
     idnos = []
-    ## Iterate through Mallet table, collecting scores per segment and topic.
-    #for i in range(0,number_of_segments):
-    #for i in range(0,10):
     i = -1
+    ## For each row, collect segment and idno
     for row_index, row in topicsintexts.iterrows():
         segment = row[1][-15:-4]
         idno = row[1][-15:-9]

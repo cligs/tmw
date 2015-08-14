@@ -94,7 +94,7 @@ targets = ["author","decade","subgenre","gender"]
 mode = "create" # load|create
 number_of_topics = 10
 outfolder = wdir+"7_aggregates/"
-#tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
+tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
 ### 5b make_topic_distribution_heatmap
 aggregates = wdir+"/7_aggregates/avg*.csv"

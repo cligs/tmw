@@ -752,7 +752,7 @@ def aggregate_using_bins_and_metadata(corpuspath,outfolder,topics_in_texts,metad
 
 
 """
-# make_topic_distribution_heatmap
+# make_topic_distribution_plots
 """
 
 import os
@@ -761,14 +761,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi):
+def make_topic_distribution_plot(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi, mode, topics):
     """Function to coordinate creation of topic distribution heatmap."""
     print("Launched make_topic_distribution_heatmap.")
-
-    ## Create output folder if needed
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-
     for aggregate in glob.glob(aggregates):
         ## Get topic score distribution for each aggregation file.
         topicscores = get_topicscoredistribution(aggregate, rows_shown)
@@ -776,9 +771,16 @@ def make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_show
         allfirstwords = get_firstwords(topicwordfile, topicscores)
         ## Set the first three words as the index of the topicscores
         topicscores["firstwords"] = allfirstwords
-        topicscores = topicscores.set_index("firstwords")
+        #topicscores = topicscores.set_index("firstwords")
         ## Use acquired data to do actual visualisation.
-        create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)
+        if mode == "heatmap": 
+            create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi)
+        elif mode == "lineplot": 
+            kind = "line"
+            create_lineplot(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi,topics,kind)
+        elif mode == "areaplot":
+            kind = "area"
+            create_lineplot(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi,topics,kind)
     print("Done.")
 
 def get_topicscoredistribution(aggregate, rows_shown):
@@ -790,7 +792,6 @@ def get_topicscoredistribution(aggregate, rows_shown):
         topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
         # column: 0=stdev; "seg1" = beginning, "Comédie", etc.
         topicscores = topicscores.iloc[:rows_shown,:-1] #rows,columns
-        #print(topicscores)
         return topicscores
 
 def get_firstwords(topicwordfile, topicscores):
@@ -817,17 +818,44 @@ def create_heatmap(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi):
     """Visualize topic score distribution data as heatmap. """
     data_filename = os.path.basename(aggregate)[:-4]
     print("   Creating heatmap for: "+data_filename)
+    ## Create output folder if needed
+    outfolder = outfolder+"heatmaps/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
     sns.set_context("poster", font_scale=font_scale)
+    topicscores = topicscores.set_index("firstwords")
+    #print(topicscores)
     sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
     plt.title("Distribution of topic scores", fontsize=24)
     #plt.xlabel("Categories", fontsize=16)
     plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
-    figure_filename = outfolder + data_filename + ".png"
+    figure_filename = outfolder+"hm_"+ data_filename + ".png"
     plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
+
+
+def create_lineplot(aggregate,topicscores,outfolder,rows_shown,font_scale,dpi,topics,kind): 
+    """Visualize topic score distribution data as lineplot. """
+    data_filename = os.path.basename(aggregate)[:-4]
+    print("   Creating lineplot for: "+data_filename)
+    ## Create output folder if needed
+    outfolder = outfolder+"lineplots/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Create subset of data based on topics to be shown.
+    selected = topicscores.loc[topics,:]
+    selected = selected.set_index("firstwords")
+    selected = selected.T
+    #print(selected)
+    ## Plot the selected data
+    selected.plot(kind=kind) # "line" or "area"
+    figure_filename = outfolder+"lp_"+str(topics)+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+  
 
 # TODO: Add overall topic score for sorting by overall importance.
 

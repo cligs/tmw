@@ -14,7 +14,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf10/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf665/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
 inpath = wdir + "master/*.xml"
@@ -92,19 +92,20 @@ metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
 targets = ["author","decade","subgenre","gender"]
 mode = "create" # load|create
-number_of_topics = 10
+number_of_topics = 200
 outfolder = wdir+"7_aggregates/"
-tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
+#tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
-### 5b make_topic_distribution_heatmap
-aggregates = wdir+"/7_aggregates/avg*.csv"
-outfolder = wdir+"/8_visuals/heatmaps/"
+### 5b make_topic_distribution_plot
+aggregates = wdir+"/7_aggregates/avg*decade.csv" # if mode == lineplot, use only bydecade data!
+outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-rows_shown = 20
+rows_shown = 200 # if mode == lineplot, set to maximum number of topics
 font_scale = 1.0
 dpi = 300
-tmw.make_topic_distribution_heatmap(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi)
-
+mode = "areaplot" # heatmap|lineplot|areaplot
+topics = ["28","31","55","73","76","83","88"] # if mode == lineplot or areaplot, select topics here
+tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi, mode, topics)
 
 
 

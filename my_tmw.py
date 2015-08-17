@@ -90,22 +90,26 @@ corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/6_mallet/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-targets = ["author","decade","subgenre","gender"]
-mode = "create" # load|create
+targets = ["author","decade","subgenre","gender","idno"] # author|decade|subgenre|gender|idno
+mode = "load" # load|create mastermatrix
 number_of_topics = 200
 outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
+
+
 ### 5b make_topic_distribution_plot
-aggregates = wdir+"/7_aggregates/avg*decade.csv" # if mode == lineplot, use only bydecade data!
-outfolder = wdir+"/8_visuals/"
+aggregates = wdir+"/7_aggregates/avg*.csv" 
+outfolder = wdir+"/8_visuals2/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-rows_shown = 200 # if mode == lineplot, set to maximum number of topics
+number_of_topics = 200
+entries_shown = 20 
 font_scale = 1.0
 dpi = 300
-mode = "areaplot" # heatmap|lineplot|areaplot
-topics = ["28","31","55","73","76","83","88"] # if mode == lineplot or areaplot, select topics here
-tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile,rows_shown,font_scale,dpi, mode, topics)
+mode = "barchart" # heatmap|lineplot|areaplot|barchart
+topics = ["1"] # select 1 (barchart) or more (lineplot, areaplot) topics here
+target = "author" # author|decade|subgenre|gender|idno
+tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale,dpi, mode, topics, target)
 
 
 

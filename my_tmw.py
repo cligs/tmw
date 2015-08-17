@@ -90,7 +90,7 @@ corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/6_mallet/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-targets = ["author","decade","subgenre","gender","idno"] # author|decade|subgenre|gender|idno
+targets = ["author","decade","subgenre","gender","idno","segmentID"] # one or several:author|decade|subgenre|gender|idno|segmentID
 mode = "load" # load|create mastermatrix
 number_of_topics = 200
 outfolder = wdir+"7_aggregates/"
@@ -100,18 +100,22 @@ outfolder = wdir+"7_aggregates/"
 
 ### 5b make_topic_distribution_plot
 aggregates = wdir+"/7_aggregates/avg*.csv" 
-outfolder = wdir+"/8_visuals2/"
+outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
 number_of_topics = 200
-entries_shown = 20 
+entries_shown = 30 
 font_scale = 1.0
 dpi = 300
-mode = "barchart" # heatmap|lineplot|areaplot|barchart
-topics = ["1"] # select 1 (barchart) or more (lineplot, areaplot) topics here
-target = "author" # author|decade|subgenre|gender|idno
+mode = "barchart" # choose one: heatmap|lineplot|areaplot|barchart
+topics = ["2"] # select several topics (list); barchart: all are used
+target = "segmentID" # choose one: author|decade|subgenre|gender|idno|segmentID
 tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale,dpi, mode, topics, target)
 
 
+### 5c show segment
+segmentID = "rf0213§0054"
+outfolder = wdir+"/9_sel-segs/"
+#tmw.show_segment(wdir,segmentID, outfolder)
 
 
 ### 6a - aggregate_using_bins_and_metadata

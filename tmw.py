@@ -664,7 +664,7 @@ def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_t
             topicscores = get_topicscoredistribution(aggregate, entries_shown, mode)
             ## For each topic appearing in topicscores, get the first three words.
             allfirstwords = get_firstwords(topicwordfile, topicscores)
-            topicscores["firstwords"] = allfirstwords
+            topicscores["top_topic_words"] = allfirstwords
             ## (optional) Set the first three words as the index of the topicscores
             #topicscores = topicscores.set_index("firstwords")
             create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,mode)
@@ -674,7 +674,7 @@ def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_t
                 entries_shown = number_of_topics
                 topicscores = get_topicscoredistribution(aggregate, entries_shown, mode)
                 allfirstwords = get_firstwords(topicwordfile, topicscores)
-                topicscores["firstwords"] = allfirstwords
+                topicscores["top_topic_words"] = allfirstwords
                 create_lineplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topics)
     elif mode == "areaplot":
         for aggregate in glob.glob(aggregates):
@@ -682,15 +682,17 @@ def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_t
                 entries_shown = number_of_topics
                 topicscores = get_topicscoredistribution(aggregate, entries_shown, mode)
                 allfirstwords = get_firstwords(topicwordfile, topicscores)
-                topicscores["firstwords"] = allfirstwords
+                topicscores["top_topic_words"] = allfirstwords
                 create_areaplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topics)
     elif mode == "barchart":
         for aggregate in glob.glob(aggregates):
             if target in aggregate:
                 topicscores = get_topicscoredistribution(aggregate, entries_shown, mode)
                 allfirstwords = get_firstwords(topicwordfile, topicscores)
-                topicscores["firstwords"] = allfirstwords
-                create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topics,target)
+                topicscores["top_topic_words"] = allfirstwords
+                topics = list(range(0,number_of_topics))
+                for topic in topics:
+                    create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topic,target)
     print("Done.")
 
 def get_topicscoredistribution(aggregate, entries_shown, mode):
@@ -734,7 +736,7 @@ def create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     sns.set_context("poster", font_scale=font_scale)
-    topicscores = topicscores.set_index("firstwords")
+    topicscores = topicscores.set_index("top_topic_words")
     #print(topicscores)
     sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
@@ -758,7 +760,7 @@ def create_lineplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
         os.makedirs(outfolder)
     ## Create subset of data based on topics to be shown.
     selected = topicscores.loc[topics,:]
-    selected = selected.set_index("firstwords")
+    selected = selected.set_index("top_topic_words")
     selected = selected.T
     ## Format the topic information
     topic_numbers = str(topics)[1:-1]
@@ -784,7 +786,7 @@ def create_areaplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
         os.makedirs(outfolder)
     ## Create subset of data based on topics to be shown.
     selected = topicscores.loc[topics,:]
-    selected = selected.set_index("firstwords")
+    selected = selected.set_index("top_topic_words")
     selected = selected.T
     selected = selected.apply(lambda c: c / c.sum() * 100, axis=1)
     ## Format the topic information
@@ -802,49 +804,50 @@ def create_areaplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-
-
-def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topics,target): 
+def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topic,target): 
     """Visualize topic score distribution data as barchart. """
     data_filename = os.path.basename(aggregate)[:-4]
-    print("   Creating barchart for: "+data_filename)
+    print("   Creating barchart for: "+data_filename, topic)
     ## Create output folder if needed
     outfolder = outfolder+"barcharts/"
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    ## Create subset of data based on topic and target to be shown.
-    selected = topicscores.loc[topics,:]
-    selected = selected.set_index("firstwords")
-    selected = selected.T
+    ## Create subset of data based on topics and target to be shown.
+    selected = topicscores.iloc[topic,:-1]
+    top_topic_words = topicscores.iloc[topic,-1]
     ## Sort by topic score and select only top-n targets
-    column_header = selected.columns.values.tolist()[0]
-    selected = selected.sort(columns=column_header, axis=0, ascending=False)
-    selected = selected.iloc[0:entries_shown,:] #rows,columns
+    selected.sort(axis=0, ascending=False)
+    selected = selected[0:entries_shown]
+    #column_header = selected.columns.values.tolist()[0]
+    #selected = selected.sort(columns=column_header, axis=0, ascending=False)
+    #selected = selected.iloc[0:entries_shown,:] #rows,columns
     #print(selected)
-    ## Format the topic information
-    topic_numbers = str(topics)[1:-1]
-    topic_numbers = re.sub("[' ]","",topic_numbers)
-    topic_numbers = re.sub(",","-",topic_numbers)
     ## Plot the selected data
-    #plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
     selected.plot(kind="bar") # "line" or "area"
-    plt.title("Topic score distribution", fontsize=24)
-    plt.ylabel("Topic scores", fontsize=20)
+    plt.title("Topic distribution for: "+top_topic_words, fontsize=20)
+    plt.ylabel("Topic scores", fontsize=16)
     plt.xlabel(target+"s", fontsize=16)
-    figure_filename = outfolder+"bc_topic-"+topic_numbers+"_by-"+target+".png"
+    figure_filename = outfolder+"bc_by-"+target+"_topic-"+"{:02d}".format(topic)+".png"
+    plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
   
-
 # TODO: Add overall topic score for sorting by overall importance.
 
 
-"""
-"""
+###########################
+## show_segment         ###
+###########################
 
+import shutil
 
-
+def show_segment(wdir,segmentID, outfolder): 
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    shutil.copyfile(wdir+"2_segs/"+segmentID+".txt",outfolder+segmentID+".txt")
+    
 
 
 

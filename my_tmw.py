@@ -97,10 +97,10 @@ outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
 ### 5b make_topic_distribution_plot
-aggregates = wdir+"/7_aggregates/avg*decade.csv" # if mode == lineplot, use only bydecade data!
+aggregates = wdir+"/7_aggregates/avg*decade.csv" # if mode == lineplot / areaplot, use only bydecade data!
 outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-rows_shown = 200 # if mode == lineplot, set to maximum number of topics
+rows_shown = 200 # if mode == lineplot / areaplot, set to maximum number of topics
 font_scale = 1.0
 dpi = 300
 mode = "areaplot" # heatmap|lineplot|areaplot

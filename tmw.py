@@ -68,52 +68,69 @@ def tei5reader_fulldocs(inpath, outfolder):
             output.write(outtext)
     print("Done.")
 
+# Utility function for writing segments
+def writesegment(segment, outfolder, filename, counter):
+    from os.path import join
+    segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
+    with open(segname,"w") as output:
+        output.write(' '.join(segment))
+    output.close()
 
-def segmenter(inpath, outfolder, target):
+# Parameters:
+#   - inpath:               path to search documents in
+#   - outfolder:            path to save segments in
+#   - target:               number of words per segment
+#   - sizetolerancefactor:  factor of which exceedance of target is tolerated before slicing paragraphs
+#                               1 for zero tolerance
+#                              -1 for infinity tolerance
+#   - preserveparagraphs:   if True, segments will contain linebreaks according to paragraphs
+#
+def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparagraphs = False):
     """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
     print("\nLaunched segmenter.")
-
     import os
-    import glob
     import re
+    from os import listdir
+    from os.path import join
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-        
-    for file in glob.glob(inpath):
+    counter = 1
+    for relfile in listdir(inpath):
+        file = join(inpath, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
-            #print("File name: ", filename)
-            text = infile.read()
 
-            text = re.sub("[,;\.!?—]", " ", text)
-            text = re.sub("-", " ", text)
-            text = re.sub("\n", " ", text)
-            text = re.sub("[ ]{1,9}", " ", text)
-            words = re.split("\W", text)
-            #print("Number of words: ", filename, len(words))
-            #for word in words[0:31]:
-            #    print(word)
-
-            seg = ""
-            actual = 0
-            counter = 0
-            for i in range(len(words)-1):
-                if len(words[i]) > 1:
-                    if actual < target:
-                        seg = seg + words[i] + " "
-                        #print(words[i])
-                        segsplit = re.split(" ", seg)
-                        actual = len(segsplit)
-                    else:
-                        counter += 1
-                        actual = 0
-                        segname = outfolder + filename + "§{:04d}".format(counter) + ".txt"
-                        with open(segname,"w") as output:
-                            output.write(seg)
-                            seg = ""
+            segment = []
+            for line in infile:
+                text = line
+                text = re.sub("[,;\.!?—]", " ", text)
+                text = re.sub("-", " ", text)
+                text = re.sub("[ ]{1,9}", " ", text)
+                words = re.split("\W", text)
+                if preserveparagraphs:
+                    words.append("\n")
+                if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
+                    print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
+                    if len(segment) * sizetolerancefactor < target:
+                        print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
+                        # wortweise auffüllen
+                        wordsliceindex = target - len(segment)
+                        segment.extend(words[0:wordsliceindex])
+                        words = words[wordsliceindex:len(words)]
+                    print("Segment length: \t", len(segment))
+                    writesegment(segment, outfolder, filename, counter)
+                    counter = counter + 1
+                    segment = []
+                segment.extend(words)
+                if len(segment) >= target:
+                    print("Segment length: \t", len(segment))
+                    writesegment(segment, outfolder, filename, counter)
+                    counter = counter + 1
+                    segment = []
+        print("Segment length: \t", len(segment))
+        writesegment(segment, outfolder, filename, counter)
     print("Done.")
-
 
 def segments_to_bins(inpath, outfile):
     """Script for sorting text segments into bins."""

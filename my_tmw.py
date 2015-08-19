@@ -60,6 +60,7 @@ outfile = outfolder + "corpus.mallet"
 stoplist = "./extras/stopwords_fr.txt" # put in tmw folder!
 #tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist)
 
+
 ### 3b - call_mallet_model
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"

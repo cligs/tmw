@@ -70,7 +70,7 @@ def tei5reader_fulldocs(inpath, outfolder):
 # Utility function for writing segments
 def writesegment(segment, outfolder, filename, counter):
     from os.path import join
-    segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
+    segname = join(outfolder, filename + "§{:06d}".format(counter) + ".txt")
     with open(segname,"w") as output:
         output.write(' '.join(segment))
     output.close()
@@ -119,17 +119,17 @@ def segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagrap
                         wordsliceindex = target - len(segment)
                         segment.extend(words[0:wordsliceindex])
                         words = words[wordsliceindex:len(words)]
-                    print("Segment length: \t", len(segment))
+                    #print("Segment length: \t", len(segment))
                     writesegment(segment, outfolder, filename, counter)
                     counter = counter + 1
                     segment = []
                 segment.extend(words)
                 if len(segment) >= target:
-                    print("Segment length: \t", len(segment))
+                    #print("Segment length: \t", len(segment))
                     writesegment(segment, outfolder, filename, counter)
                     counter = counter + 1
                     segment = []
-        print("Segment length: \t", len(segment))
+        #print("Segment length: \t", len(segment))
         writesegment(segment, outfolder, filename, counter)
     print("Done.")
 
@@ -718,7 +718,8 @@ def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_te
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
         avg_topicscores = avg_topicscores.drop(["year"], axis=1)
-        #print(avg_topicscores.head())
+        avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
+        print(avg_topicscores.head())
   
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
@@ -747,8 +748,8 @@ def get_topicscores(topics_in_texts, number_of_topics):
     i = -1
     ## For each row, collect segment and idno
     for row_index, row in topicsintexts.iterrows():
-        segment = row[1][-15:-4]
-        idno = row[1][-15:-9]
+        segment = row[1][-17:-4]
+        idno = row[1][-17:-11]
         #print(segment, idno)
         idnos.append(idno)
         topics = []
@@ -811,7 +812,7 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, numb
     #print(topicscores.columns)
     #print(topicscores)
     mastermatrix = pd.merge(mastermatrix, topicscores, on="segmentID", how="inner")
-    #print("mastermatrix: all three\n", mastermatrix)
+    #print("mastermatrix: all three\n", mastermatrix.head())
     mastermatrix.to_csv(mastermatrixfile, sep=",", encoding="utf-8")
     print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
     return mastermatrix
@@ -834,14 +835,15 @@ def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_t
     print("Launched make_topic_distribution_heatmap.")
     if mode == "heatmap":
         for aggregate in glob.glob(aggregates):
-            ## Get topic score distribution for each aggregation file.
-            topicscores = get_topicscoredistribution(aggregate, entries_shown, mode)
-            ## For each topic appearing in topicscores, get the first three words.
-            allfirstwords = get_firstwords(topicwordfile, topicscores)
-            topicscores["top_topic_words"] = allfirstwords
-            ## (optional) Set the first three words as the index of the topicscores
-            #topicscores = topicscores.set_index("firstwords")
-            create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,mode)
+            if "segmentID" not in aggregate:
+                ## Get topic score distribution for each aggregation file.
+                topicscores = get_topicscoredistribution(aggregate, entries_shown, mode)
+                ## For each topic appearing in topicscores, get the first three words.
+                allfirstwords = get_firstwords(topicwordfile, topicscores)
+                topicscores["top_topic_words"] = allfirstwords
+                ## (optional) Set the first three words as the index of the topicscores
+                #topicscores = topicscores.set_index("firstwords")
+                create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,mode)
     elif mode == "lineplot": 
         for aggregate in glob.glob(aggregates):
             if "decade" in aggregate:
@@ -873,12 +875,7 @@ def get_topicscoredistribution(aggregate, entries_shown, mode):
     with open(aggregate, "r") as infile:
         topicscores = pd.DataFrame.from_csv(infile, sep=",")
         topicscores = topicscores.T
-        if mode == "heatmap": 
-            stdevs = topicscores.std(axis=1)
-            topicscores = pd.concat([topicscores, stdevs], axis=1)
-            topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
-            # column: 0=stdev; "seg1" = beginning, "Comédie", etc.
-            topicscores = topicscores.iloc[:entries_shown,:-1] #rows,columns
+        #print("topicscores\n",topicscores.head())    
         return topicscores
 
 def get_firstwords(topicwordfile, topicscores):
@@ -886,15 +883,13 @@ def get_firstwords(topicwordfile, topicscores):
     allfirstwords = []
     with open(topicwordfile, "r") as infile:
         topicwords = pd.read_csv(infile, sep="\t", header=None)
-        #print(topicwords)
-        topics = topicscores.index.tolist()
+        #print(topicwords.head())
+        topics = topicwords.index.tolist()
+        #print(topics)
         for topic in topics:
-            #topic = int(topic[2:])-1
-            #topic = int(topic)-1
             topic = int(topic)
             firstwords = topicwords.loc[topic]
             firstwords = firstwords[2].split(" ")
-            #topic = topic+1
             firstwords = str(firstwords[0]+"-"+firstwords[1]+"-"+firstwords[2]+" "+str(topic)+"")
             allfirstwords.append(firstwords)   
         #allfirstwords["tp"+str(topic)] = firstwords
@@ -910,8 +905,14 @@ def create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     sns.set_context("poster", font_scale=font_scale)
+    ## Calculate standard deviation and sort descending by it.
+    stdevs = topicscores.std(axis=1)
+    topicscores = pd.concat([topicscores, stdevs], axis=1)
+    topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
+    ## Limit display to top n topics.
+    topicscores = topicscores.iloc[:entries_shown,:-1] #rows,columns
+    ## Set column "ttw" to index so that they will be used for display
     topicscores = topicscores.set_index("top_topic_words")
-    #print(topicscores)
     sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
     plt.title("Distribution of topic scores", fontsize=24)
@@ -941,7 +942,7 @@ def create_lineplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
     topic_numbers = re.sub("[' ]","",topic_numbers)
     topic_numbers = re.sub(",","-",topic_numbers)
     ## Plot the selected data
-    selected.plot(kind="line")
+    selected.plot(kind="line", lw=5)
     plt.title("Evolution of topic scores", fontsize=24)
     plt.ylabel("Topic scores (absolute)", fontsize=20)
     plt.xlabel("Decades", fontsize=16)

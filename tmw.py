@@ -55,12 +55,10 @@ def tei5reader_fulldocs(inpath, outfolder):
             text = "\n".join(text)
 
             ### Some cleaning up
-            text = re.sub("  ", "", text)
-            #text = re.sub("    ", "", text)
-            text = re.sub("\n{1,6}", " ", text)
-            #text = re.sub("\n{1,6}", "\n", text)
             text = re.sub("\n \n", "\n", text)
-            text = re.sub("\t\n", "", text)
+            text = re.sub("\t\n", "\n", text)
+            text = re.sub("\n{1,10}", "\n", text)
+            text = re.sub("[ ]{1,10}", " ", text)
 
             outtext = str(text)
             outfile = outfolder + filename + ".txt"
@@ -69,7 +67,74 @@ def tei5reader_fulldocs(inpath, outfolder):
     print("Done.")
 
 
-def segmenter(inpath, outfolder, target):
+# Utility function for writing segments
+def writesegment(segment, outfolder, filename, counter):
+    from os.path import join
+    segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
+    with open(segname,"w") as output:
+        output.write(' '.join(segment))
+    output.close()
+
+# Parameters:
+#   - inpath:               path to search documents in
+#   - outfolder:            path to save segments in
+#   - target:               number of words per segment
+#   - sizetolerancefactor:  factor of which exceedance of target is tolerated before slicing paragraphs
+#                               1 for zero tolerance
+#                              -1 for infinity tolerance
+#   - preserveparagraphs:   if True, segments will contain linebreaks according to paragraphs
+#
+
+def segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagraphs):
+    """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
+    print("\nLaunched segmenter.")
+    import os
+    import re
+    from os import listdir
+    from os.path import join
+
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    counter = 1
+    for relfile in listdir(infolder):
+        file = join(infolder, relfile)
+        with open(file, "r") as infile:
+            filename = os.path.basename(file)[:-4]
+
+            segment = []
+            for line in infile:
+                text = line
+                text = re.sub("[,;\.!?—«»]", " ", text)
+                #text = re.sub("-", " ", text)
+                text = re.sub("[ ]{1,9}", " ", text)
+                #words = re.split("\W", text)
+                words = re.split("\s", text)
+                if preserveparagraphs:
+                    words.append("\n")
+                if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
+                    #print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
+                    if len(segment) * sizetolerancefactor < target:
+                        #print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
+                        # wortweise auffüllen
+                        wordsliceindex = target - len(segment)
+                        segment.extend(words[0:wordsliceindex])
+                        words = words[wordsliceindex:len(words)]
+                    print("Segment length: \t", len(segment))
+                    writesegment(segment, outfolder, filename, counter)
+                    counter = counter + 1
+                    segment = []
+                segment.extend(words)
+                if len(segment) >= target:
+                    print("Segment length: \t", len(segment))
+                    writesegment(segment, outfolder, filename, counter)
+                    counter = counter + 1
+                    segment = []
+        print("Segment length: \t", len(segment))
+        writesegment(segment, outfolder, filename, counter)
+    print("Done.")
+
+
+def old_segmenter(inpath, outfolder, target):
     """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
     print("\nLaunched segmenter.")
 
@@ -108,7 +173,7 @@ def segmenter(inpath, outfolder, target):
                     else:
                         counter += 1
                         actual = 0
-                        segname = outfolder + filename + "§{:04d}".format(counter) + ".txt"
+                        segname = outfolder + filename + "§{:06d}".format(counter) + ".txt"
                         with open(segname,"w") as output:
                             output.write(seg)
                             seg = ""
@@ -247,8 +312,8 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub("d'","de ",text)
             text = re.sub("L'","Le ",text)
             text = re.sub("l'","la ",text)
-            text = re.sub("T'","tu|te ",text)
-            text = re.sub("t'","tu|te ",text)
+            text = re.sub("T'","tu ",text) ## tu|te
+            text = re.sub("t'","tu ",text) ## tu|te
             text = re.sub("-le"," le",text)
             text = re.sub("-moi"," moi",text)
             text = re.sub("m'","me ",text)
@@ -264,8 +329,8 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub("-ce"," ce",text)
             text = re.sub("-tu"," tu",text)
             text = re.sub("-toi"," toi",text)
-            text = re.sub("jusqu'à'","jusque à",text)
-            text = re.sub("aujourd'hui","aujourdhui",text)
+            text = re.sub("jusqu'à'","jusque à",text) ##?
+            text = re.sub("aujourd'hui","aujourdhui",text) ##?
             text = re.sub("-t","",text)
             text = re.sub("-y"," y",text)
             text = re.sub("-en"," en",text)
@@ -275,6 +340,104 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub("Qu'","Que ",text)
             text = re.sub("qu'","que ",text)
             text = re.sub("-même"," même",text)
+
+            ## Sentence-initial capitals are a problem for TreeTagger
+            text = re.sub(" Il "," il ",text)
+            text = re.sub(" Ils "," ils ",text)
+            text = re.sub(" Elles "," elles ",text)
+            text = re.sub(" Elle "," elle ",text)
+            text = re.sub(" Je "," je ",text)
+            text = re.sub(" Tu "," tu ",text)
+            text = re.sub(" Toi "," toi ",text)
+            text = re.sub(" Nous "," nous ",text)
+            text = re.sub(" Vous "," vous ",text)
+            text = re.sub(" Mais "," mais ",text)
+            text = re.sub(" Ne "," ne ",text)
+            text = re.sub(" Et "," et ",text)
+            text = re.sub(" Pourquoi "," pourquoi ",text)
+            text = re.sub(" Alors "," alors ",text)
+            text = re.sub(" Aussi "," aussi ",text)
+            text = re.sub(" Car "," car ",text)
+            text = re.sub(" Au "," au ",text)
+            text = re.sub(" Ses "," ses ",text)
+            text = re.sub(" Toute "," toute ",text)
+            text = re.sub(" Tout "," tout ",text)
+            text = re.sub(" Hier "," hier ",text)
+            text = re.sub(" Non "," non ",text)
+            text = re.sub(" Comme "," comme ",text)
+            text = re.sub(" Dans "," dans ",text)
+            text = re.sub(" Pour "," pour ",text)
+            text = re.sub(" Voilà "," voilà ",text)
+            text = re.sub(" Son "," son ",text)
+            text = re.sub(" Une "," une ",text)
+            text = re.sub(" Un "," un ",text)
+            text = re.sub(" Où "," où ",text)
+            text = re.sub(" De "," de ",text)
+            text = re.sub(" Qui "," qui ",text)
+            text = re.sub(" Depuis "," depuis ",text)
+            text = re.sub(" Ça "," ça ",text)
+            text = re.sub(" Sur "," sur ",text)
+            text = re.sub(" Ensuite "," ensuite ",text)
+            text = re.sub(" Puis "," puis ",text)
+            text = re.sub(" On "," on ",text)
+            text = re.sub(" Si "," si ",text)
+            text = re.sub(" Même "," même ",text)
+            text = re.sub(" Toutefois "," toutefois ",text)
+            text = re.sub(" Ainsi "," ainsi ",text)
+            text = re.sub(" Aucun "," aucun ",text)
+            text = re.sub(" Ce "," ce ",text)
+            text = re.sub(" Ces "," ces ",text)
+            text = re.sub(" Toutes "," toutes ",text)
+            text = re.sub(" En "," en ",text)
+            text = re.sub(" Après "," après ",text)
+            text = re.sub(" Quel "," quel ",text)
+            text = re.sub(" Quelle "," quelle ",text)
+            text = re.sub(" Quand "," quand ",text)
+            text = re.sub(" Celle "," celle ",text)
+            text = re.sub(" Puisque "," puisque ",text)
+            text = re.sub(" Tous "," tous ",text)
+            text = re.sub(" Dès "," dès ",text)
+            text = re.sub(" Cet "," cet ",text)
+            text = re.sub(" Lorsque "," lorsque ",text)
+            text = re.sub(" Lui "," lui ",text)
+            text = re.sub(" Sauf "," sauf ",text)
+            text = re.sub(" Moins "," moins ",text)
+            text = re.sub(" Encore "," encore ",text)
+            text = re.sub(" Cependant "," cependant ",text)
+            text = re.sub(" Comment "," comment ",text)
+            text = re.sub(" Assez "," assez ",text)
+            text = re.sub(" Ma "," ma ",text)
+            text = re.sub(" Quelques "," quelques ",text)
+            text = re.sub(" Leurs "," leurs ",text)
+            text = re.sub(" Ceux "," ceux ",text)
+            text = re.sub(" Par "," par ",text)
+            text = re.sub(" Devant "," devant ",text)
+            text = re.sub(" Bien "," bien ",text)
+            text = re.sub(" Personne "," personne ",text)
+            text = re.sub(" Près "," près ",text)
+            text = re.sub(" Avant "," avant ",text)
+            text = re.sub(" Rien "," rien ",text)
+            text = re.sub(" Partout "," partout ",text)
+            text = re.sub(" Pourtant "," pourtant ",text)
+            text = re.sub(" Déjà "," déjà ",text)
+            text = re.sub(" Enfin "," enfin ",text)
+            text = re.sub(" Maintenant "," maintenant ",text)
+            text = re.sub(" Quoi "," quoi ",text)
+            text = re.sub(" Eh "," eh ",text)
+            text = re.sub(" Ah "," ah ",text)
+            text = re.sub(" Oh "," oh ",text)
+            text = re.sub(" Jamais "," jamais ",text)
+            text = re.sub("  ","  ",text)
+
+            #A few tokenizations need to be fixed again
+            text = re.sub(" Qu "," que ",text)
+            text = re.sub(" qu "," que ",text)
+            text = re.sub(" quelqu "," quelque ",text)
+            text = re.sub(" jusqu "," jusque ",text)
+            text = re.sub(" Jusqu "," jusque ",text)
+            text = re.sub(" aujourd hui "," aujourd'hui ",text)
+            text = re.sub("  ","  ",text)
+
 
             basename = os.path.basename(file)
             cleanfilename = basename
@@ -345,7 +508,7 @@ def call_treetagger(infolder, outfolder, tagger):
 
 
 
-def make_lemmatext(inpath,outfolder):
+def make_lemmatext(inpath, outfolder, mode, stoplist):
     """Function to extract lemmas from TreeTagger output."""
     print("\nLaunched make_lemmatext.")
 
@@ -369,13 +532,24 @@ def make_lemmatext(inpath,outfolder):
                 if len(splitline) == 3:
                     lemma = splitline[2]
                     pos = splitline[1]
-                    word = splitline[0]
-                    if "|" in lemma:
-                        lemmata.append(word.lower())
-                    elif "NOM" in pos and "|" not in lemma and "<unknown>" not in lemma:
-                    #elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
-                        lemmata.append(lemma.lower())
-            stoplist = ["les","suis","est","un", "pas", "abord", "rien", "fait", "ton", "moi","être"]
+                    token = splitline[0]
+                    ## Select subset of lemmas according to parameter "mode"
+                    if mode == "N":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    elif mode == "NV":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos or "VER" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    elif mode == "NVAA":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+            ## Continue with list of lemmata, but remove undesired leftover words         
             lemmata = ' '.join([word for word in lemmata if word not in stoplist])
             lemmata = re.sub("[ ]{1,4}"," ", lemmata)
             newfilename = os.path.basename(file)[:-4] + ".txt"

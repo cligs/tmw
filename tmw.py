@@ -69,10 +69,10 @@ def tei5reader_fulldocs(inpath, outfolder):
     print("Done.")
 
 # Utility function for writing segments
-def writesegment(segment, outfolder, filename, counter):
+def writesegment(segment, outfolder, filename, counter, mode="w"):
     from os.path import join
     segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
-    with open(segname,"w") as output:
+    with open(segname, mode) as output:
         output.write(' '.join(segment))
     output.close()
 
@@ -98,6 +98,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
         os.makedirs(outfolder)
     counter = 1
     for relfile in listdir(inpath):
+        counter = 1
         file = join(inpath, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
@@ -130,7 +131,13 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
                     counter = counter + 1
                     segment = []
         print("Segment length: \t", len(segment))
-        writesegment(segment, outfolder, filename, counter)
+        if sizetolerancefactor != -1 and len(segment) * sizetolerancefactor < target:
+            print("Segment length of last Segment too short. Adding text to previous segment.")
+            counter = counter - 1
+            writesegment(segment, outfolder, filename, counter, "a")
+        else:
+            writesegment(segment, outfolder, filename, counter)
+
     print("Done.")
 
 def segments_to_bins(inpath, outfile):

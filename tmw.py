@@ -89,9 +89,11 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
     """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
     print("\nLaunched segmenter.")
     import os
+    import glob
     import re
     from os import listdir
     from os.path import join
+    from nltk.tokenize import word_tokenize
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
@@ -107,7 +109,9 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
                 text = re.sub("[,;\.!?—]", " ", text)
                 text = re.sub("-", " ", text)
                 text = re.sub("[ ]{1,9}", " ", text)
-                words = re.split("\W", text)
+               # words = re.split("\W", text)
+                words = word_tokenize(text)
+                print(words)
                 if preserveparagraphs:
                     words.append("\n")
                 if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:

@@ -93,16 +93,16 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
     from os import listdir
     from os.path import join
     from nltk.tokenize import word_tokenize
+    import glob
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     counter = 1
-    for relfile in listdir(inpath):
+    for relfile in glob.glob(inpath):
         counter = 1
         file = join(inpath, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
-
             segment = []
             for line in infile:
                 text = line
@@ -112,7 +112,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
                 words = word_tokenize(text)
                 if preserveparagraphs:
                     words.append("\n")
-                if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
+                while sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
                     print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
                     if len(segment) * sizetolerancefactor < target:
                         print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
@@ -125,17 +125,24 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
                     counter = counter + 1
                     segment = []
                 segment.extend(words)
-                if len(segment) >= target:
+                if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
+                    print("Segment length of last Segment too short. Adding text to previous segment.")
+                    counter = counter - 1
+                    writesegment(segment, outfolder, filename, counter, "a")
+                    counter = counter + 1
                     print("Segment length: \t", len(segment))
+                    segment = []
+                elif len(segment) > 0:
                     writesegment(segment, outfolder, filename, counter)
+                    print("Segment length: \t", len(segment))
                     counter = counter + 1
                     segment = []
-        print("Segment length: \t", len(segment))
-        if sizetolerancefactor != -1 and len(segment) * sizetolerancefactor < target:
+        if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
             print("Segment length of last Segment too short. Adding text to previous segment.")
             counter = counter - 1
             writesegment(segment, outfolder, filename, counter, "a")
-        else:
+            counter = counter + 1
+        elif len(segment) > 0:
             writesegment(segment, outfolder, filename, counter)
 
     print("Done.")

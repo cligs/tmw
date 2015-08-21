@@ -93,16 +93,18 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
     from os import listdir
     from os.path import join
     from nltk.tokenize import word_tokenize
+    import glob
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     counter = 1
-    for relfile in listdir(inpath):
+    for relfile in glob.glob(inpath):
         counter = 1
         file = join(inpath, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
-
+            if filename == "rf0053":
+                print("now")
             segment = []
             for line in infile:
                 text = line
@@ -112,7 +114,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
                 words = word_tokenize(text)
                 if preserveparagraphs:
                     words.append("\n")
-                if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
+                while sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
                     print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
                     if len(segment) * sizetolerancefactor < target:
                         print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
@@ -125,17 +127,24 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
                     counter = counter + 1
                     segment = []
                 segment.extend(words)
-                if len(segment) >= target:
+                if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
+                    print("Segment length of last Segment too short. Adding text to previous segment.")
+                    counter = counter - 1
+                    writesegment(segment, outfolder, filename, counter, "a")
+                    counter = counter + 1
                     print("Segment length: \t", len(segment))
+                    segment = []
+                elif len(segment) > 0:
                     writesegment(segment, outfolder, filename, counter)
+                    print("Segment length: \t", len(segment))
                     counter = counter + 1
                     segment = []
-        print("Segment length: \t", len(segment))
-        if sizetolerancefactor != -1 and len(segment) * sizetolerancefactor < target:
+        if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
             print("Segment length of last Segment too short. Adding text to previous segment.")
             counter = counter - 1
             writesegment(segment, outfolder, filename, counter, "a")
-        else:
+            counter = counter + 1
+        elif len(segment) > 0:
             writesegment(segment, outfolder, filename, counter)
 
     print("Done.")
@@ -319,7 +328,7 @@ def nltk_stanfordpos(inpath, outfolder):
 
     import os
     import glob
-    from nltk.tag.stanford import POSTagger
+    from nltk.tag.stanford import StanfordPOSTagger as POSTagger
 
     for file in glob.glob(inpath):
         st = POSTagger('/home/christof/Programs/stanfordpos/models/french.tagger', '/home/christof/Programs/stanfordpos/stanford-postagger.jar', encoding="utf8")
@@ -522,7 +531,7 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
         #font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
         wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
         default_colors = wordcloud.to_array()
-        plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
+        plt.imshow(wordcloud.recolor(random_state=3)) #color_func=get_color_scale
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
         plt.title(figure_title, fontsize=24)

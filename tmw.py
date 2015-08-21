@@ -103,8 +103,6 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
         file = join(inpath, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
-            if filename == "rf0053":
-                print("now")
             segment = []
             for line in infile:
                 text = line
@@ -328,7 +326,7 @@ def nltk_stanfordpos(inpath, outfolder):
 
     import os
     import glob
-    from nltk.tag.stanford import StanfordPOSTagger as POSTagger
+    from nltk.tag.stanford import POSTagger
 
     for file in glob.glob(inpath):
         st = POSTagger('/home/christof/Programs/stanfordpos/models/french.tagger', '/home/christof/Programs/stanfordpos/stanford-postagger.jar', encoding="utf8")
@@ -531,7 +529,7 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
         #font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
         wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
         default_colors = wordcloud.to_array()
-        plt.imshow(wordcloud.recolor(random_state=3)) #color_func=get_color_scale
+        plt.imshow(color_func=get_color_scale, wordcloud.recolor(random_state=3))
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
         plt.title(figure_title, fontsize=24)

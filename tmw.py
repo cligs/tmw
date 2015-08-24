@@ -57,10 +57,10 @@ def tei5reader_fulldocs(inpath, outfolder):
             ### Some cleaning up
             text = re.sub("  ", "", text)
             #text = re.sub("    ", "", text)
-            text = re.sub("\n{1,6}", " ", text)
+          #  text = re.sub("\n{1,6}", " ", text)
             #text = re.sub("\n{1,6}", "\n", text)
-            text = re.sub("\n \n", "\n", text)
-            text = re.sub("\t\n", "", text)
+          #  text = re.sub("\n \n", "\n", text)
+           # text = re.sub("\t\n", "", text)
 
             outtext = str(text)
             outfile = outfolder + filename + ".txt"
@@ -75,6 +75,71 @@ def writesegment(segment, outfolder, filename, counter, mode="w"):
     with open(segname, mode) as output:
         output.write(' '.join(segment))
     output.close()
+
+def write(segment, file, mode = "w"):
+    with open(file, mode) as output:
+        output.write(' '.join(segment))
+        output.close()
+
+
+counter = 0
+currentsegmentsize = 0
+
+# Utility function for writing segments
+def writesegment(segment, outfolder, filename, target, tolerancefactor):
+    from os.path import join
+    global currentsegmentsize
+    global counter
+
+    segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
+
+    # case: last segment is too small => fill with (slice of) new segment
+    if currentsegmentsize * tolerancefactor < target: # min size limit not reached => split
+            #split segment
+            wordsliceindex = target - len(currentsegmentsize)
+
+            # if it's too big: slice!
+            if len(segment) > wordsliceindex:
+                write(segment[0:wordsliceindex], segname, "a")
+                currentsegmentsize += wordsliceindex
+                segment = segment[wordsliceindex:len(segment)]
+            else:
+                # segment fits so append
+                write(segment, segname, "a")
+                currentsegmentsize += len(segment)
+                # done
+                return
+
+
+    # # case: new segment is too big, last segment is too small
+    # while currentsegmentsize + len(segment) > target * tolerancefactor: # max size limit exceeded
+    #     if currentsegmentsize * tolerancefactor < target: # min size limit not reached => split
+    #         #split segment
+    #         wordsliceindex = target - len(currentsegmentsize)
+    #         write(segment[0:wordsliceindex], segname, "a")
+    #         segment = segment[wordsliceindex:len(segment)]
+    #         currentsegmentsize += wordsliceindex
+
+
+    # case: new segment is too big
+    # if segment > targer: slice segment
+    while len(segment) > target * tolerancefactor:
+        counter += 1
+        currentsegmentsize = 0
+        write(segment[0:target], segname)
+        segment = segment[target:len(segment)]
+
+    # now #segment is < target
+    if (len(segment) == 0):
+        #segment was perfectly sliced so we are done
+        return
+
+    # there's some part of segment left, write this to file
+    counter += 1
+    currentsegmentsize = len(segment)
+    write(segment, segname)
+
+
 
 # Parameters:
 #   - inpath:               path to search documents in
@@ -98,52 +163,111 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparag
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     counter = 1
+    # work on files in inpath
     for relfile in glob.glob(inpath):
         counter = 1
+
+        # get absolut filename
         file = join(inpath, relfile)
+        # track size of last segment in order to avoid exceeding size constraints while appending
+
+        lastsegment = 0
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
+            # segment contains words assigned to the current segment
             segment = []
+
+            # go thru paragraphs one by one
             for line in infile:
                 text = line
+                # remove special characters and space-chains
                 text = re.sub("[,;\.!?—\t\r\n\v\f]", " ", text)
                 text = re.sub("-", " ", text)
                 text = re.sub("[ ]{1,9}", " ", text)
+
+                # tokanize text
                 words = word_tokenize(text)
+
                 if preserveparagraphs:
                     words.append("\n")
+
+                # while current #segment and #remaining-words exceed limitation (e.g. line too long)
                 while sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
                     print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
+
+                    # if #segment is yet too small, extend to desired limit with part of words (e.g. slice line)
                     if len(segment) * sizetolerancefactor < target:
                         print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
                         # wortweise auffüllen
                         wordsliceindex = target - len(segment)
                         segment.extend(words[0:wordsliceindex])
                         words = words[wordsliceindex:len(words)]
+
+                    # Possible states: Line: <line still too long> / <line meeting constraints>
+                    #               Segment: <segment within size constraints> => save segment
+
                     print("Segment length: \t", len(segment))
                     writesegment(segment, outfolder, filename, counter)
                     counter = counter + 1
+                    lastsegment = len(segment)
                     segment = []
+
+                    # dealing with state: <line still too long>:
+                    if len(words) > target * sizetolerancefactor:
+                        segment.extend(words[0:target])
+                        words = words[target:len(words)]
+
+                # line completely processed
+                if len(words) == 0:
+                    continue
+
+                # possible states:  <line meeting size constraints> / <line too small>
+
                 segment.extend(words)
+
+                # dealing with state: <line too small>:
+                # if words is too small for its own segment: append to previous segment ignoring further limitations
                 if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
                     print("Segment length of last Segment too short. Adding text to previous segment.")
-                    counter = counter - 1
-                    writesegment(segment, outfolder, filename, counter, "a")
+
+                    # avoid appending beyond size constraints:
+                    if sizetolerancefactor != -1 and lastsegment + len(segment) > target * sizetolerancefactor:
+                        print("Segment length of last segment exceeded. Starting new segment")
+                        lastsegment = len(segment)
+                        writesegment(segment, outfolder, filename, counter)
+                    else:
+                        print("Segment length of last segment: " + str(lastsegment))
+                        counter = counter - 1
+                        lastsegment += len(segment)
+                        writesegment(segment, outfolder, filename, counter, "a")
                     counter = counter + 1
                     print("Segment length: \t", len(segment))
                     segment = []
+                # otherways just save remaining words in own segment
                 elif len(segment) > 0:
                     writesegment(segment, outfolder, filename, counter)
                     print("Segment length: \t", len(segment))
                     counter = counter + 1
+                    lastsegment = len(segment)
                     segment = []
-        if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
-            print("Segment length of last Segment too short. Adding text to previous segment.")
-            counter = counter - 1
-            writesegment(segment, outfolder, filename, counter, "a")
-            counter = counter + 1
-        elif len(segment) > 0:
-            writesegment(segment, outfolder, filename, counter)
+        # # following code might be obsolete. TODO: check!
+        # if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
+        #     print("Segment length of last Segment too short. Adding text to previous segment.")
+        #     # avoid appending beyond size constraints:
+        #     if sizetolerancefactor != -1 and lastsegment + len(segment) > target * sizetolerancefactor:
+        #         print("Segment length of last segment exceeded. Starting new segment")
+        #         lastsegment = 0
+        #         writesegment(segment, outfolder, filename, counter)
+        #     else:
+        #         counter = counter - 1
+        #         lastsegment += len(segment)
+        #         writesegment(segment, outfolder, filename, counter, "a")
+        #     counter = counter + 1
+        #     print("Segment length: \t", len(segment))
+        #     segment = []
+        # elif len(segment) > 0:
+        #     writesegment(segment, outfolder, filename, counter)
+        #     lastsegment = segment
 
     print("Done.")
 

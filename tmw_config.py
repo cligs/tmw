@@ -24,8 +24,8 @@ outfolder = wdir + "1_txt/"
 ### 1b - segmenter
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
-target = 5000
-sizetolerancefactor = 1 # 1 = exact target; -1 = never split paragraph; 2 = target max *2, minimal /2 .
+target = 600
+sizetolerancefactor = 1.1 # 1 = exact target; >1 = with some tolerance (1.1 = +/- 10%).
 preserveparagraphs = True # True|False
 tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 

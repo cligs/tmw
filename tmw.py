@@ -58,7 +58,6 @@ def tei5reader_fulldocs(inpath, outfolder):
             text = re.sub("[ ]{1,20}", " ", text)
             text = re.sub("\t\n", "\n", text)
             text = re.sub("\n{1,10}", "\n", text)
-            text = re.sub("\n{1,10}", "\n", text)
             text = re.sub("\n \n", "\n", text)
             text = re.sub("\n.\n", "\n", text)
             text = re.sub("[ ]{1,20}", " ", text)
@@ -108,32 +107,32 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
                 if preserveparagraphs:
                     words.append("\n")
                 while sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
-                    print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
+                    #print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
                     if len(segment) * sizetolerancefactor < target:
-                        print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
+                        #print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
                         # wortweise auffüllen
                         wordsliceindex = target - len(segment)
                         segment.extend(words[0:wordsliceindex])
                         words = words[wordsliceindex:len(words)]
-                    print("Segment length: \t", len(segment))
+                    #print("Segment length: \t", len(segment))
                     writesegment(segment, outfolder, filename, counter)
                     counter = counter + 1
                     segment = []
                 segment.extend(words)
                 if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
-                    print("Segment length of last Segment too short. Adding text to previous segment.")
+                    #print("Segment length of last Segment too short. Adding text to previous segment.")
                     counter = counter - 1
                     writesegment(segment, outfolder, filename, counter, "a")
                     counter = counter + 1
-                    print("Segment length: \t", len(segment))
+                    #print("Segment length: \t", len(segment))
                     segment = []
                 elif len(segment) > 0:
                     writesegment(segment, outfolder, filename, counter)
-                    print("Segment length: \t", len(segment))
+                    #print("Segment length: \t", len(segment))
                     counter = counter + 1
                     segment = []
         if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
-            print("Segment length of last Segment too short. Adding text to previous segment.")
+            #print("Segment length of last Segment too short. Adding text to previous segment.")
             counter = counter - 1
             writesegment(segment, outfolder, filename, counter, "a")
             counter = counter + 1

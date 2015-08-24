@@ -38,7 +38,7 @@ def tei5reader_fulldocs(inpath, outfolder):
             namespaces = {'tei':'http://www.tei-c.org/ns/1.0'}
 
             ### Removes tags but conserves their text content.
-            etree.strip_tags(xml, "{http://www.tei-c.org/ns/1.0}hi")
+            etree.strip_tags(xml, "{http://www.tei-c.org/ns/1.0}seg")
 
             ### Removes elements and their text content.
             #etree.strip_elements(xml, "speaker")
@@ -55,10 +55,13 @@ def tei5reader_fulldocs(inpath, outfolder):
             text = "\n".join(text)
 
             ### Some cleaning up
-            text = re.sub("\n \n", "\n", text)
+            text = re.sub("[ ]{1,20}", " ", text)
             text = re.sub("\t\n", "\n", text)
             text = re.sub("\n{1,10}", "\n", text)
-            text = re.sub("[ ]{1,10}", " ", text)
+            text = re.sub("\n{1,10}", "\n", text)
+            text = re.sub("\n \n", "\n", text)
+            text = re.sub("\n.\n", "\n", text)
+            text = re.sub("[ ]{1,20}", " ", text)
 
             outtext = str(text)
             outfile = outfolder + filename + ".txt"
@@ -68,10 +71,10 @@ def tei5reader_fulldocs(inpath, outfolder):
 
 
 # Utility function for writing segments
-def writesegment(segment, outfolder, filename, counter):
+def writesegment(segment, outfolder, filename, counter, mode="w"):
     from os.path import join
     segname = join(outfolder, filename + "§{:06d}".format(counter) + ".txt")
-    with open(segname,"w") as output:
+    with open(segname, mode) as output:
         output.write(' '.join(segment))
     output.close()
 
@@ -92,11 +95,12 @@ def segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagrap
     import re
     from os import listdir
     from os.path import join
+    from nltk.tokenize import word_tokenize
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    counter = 1
     for relfile in listdir(infolder):
+        counter = 1
         file = join(infolder, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
@@ -104,11 +108,14 @@ def segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagrap
             segment = []
             for line in infile:
                 text = line
-                text = re.sub("[,;\.!?—«»]", " ", text)
+                text = re.sub("[,;\.!?—«»\[\]]", " ", text)
+                text = re.sub("-- ", "", text)
                 #text = re.sub("-", " ", text)
                 text = re.sub("[ ]{1,9}", " ", text)
+                ## Select one of the three tokenization options
                 #words = re.split("\W", text)
                 words = re.split("\s", text)
+                #words = word_tokenize(text)
                 if preserveparagraphs:
                     words.append("\n")
                 if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
@@ -130,7 +137,13 @@ def segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagrap
                     counter = counter + 1
                     segment = []
         #print("Segment length: \t", len(segment))
-        writesegment(segment, outfolder, filename, counter)
+        if sizetolerancefactor != -1 and len(segment) * sizetolerancefactor < target:
+            #print("Segment length of last Segment too short. Adding text to previous segment.")
+            counter = counter - 1
+            writesegment(segment, outfolder, filename, counter, "a")
+        else:
+            writesegment(segment, outfolder, filename, counter)
+
     print("Done.")
 
 
@@ -360,6 +373,8 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub(" Car "," car ",text)
             text = re.sub(" Au "," au ",text)
             text = re.sub(" Ses "," ses ",text)
+            text = re.sub(" Se "," se ",text)
+            text = re.sub(" Moi "," moi ",text)
             text = re.sub(" Toute "," toute ",text)
             text = re.sub(" Tout "," tout ",text)
             text = re.sub(" Hier "," hier ",text)
@@ -427,7 +442,25 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub(" Ah "," ah ",text)
             text = re.sub(" Oh "," oh ",text)
             text = re.sub(" Jamais "," jamais ",text)
-            text = re.sub("  ","  ",text)
+            text = re.sub(" Mon "," mon ",text)
+            text = re.sub(" Cela "," cela ",text)
+            text = re.sub(" Du "," du ",text)
+            text = re.sub(" Oui "," oui ",text)
+            text = re.sub(" Ou "," ou ",text)
+            text = re.sub(" Sa "," sa ",text)
+            text = re.sub(" Celui "," celui ",text)
+            text = re.sub(" Cette "," cette ",text)
+            text = re.sub(" Des "," des ",text)
+            text = re.sub(" Naturellement "," naturellement ",text)
+            text = re.sub(" Sans "," sans ",text)
+            text = re.sub(" Vos "," vos ",text)
+            text = re.sub(" Votre "," votre ",text)
+            text = re.sub(" Notre "," notre ",text)
+            text = re.sub(" Peut-être "," peut-être ",text)
+            text = re.sub(" Mes "," mes ",text)
+            text = re.sub(" Celle "," celle ",text)
+            text = re.sub(" Tant "," tant ",text)
+            text = re.sub(" Demain "," demain ",text)
 
             #A few tokenizations need to be fixed again
             text = re.sub(" Qu "," que ",text)
@@ -719,7 +752,7 @@ def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_te
         avg_topicscores = grouped.agg(np.mean)
         avg_topicscores = avg_topicscores.drop(["year"], axis=1)
         avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
-        print(avg_topicscores.head())
+        #print(avg_topicscores.head())
   
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
@@ -830,7 +863,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale,dpi, mode, topics, target):
+def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics, entries_shown, font_scale, height, dpi, mode, topics, target):
     """Function to coordinate creation various topic distribution plots."""
     print("Launched make_topic_distribution_heatmap.")
     if mode == "heatmap":
@@ -868,7 +901,7 @@ def make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_t
                 topicscores["top_topic_words"] = allfirstwords
                 topics = list(range(0,number_of_topics))
                 for topic in topics:
-                    create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topic,target)
+                    create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,height,dpi,topic,target)
     print("Done.")
 
 def get_topicscoredistribution(aggregate, entries_shown, mode):
@@ -909,16 +942,19 @@ def create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,
     stdevs = topicscores.std(axis=1)
     topicscores = pd.concat([topicscores, stdevs], axis=1)
     topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
+    ## Alternatively, sort by one of the (existing!) target columns
+    #print(topicscores.head())
+    #topicscores = topicscores.sort(columns="blanche", axis=0, ascending=False)    
     ## Limit display to top n topics.
     topicscores = topicscores.iloc[:entries_shown,:-1] #rows,columns
     ## Set column "ttw" to index so that they will be used for display
     topicscores = topicscores.set_index("top_topic_words")
     sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
-    plt.title("Distribution of topic scores", fontsize=24)
+    plt.title("Verteilung der Topic Scores", fontsize=24)
     #plt.xlabel("Categories", fontsize=16)
-    plt.ylabel("Top topics (sorted by stdev)", fontsize=20)
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
+    plt.ylabel("Topics", fontsize=20)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 16)   
     figure_filename = outfolder+"hm_"+ data_filename + ".png"
     plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
@@ -942,10 +978,11 @@ def create_lineplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
     topic_numbers = re.sub("[' ]","",topic_numbers)
     topic_numbers = re.sub(",","-",topic_numbers)
     ## Plot the selected data
-    selected.plot(kind="line", lw=5)
-    plt.title("Evolution of topic scores", fontsize=24)
-    plt.ylabel("Topic scores (absolute)", fontsize=20)
-    plt.xlabel("Decades", fontsize=16)
+    selected.plot(kind="line", lw=3, marker="o")
+    plt.title("Entwicklung der Topic Scores", fontsize=20)
+    plt.ylabel("Topic scores (absolut)", fontsize=16)
+    plt.xlabel("Jahrzehnte", fontsize=16)
+    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
     figure_filename = outfolder+"lp_topics-"+topic_numbers+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
@@ -979,12 +1016,12 @@ def create_areaplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topic,target): 
+def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,height,dpi,topic,target): 
     """Visualize topic score distribution data as barchart. """
     data_filename = os.path.basename(aggregate)[:-4]
     print("   Creating barchart for: "+data_filename, topic)
     ## Create output folder if needed
-    outfolder = outfolder+"barcharts/"
+    outfolder = outfolder+"barcharts/"+target+"/"
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     ## Create subset of data based on topics and target to be shown.
@@ -1000,10 +1037,12 @@ def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi
     ## Plot the selected data
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
     selected.plot(kind="bar") # "line" or "area"
-    plt.title("Topic distribution for: "+top_topic_words, fontsize=20)
+    plt.title("Topic-Verteilung: "+top_topic_words, fontsize=20)
     plt.ylabel("Topic scores", fontsize=16)
     plt.xlabel(target+"s", fontsize=16)
-    figure_filename = outfolder+"bc_by-"+target+"_topic-"+"{:02d}".format(topic)+".png"
+    if height != 0:
+        plt.ylim((0.000,height))
+    figure_filename = outfolder+"bc_by-"+target+"_"+str(height)+"_topic-"+"{:02d}".format(topic)+".png"
     plt.tight_layout() 
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()

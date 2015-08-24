@@ -14,12 +14,12 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf720/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
-inpath = wdir + "test/*.xml"
+inpath = wdir + "master/*.xml"
 outfolder = wdir + "1_txt/"
-#tmw.tei5reader_fulldocs(inpath,outfolder)
+tmw.tei5reader_fulldocs(inpath,outfolder)
 
 ### 1b - segmenter
 infolder = wdir + "1_txt/"
@@ -27,7 +27,7 @@ outfolder = wdir + "2_segs/"
 target = 600
 sizetolerancefactor = 1.2 # 1 = exact target; -1 = never split paragraph; 2 = target max *2, minimal /2 .
 preserveparagraphs = False # True|False
-#tmw.segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagraphs)
+tmw.segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### 1c - segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"
@@ -39,20 +39,20 @@ outfile = wdir + "segs-and-bins.csv"
 ### 2a - pretokenize
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_tokens/"
-#tmw.pretokenize(inpath,outfolder)
+tmw.pretokenize(inpath,outfolder)
 
 ### 2b - call_treetagger
 infolder = wdir + "3_tokens/"
 outfolder = wdir + "4_tagged/"
 tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
-#tmw.call_treetagger(infolder, outfolder, tagger) 
+tmw.call_treetagger(infolder, outfolder, tagger) 
 
 ### 2c - make_lemmatext
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "N" # N=nouns, NV=nouns+verbs, NVAA=nouns+verbs+adj+adverbs
-stoplist = ["être", "avoir", "<unknown>", "#les", "#suis", "#est", "#un", "#pas", "#abord", "#rien", "#fait", "#ton", "#moi", "homme", "femme", "#heure", "#temps", "#œil", "#oeil", "#chose", "#sorte", "#dire", "savoir", "faire", "aller", "devenir", "écrier"]
-#tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
+stoplist = ["<unknown>", "unknown"]
+tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
 
 
 
@@ -61,32 +61,32 @@ mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
-stoplist = "./extras/stopwords_fr.txt" # put in tmw folder!
-#tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist)
+stoplist = "./extras/stopwords_fr.txt" # in tmw folder
+tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist)
 
 
 ### 3b - call_mallet_model
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
-num_topics = "20"
+num_topics = "250"
 optimize_interval = "100"
-num_iterations = "500"
-num_top_words = "100"
+num_iterations = "10000"
+num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
-#tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
+tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
 
 
 
 ### 4 - make_wordle_from_mallet
 word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
-topics = 20
+topics = 250
 words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
 
@@ -95,12 +95,12 @@ corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-#targets = ["author"] # one or several:author|decade|subgenre|gender|idno|segmentID
-targets = ["author","decade","subgenre","author-gender","idno","segmentID"] # one or several:author|decade|subgenre|author-gender|idno|segmentID
-mode = "load" # load|create mastermatrix
-number_of_topics = 20
+#targets = ["author"] 
+targets = ["author","decade","subgenre","author-gender","idno","segmentID", "narration", "protagonist-policier", "protagonist-simple"] # one or several:author|decade|subgenre|author-gender|idno|segmentID
+mode = "create" # load|create mastermatrix
+number_of_topics = 250
 outfolder = wdir+"7_aggregates/"
-#tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
+tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
 
 
@@ -108,18 +108,19 @@ outfolder = wdir+"7_aggregates/"
 aggregates = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-number_of_topics = 20 # must be actual number of topics modeled.
-entries_shown = 16 
+number_of_topics = 250 # must be actual number of topics modeled.
+entries_shown = 40 
 font_scale = 1.0
+height = 0 # for barchart; 0=automatic
 dpi = 300
 mode = "heatmap" # choose one: heatmap|lineplot|areaplot|barchart
-topics = ["2","12","4"] # for lineplot/areaplot: select one or several topics (list)
-target = "decade" # for barchart, choose one: author|decade|subgenre|gender|idno|segmentID
-tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale,dpi, mode, topics, target)
+topics = ["40","111","155","192"] # for lineplot/areaplot: select one or several topics (list)
+target = "author" # for barchart, choose one: author|decade|subgenre|gender|idno|segmentID
+tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
 
 
 ### 5c show segment
-segmentID = "rf0213§0054"
+segmentID = "rf0546§000083"
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
 

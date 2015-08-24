@@ -92,6 +92,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
+    counter = 1
     for relfile in glob.glob(inpath):
         counter = 1
         file = join(inpath, relfile)

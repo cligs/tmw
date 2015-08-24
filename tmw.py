@@ -68,7 +68,11 @@ def tei5reader_fulldocs(inpath, outfolder):
         with open(outfile,"w") as output:
             output.write(outtext)
     print("Done.")
+    
 
+#########################################
+### segmenter                         ###    
+#########################################
 
 # Utility function for writing segments
 def writesegment(segment, outfolder, filename, counter, mode="w"):
@@ -78,120 +82,65 @@ def writesegment(segment, outfolder, filename, counter, mode="w"):
         output.write(' '.join(segment))
     output.close()
 
-# Parameters:
-#   - inpath:               path to search documents in
-#   - outfolder:            path to save segments in
-#   - target:               number of words per segment
-#   - sizetolerancefactor:  factor of which exceedance of target is tolerated before slicing paragraphs
-#                               1 for zero tolerance
-#                              -1 for infinity tolerance
-#   - preserveparagraphs:   if True, segments will contain linebreaks according to paragraphs
-#
-
-def segmenter(infolder, outfolder, target, sizetolerancefactor, preserveparagraphs):
+def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs):
     """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
     print("\nLaunched segmenter.")
     import os
     import re
-    from os import listdir
     from os.path import join
     from nltk.tokenize import word_tokenize
+    import glob
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    for relfile in listdir(infolder):
+    for relfile in glob.glob(inpath):
         counter = 1
-        file = join(infolder, relfile)
+        file = join(inpath, relfile)
         with open(file, "r") as infile:
             filename = os.path.basename(file)[:-4]
-
             segment = []
             for line in infile:
                 text = line
-                text = re.sub("[,;\.!?—«»\[\]]", " ", text)
-                text = re.sub("-- ", "", text)
-                #text = re.sub("-", " ", text)
+                text = re.sub("[,;\.!?—\t\r\n\v\f]", " ", text)
+                text = re.sub("-", " ", text)
                 text = re.sub("[ ]{1,9}", " ", text)
-                ## Select one of the three tokenization options
-                #words = re.split("\W", text)
-                words = re.split("\s", text)
-                #words = word_tokenize(text)
+                words = word_tokenize(text)
                 if preserveparagraphs:
                     words.append("\n")
-                if sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
-                    #print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
+                while sizetolerancefactor != -1 and len(segment) + len(words) > target * sizetolerancefactor:
+                    print("Segment length extending size-constraints. Checking if segment length is sufficient yet.")
                     if len(segment) * sizetolerancefactor < target:
-                        #print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
+                        print("Segment length isn't sufficient. Slicing paragraph to meet segment-legth-constraints.")
                         # wortweise auffüllen
                         wordsliceindex = target - len(segment)
                         segment.extend(words[0:wordsliceindex])
                         words = words[wordsliceindex:len(words)]
-                    #print("Segment length: \t", len(segment))
+                    print("Segment length: \t", len(segment))
                     writesegment(segment, outfolder, filename, counter)
                     counter = counter + 1
                     segment = []
                 segment.extend(words)
-                if len(segment) >= target:
-                    #print("Segment length: \t", len(segment))
+                if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
+                    print("Segment length of last Segment too short. Adding text to previous segment.")
+                    counter = counter - 1
+                    writesegment(segment, outfolder, filename, counter, "a")
+                    counter = counter + 1
+                    print("Segment length: \t", len(segment))
+                    segment = []
+                elif len(segment) > 0:
                     writesegment(segment, outfolder, filename, counter)
+                    print("Segment length: \t", len(segment))
                     counter = counter + 1
                     segment = []
-        #print("Segment length: \t", len(segment))
-        if sizetolerancefactor != -1 and len(segment) * sizetolerancefactor < target:
-            #print("Segment length of last Segment too short. Adding text to previous segment.")
+        if sizetolerancefactor != -1 and len(segment) > 0 and len(segment) * sizetolerancefactor < target:
+            print("Segment length of last Segment too short. Adding text to previous segment.")
             counter = counter - 1
             writesegment(segment, outfolder, filename, counter, "a")
-        else:
+            counter = counter + 1
+        elif len(segment) > 0:
             writesegment(segment, outfolder, filename, counter)
 
     print("Done.")
-
-
-def old_segmenter(inpath, outfolder, target):
-    """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
-    print("\nLaunched segmenter.")
-
-    import os
-    import glob
-    import re
-
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-        
-    for file in glob.glob(inpath):
-        with open(file, "r") as infile:
-            filename = os.path.basename(file)[:-4]
-            #print("File name: ", filename)
-            text = infile.read()
-
-            text = re.sub("[,;\.!?—]", " ", text)
-            text = re.sub("-", " ", text)
-            text = re.sub("\n", " ", text)
-            text = re.sub("[ ]{1,9}", " ", text)
-            words = re.split("\W", text)
-            #print("Number of words: ", filename, len(words))
-            #for word in words[0:31]:
-            #    print(word)
-
-            seg = ""
-            actual = 0
-            counter = 0
-            for i in range(len(words)-1):
-                if len(words[i]) > 1:
-                    if actual < target:
-                        seg = seg + words[i] + " "
-                        #print(words[i])
-                        segsplit = re.split(" ", seg)
-                        actual = len(segsplit)
-                    else:
-                        counter += 1
-                        actual = 0
-                        segname = outfolder + filename + "§{:06d}".format(counter) + ".txt"
-                        with open(segname,"w") as output:
-                            output.write(seg)
-                            seg = ""
-    print("Done.")
-
 
 def segments_to_bins(inpath, outfile):
     """Script for sorting text segments into bins."""

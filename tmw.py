@@ -192,7 +192,7 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
 #                              -1 for infinity tolerance
 #   - preserveparagraphs:   if True, segments will contain linebreaks according to paragraphs
 #
-def segmenter(inpath, outfolder, target, sizetolerancefactor = -1, preserveparagraphs = False):
+def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs):
     """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
     print("\nLaunched segmenter.")
     import os

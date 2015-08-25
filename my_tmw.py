@@ -25,7 +25,9 @@ outfolder = wdir + "1_txt/"
 inpath = wdir + "1_txt/*.txt"
 outpath = wdir + "2_segs/"
 segment_length = 1000
-#tmw.segmenter(inpath,outpath,segment_length)
+sizetolerancefactor = 1 # 1 = zero tolerance; 1.1 = +/- 10% tolerance.
+preserveparagraphs = False
+#tmw.segmenter(inpath,outpath,segment_length, sizetolerancefactor, preserveparagraphs)
 
 ### 1c - segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"

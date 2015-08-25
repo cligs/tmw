@@ -62,7 +62,7 @@ infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
 stoplist = "./extras/stopwords_fr.txt" # in tmw folder
-tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist)
+#tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist)
 
 
 ### 3b - call_mallet_model
@@ -75,7 +75,7 @@ num_iterations = "100"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
-tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
+#tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
 
 
 
@@ -86,7 +86,7 @@ words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
 

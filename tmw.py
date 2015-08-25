@@ -498,20 +498,25 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
                     pos = splitline[1]
                     token = splitline[0]
                     ## Select subset of lemmas according to parameter "mode"
-                    if mode == "N":
+                    if mode == "frN":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
-                    elif mode == "NV":
+                    elif mode == "frNV":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos or "VER" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
-                    elif mode == "NVAA":
+                    elif mode == "frNVAA":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    if mode == "esN":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NC" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
             ## Continue with list of lemmata, but remove undesired leftover words         
             lemmata = ' '.join([word for word in lemmata if word not in stoplist])

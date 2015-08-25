@@ -513,7 +513,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
                             lemmata.append(token.lower())
                         elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
-                    if mode == "esN":
+                    elif mode == "esN":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NC" in pos and "|" not in lemma and "<unknown>" not in lemma:

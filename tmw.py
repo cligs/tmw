@@ -707,7 +707,7 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
     for topic in range(0,topics):
         ## Defines filename and title for the wordle image.
         figure_filename = "wordle_tp"+"{:03d}".format(topic) + ".png"
-        figure_title = "topic "+ "{:02d}".format(topic)        
+        figure_title = "topic "+ "{:03d}".format(topic)        
         ## Gets the text for one topic.
         text = get_wordlewords(words,topic)
         #print(text)

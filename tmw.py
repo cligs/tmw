@@ -467,7 +467,12 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub(" Sans "," sans ",text)
             text = re.sub(" Vos "," vos ",text)
             text = re.sub(" Votre "," votre ",text)
-            text = re.sub(" Notre "," notre ",text)
+            text = re.s                    elif mode == "esN":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NC" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+ub(" Notre "," notre ",text)
             text = re.sub(" Peut-être "," peut-être ",text)
             text = re.sub(" Mes "," mes ",text)
             text = re.sub(" Celle "," celle ",text)
@@ -593,6 +598,11 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    elif mode == "esN":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NC" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
             ## Continue with list of lemmata, but remove undesired leftover words         
             lemmata = ' '.join([word for word in lemmata if word not in stoplist])

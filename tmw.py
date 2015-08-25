@@ -154,8 +154,8 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
         relname = filename + "§{:04d}".format(counter) + ".txt"
         if os.path.isfile(segname):
             os.remove(segname)
-        print(relname + "\t New segment with size \t0")
-    print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(len(segment)) + "\t for a total of " + str((currentsegmentsize + len(segment))))
+        #print(relname + "\t New segment with size \t0")
+    #print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(len(segment)) + "\t for a total of " + str((currentsegmentsize + len(segment))))
     currentsegmentsize += len(segment) - segment.count("\n") # take possible segment end into account!
     write(segment, segname, "a")
 
@@ -738,7 +738,6 @@ import glob
 def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder):
     """Function to calculate average topic scores based on metadata."""
     print("\nLaunched average_topicscores.")
-
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
 
@@ -792,8 +791,8 @@ def get_topicscores(topics_in_texts, number_of_topics):
     i = -1
     ## For each row, collect segment and idno
     for row_index, row in topicsintexts.iterrows():
-        segment = row[1][-17:-4]
-        idno = row[1][-17:-11]
+        segment = row[1][-15:-4]
+        idno = row[1][-15:-11]
         #print(segment, idno)
         idnos.append(idno)
         topics = []
@@ -846,6 +845,11 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, numb
     metadata = get_metadata(metadatafile)
     docmatrix = get_docmatrix(corpuspath)
     topicscores = get_topicscores(topics_in_texts, number_of_topics)
+    
+    ## For inspection only.
+    #print("Metadata\n", metadata.head())
+    #print("Docmatrix\n", docmatrix.head())
+    #print("topicscores\n", topicscores.head())
 
     print("  Merging data...")    
     ## Merge metadata and docmatrix, matching each segment to its metadata.

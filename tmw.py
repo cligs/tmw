@@ -199,6 +199,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
                 writesegment(words, outfolder, filename, target, sizetolerancefactor, preserveparagraphs)
     print("Done.")
 
+
 ################################################################
 ### Binning                                                  ###
 ################################################################
@@ -657,10 +658,10 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
 
 
 ##################################################################
-###  5. Aggregate data and visualize results                   ###
+###  make_wordle_from_mallet                                   ###
 ##################################################################
 
-
+# TODO: Crop image file automatically to remove big white margin.
 
 def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path, dpi):
     """Generate wordles from Mallet output, using the wordcloud module."""
@@ -727,9 +728,30 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path,
     
 
 
-"""
-# Average topicscores based on metadata.
-"""
+def crop_images(inpath, outfolder, left, upper, right, lower):
+    """ Function to crop wordle files."""
+    print("Launched crop_images.")
+    from PIL import Image
+    import glob
+    import os
+
+    counter = 0
+    for file in glob.glob(inpath): 
+        original = Image.open(file)
+        filename = os.path.basename(file)[:-4]+"x.png"
+        box = (left, upper, right, lower)
+        cropped = original.crop(box)
+        cropped.save(outfolder + filename)
+        counter +=1
+    print("Done. Images cropped:" , counter)
+
+
+
+
+
+##################################################################
+### average_topicscores: creating or loading mastermatrix      ###
+##################################################################
 
 import numpy as np
 import pandas as pd
@@ -868,9 +890,9 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, numb
 
 
 
-#################################
-# make_topic_distribution_plots #
-#################################
+############################################################
+### make_topic_distribution_plots                        ###
+############################################################
 
 import os
 import glob

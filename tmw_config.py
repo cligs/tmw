@@ -86,8 +86,17 @@ words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
+
+### crop_images
+inpath = wdir + "8_visuals/wordles/*.png"
+outfolder = wdir + "8_visuals/wordles/"
+left = 225 # image start at the left
+upper = 210 # image start at the top
+right = 2225 # image end on the right
+lower = 1310 # image end at the bottom
+tmw.crop_images(inpath, outfolder, left, upper, right, lower)
 
 
 ### 5a - average_topicscores
@@ -96,7 +105,7 @@ mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
 #targets = ["author"] 
-targets = ["author-name","decade","subgenre","author-gender","idno","segmentID", "narration", "protagonist-policier"] 
+targets = ["author-name","author-gender","decade","subgenre","idno","segmentID", "narration", "protagonist-policier"] 
 # targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 mode = "create" # load|create mastermatrix
 number_of_topics = 250

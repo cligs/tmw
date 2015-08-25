@@ -472,7 +472,7 @@ def call_treetagger(infolder, outfolder, tagger):
 
 
 
-def make_lemmatext(inpath,outfolder):
+def make_lemmatext(inpath, outfolder, mode, stoplist):
     """Function to extract lemmas from TreeTagger output."""
     print("\nLaunched make_lemmatext.")
 
@@ -496,13 +496,24 @@ def make_lemmatext(inpath,outfolder):
                 if len(splitline) == 3:
                     lemma = splitline[2]
                     pos = splitline[1]
-                    word = splitline[0]
-                    if "|" in lemma:
-                        lemmata.append(word.lower())
-                    elif "NOM" in pos and "|" not in lemma and "<unknown>" not in lemma:
-                    #elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
-                        lemmata.append(lemma.lower())
-            stoplist = ["les","suis","est","un", "pas", "abord", "rien", "fait", "ton", "moi","être"]
+                    token = splitline[0]
+                    ## Select subset of lemmas according to parameter "mode"
+                    if mode == "N":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    elif mode == "NV":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos or "VER" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    elif mode == "NVAA":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+            ## Continue with list of lemmata, but remove undesired leftover words         
             lemmata = ' '.join([word for word in lemmata if word not in stoplist])
             lemmata = re.sub("[ ]{1,4}"," ", lemmata)
             newfilename = os.path.basename(file)[:-4] + ".txt"
@@ -511,6 +522,7 @@ def make_lemmatext(inpath,outfolder):
                 output.write(str(lemmata))
     print("Files treated: ", counter)
     print("Done.")
+
 
 
 

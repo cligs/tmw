@@ -50,7 +50,9 @@ tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
 ### 2c - make_lemmatext
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
-#tmw.make_lemmatext(inpath,outfolder)
+mode = "N" # N=nouns, NV=nouns+verbs, NVAA=nouns+verbs+adj+adverbs
+stoplist = ["<unknown>", "unknown"]
+#tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
 
 
 

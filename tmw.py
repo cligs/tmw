@@ -647,9 +647,10 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
     topic_word_weights_file = outfolder + "word-weights.txt"
     output_topic_keys = outfolder + "topics-with-words.csv"
     output_doc_topics = outfolder + "topics-in-texts.csv"
+    output_topic_state = outfolder + "topic_state.gz"
     
     ### Constructing Mallet command from parameters.
-    command = mallet_path +" train-topics --input "+ inputfile +" --num-topics "+ num_topics +" --optimize-interval "+ optimize_interval +" --num-iterations " + num_iterations +" --num-top-words " + num_top_words +" --word-topic-counts-file "+ word_topics_counts_file + " --topic-word-weights-file "+ topic_word_weights_file +" --output-state topic-state.gz"+" --output-topic-keys "+ output_topic_keys +" --output-doc-topics "+ output_doc_topics +" --doc-topics-max "+ doc_topics_max
+    command = mallet_path +" train-topics --input "+ inputfile +" --num-topics "+ num_topics +" --optimize-interval "+ optimize_interval +" --num-iterations " + num_iterations +" --num-top-words " + num_top_words +" --word-topic-counts-file "+ word_topics_counts_file + " --topic-word-weights-file "+ topic_word_weights_file +" --output-state topic-state.gz"+" --output-topic-keys "+ output_topic_keys +" --output-doc-topics "+ output_doc_topics +" --doc-topics-max "+ doc_topics_max + " --output-state " + output_topic_state
     #print(command)
     subprocess.call(command, shell=True)
     print("Done.\n")

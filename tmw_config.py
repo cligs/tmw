@@ -19,7 +19,7 @@ wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740/" # end with slash.
 ### 1a - tei5reader_fulldocs (standard option)
 inpath = wdir + "master/*.xml"
 outfolder = wdir + "1_txt/"
-tmw.tei5reader_fulldocs(inpath,outfolder)
+#tmw.tei5reader_fulldocs(inpath,outfolder)
 
 ### 1b - segmenter
 inpath = wdir + "1_txt/*.txt"
@@ -27,7 +27,7 @@ outfolder = wdir + "2_segs/"
 target = 600
 sizetolerancefactor = 1.1 # 1 = exact target; >1 = with some tolerance (1.1 = +/- 10%).
 preserveparagraphs = True # True|False
-tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
+#tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### 1c - segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"
@@ -39,20 +39,20 @@ outfile = wdir + "segs-and-bins.csv"
 ### 2a - pretokenize
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_tokens/"
-tmw.pretokenize(inpath,outfolder)
+#tmw.pretokenize(inpath,outfolder)
 
 ### 2b - call_treetagger
 infolder = wdir + "3_tokens/"
 outfolder = wdir + "4_tagged/"
 tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
-tmw.call_treetagger(infolder, outfolder, tagger) 
+#tmw.call_treetagger(infolder, outfolder, tagger) 
 
 ### 2c - make_lemmatext
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "N" # N=nouns, NV=nouns+verbs, NVAA=nouns+verbs+adj+adverbs
 stoplist = ["<unknown>", "unknown"]
-tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
+#tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
 
 
 
@@ -71,7 +71,7 @@ inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "250"
 optimize_interval = "100"
-num_iterations = "10000"
+num_iterations = "100"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
@@ -86,7 +86,7 @@ words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
-tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 
 

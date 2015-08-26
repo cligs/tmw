@@ -116,7 +116,7 @@ outfolder = wdir+"7_aggregates/"
 # targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
            "idno", "segmentID", "narration", "protagonist-policier"] 
-tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
+#tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
@@ -167,17 +167,32 @@ target = "author" # for barchart, choose one: author-name|decade|subgenre|gender
 #tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
 
 ### plot_topTopics
-### Creates a barchart of the top topic for each entry in a given category.
+### For each item from a category, creates a barchart of the top topics.
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 numberOfTopics = 250 # must be actual number of topics modeled.
 targetCategories = ["author-gender", "decade","title"] # one or several: author-name|decade|subgenre|gender|title|
-topTopicsShown = 20 
+topTopicsShown = 30 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
 outfolder = wdir+"/8_visuals/topTopics/"
 #tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
+
+### plot_topItems
+### For each topic, creates a barchart with top items from a category. 
+averageDatasets = wdir+"/7_aggregates/avg*.csv" 
+outfolder = wdir+"/8_visuals/topItems/"
+firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
+numberOfTopics = 250 # must be actual number of topics modeled.  !!!LOWER FOR TESTING!!!
+targetCategories = ["author-name", "subgenre"] # choose from: author-name, decade, subgenre, gender, idno, title, segmentID
+topItemsShown = 30 
+fontscale = 1.0
+height = 0 # 0=automatic and flexible
+dpi = 300
+tmw.plot_topItems(averageDatasets, outfolder, firstWordsFile, numberOfTopics, targetCategories, topItemsShown, fontscale, height, dpi)
+
+
 
 
 

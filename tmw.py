@@ -1158,6 +1158,16 @@ def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,hei
 # plot_topTopics                #
 #################################
 
+# TODO: Move this one one level up if several plotting functions use it.
+def get_firstWords(firstWordsFile):
+    """Function to load list of top topic words into dataframe."""
+    #print("  Getting firstWords.")
+    with open(firstWordsFile, "r") as infile: 
+        firstWords = pd.DataFrame.from_csv(infile, header=None)
+        firstWords.columns = ["firstWords"]
+        #print(firstWords)
+        return(firstWords)
+
 def get_targetItems(average, targetCategory):
     """Get a list of items included in the target category."""
     print(" Getting targetItems for: "+targetCategory)
@@ -1168,15 +1178,6 @@ def get_targetItems(average, targetCategory):
         #print(targetItems)
         return(targetItems)    
      
-def get_firstWords(firstWordsFile):
-    """Function to load list of top topic words into dataframe."""
-    #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
-        firstWords = pd.DataFrame.from_csv(infile, header=None)
-        firstWords.columns = ["firstWords"]
-        #print(firstWords)
-        return(firstWords)
-
 def get_dataToPlot(average, firstWordsFile, topTopicsShown, item):
     """From average topic score data, select data to be plotted."""
     #print("  Getting dataToPlot.")
@@ -1233,7 +1234,79 @@ def plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics,
 
 
 
+#################################
+# plot_topItems                 #
+#################################
 
+
+def get_topItems_firstWords(firstWordsFile, topic):
+    """Function to load list of top topic words into dataframe."""
+    #print("  Getting firstWords.")
+    with open(firstWordsFile, "r") as infile: 
+        firstWords = pd.DataFrame.from_csv(infile, header=None)
+        firstWords.columns = ["firstWords"]
+        # Only the words for one topic are needed.
+        firstWords = firstWords.iloc[topic]
+        firstWords = firstWords[0]
+        return(firstWords)
+
+def get_topItems_dataToPlot(average, firstWordsFile, topItemsShown, topic):
+    """From average topic score data, select data to be plotted."""
+    #print("  Getting dataToPlot.")
+    with open(average, "r") as infile:
+        ## Read the average topic score data
+        allData = pd.DataFrame.from_csv(infile, sep=",")
+        allData = allData.T
+        ## Create subset of data based on target.
+        dataToPlot = allData.iloc[topic,:]
+        dataToPlot = dataToPlot.order(ascending=False)
+        dataToPlot = dataToPlot[0:topItemsShown]
+        #print(dataToPlot)
+        return dataToPlot
+
+def create_topItems_barchart(dataToPlot, firstWords, targetCategory, topic, 
+                              fontscale, height, dpi, outfolder):
+    """Function to make a topItems barchart."""
+    print("  Creating plot for topic: "+str(topic))
+    ## Doing the plotting.
+    dataToPlot.plot(kind="bar", legend=None) 
+    plt.title("Top "+targetCategory+" für topic "+str(topic)+" ("+str(firstWords)+")", fontsize=15)
+    plt.ylabel("Scores", fontsize=13)
+    plt.xlabel(targetCategory, fontsize=13)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 11)   
+    if height != 0:
+        plt.ylim((0.000,height))
+    plt.tight_layout() 
+
+    ## Saving the plot to disk.
+    outfolder = outfolder+targetCategory+"/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    figure_filename = outfolder+"topItems_"+str(topic)+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+
+def plot_topItems(averageDatasets, outfolder, firstWordsFile,  
+                  numberOfTopics, targetCategories, topItemsShown, 
+                  fontscale, height, dpi): 
+    """Visualize topic score distribution data as barchart. """
+    print("Launched plot_topItems")
+    for average in glob.glob(averageDatasets):
+        for targetCategory in targetCategories:
+            if targetCategory in average:
+                print(" Plotting for: "+targetCategory)
+                topics = list(range(0,numberOfTopics))
+                for topic in topics:
+                    firstWords = get_topItems_firstWords(firstWordsFile, topic)
+                    dataToPlot = get_topItems_dataToPlot(average, 
+                                                         firstWordsFile, 
+                                                         topItemsShown, 
+                                                         topic)
+                    create_topItems_barchart(dataToPlot, firstWords, 
+                                             targetCategory, topic, 
+                                             fontscale, height, dpi, outfolder)
+    print("Done.")
 
 
 

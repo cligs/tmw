@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # Filename: my_tmw.py
+# Author: #cf
 
-"""
-# Python module for a Topic Modeling Workflow 
-"""
- 
+##################################################################
+###  CONFIG FILE for: Topic Modeling Workflow (tmw)            ###
+##################################################################
+
 # Used in the following paper: Christof Schoech, "Topic Modeling French Crime Fiction"
 # presented at the Digital Humanities Conference, Sydney, 2015.
 # For information on requirements and usage, see the README file.
@@ -16,12 +17,20 @@ import tmw
 ### Set the general working directory.
 wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740b/" # end with slash.
 
-### 1a - tei5reader_fulldocs (standard option)
+
+
+################################
+###    PREPROCESSING         ###
+################################
+
+### tei5reader_fulldocs (standard option)
+### Extract selected plain text from XML/TEI files.
 inpath = wdir + "master/*.xml"
 outfolder = wdir + "1_txt/"
 #tmw.tei5reader_fulldocs(inpath,outfolder)
 
-### 1b - segmenter
+### segmenter
+### Split entire texts into smaller segments.
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
 target = 600
@@ -29,43 +38,51 @@ sizetolerancefactor = 1.1 # 1 = exact target; >1 = with some tolerance (1.1 = +/
 preserveparagraphs = True # True|False
 #tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
-### 1c - segments_to_bins: inpath, outfile
+### segments_to_bins: inpath, outfile
+### Sort text segments into a fixed number of bins. 
 inpath = wdir + "2_segs/*.txt"
 outfile = wdir + "segs-and-bins.csv"
 ##tmw.segments_to_bins(inpath,outfile)
 
-
-
-### 2a - pretokenize
+### pretokenize
+### Perform some preliminary tokenization.
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_tokens/"
 #tmw.pretokenize(inpath,outfolder)
 
-### 2b - call_treetagger
+### call_treetagger
+### Perform lemmatization and POS tagging.
 infolder = wdir + "3_tokens/"
 outfolder = wdir + "4_tagged/"
 tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
 #tmw.call_treetagger(infolder, outfolder, tagger) 
 
-### 2c - make_lemmatext
+### make_lemmatext
+### Extract selected lemmata from tagged text.
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "frN" # frN=nouns, esN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs 
-stoplist = ["<unknown>", "unknown"]
-#tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
+stoplist_errors = "./extras/fr_stopwords_errors.txt" # in tmw folder
+tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
 
+################################
+###    TOPIC MODELING        ###
+################################
 
-### 3a - call_mallet_import
+
+### call_mallet_import
+### Imports text data into the Mallet corpus format.
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
-stoplist = "./extras/stopwords_fr.txt" # in tmw folder
-#tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist)
+stoplist_project = "./extras/fr_stopwords_project.txt" # in tmw folder
+#tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
 
 
-### 3b - call_mallet_model
+### call_mallet_model
+### Performs the actual topic modeling. 
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
@@ -79,27 +96,12 @@ num_threads = "4"
 
 
 
-### 4 - make_wordle_from_mallet
-word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
-topics = 250
-words = 40
-outfolder = wdir + "8_visuals/wordles/"
-font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
-dpi = 300
-#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+################################
+###    POSTPROCESSING DATA   ###
+################################
 
-
-### crop_images
-inpath = wdir + "8_visuals/wordles/*.png"
-outfolder = wdir + "8_visuals/wordles/"
-left = 225 # image start at the left
-upper = 210 # image start at the top
-right = 2225 # image end on the right
-lower = 1310 # image end at the bottom
-#tmw.crop_images(inpath, outfolder, left, upper, right, lower)
-
-
-### 5a - average_topicscores
+### average_topicscores
+### Creates the mastermatrix with all information in one place.
 corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
@@ -113,6 +115,7 @@ outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
 ### save_firstWords
+### Saves the first words of each topic to a separate file.
 topicWordFile = wdir+"6_mallet/topics-with-words.csv"
 outfolder = wdir+"7_aggregates/"
 filename = "firstWords.csv"
@@ -124,7 +127,28 @@ filename = "firstWords.csv"
 ###    VISUALIZATION         ###
 ################################
 
+### make_wordle_from_mallet
+### Creates a wordle for each topic.
+word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
+topics = 250
+words = 40
+outfolder = wdir + "8_visuals/wordles/"
+font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
+dpi = 300
+#tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
+
+### crop_images
+### Crops the wordles, use if needed.
+inpath = wdir + "8_visuals/wordles/*.png"
+outfolder = wdir + "8_visuals/wordles/"
+left = 225 # image start at the left
+upper = 210 # image start at the top
+right = 2225 # image end on the right
+lower = 1310 # image end at the bottom
+#tmw.crop_images(inpath, outfolder, left, upper, right, lower)
+
 ### make_topic_distribution_plot
+### Creates a variety of plots 
 aggregates = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
@@ -138,7 +162,6 @@ topics = ["40","111","155","192"] # for lineplot/areaplot: select one or several
 target = "author" # for barchart, choose one: author-name|decade|subgenre|gender|idno|segmentID
 #tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
 
-
 ### plot_topTopics
 ### Creates a barchart of the top topic for each entry in a given category.
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
@@ -150,7 +173,7 @@ fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
 outfolder = wdir+"/8_visuals/topTopics/"
-tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
+#tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
 
 
 

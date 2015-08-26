@@ -565,7 +565,7 @@ def call_treetagger(infolder, outfolder, tagger):
 # make_lemmatext                #
 #################################
 
-def make_lemmatext(inpath, outfolder, mode, stoplist):
+def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
     """Function to extract lemmas from TreeTagger output."""
     print("\nLaunched make_lemmatext.")
 
@@ -575,6 +575,8 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
+    with open(stoplist, "r") as infile: 
+        stoplist = infile.read()
     counter = 0
     for file in glob.glob(inpath):
         #print(os.path.basename(file))
@@ -635,7 +637,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
 #################################
 
 
-def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist):
+def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist_project):
     """Function to import text data into Mallet."""
     print("\nLaunched call_mallet_import.")    
     import subprocess
@@ -645,7 +647,7 @@ def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist):
     ### Fixed parameters.
     token_regex = "'\p{L}[\p{L}\p{P}]*\p{L}'"
     ### Building the command line command    
-    command = mallet_path + " import-dir --input " + infolder + " --output " + outfile + " --keep-sequence --token-regex " + token_regex + " --remove-stopwords TRUE --stoplist-file " + stoplist
+    command = mallet_path + " import-dir --input " + infolder + " --output " + outfile + " --keep-sequence --token-regex " + token_regex + " --remove-stopwords TRUE --stoplist-file " + stoplist_project
     ## Make the call 
     subprocess.call(command, shell=True)
     print("Done.\n")

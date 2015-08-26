@@ -14,7 +14,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740b/" # end with slash.
 
 ### 1a - tei5reader_fulldocs (standard option)
 inpath = wdir + "master/*.xml"
@@ -104,10 +104,10 @@ corpuspath = wdir+"/2_segs/*.txt"
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-#targets = ["author"] 
-targets = ["author-name","author-gender","title", "decade","subgenre","idno","segmentID", "narration", "protagonist-policier"] 
+targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
+           "idno", "segmentID", "narration", "protagonist-policier"] 
 # targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
-mode = "create" # load|create mastermatrix
+mode = "load" # load|create mastermatrix
 number_of_topics = 250
 outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
@@ -117,6 +117,7 @@ topicWordFile = wdir+"6_mallet/topics-with-words.csv"
 outfolder = wdir+"7_aggregates/"
 filename = "firstWords.csv"
 #tmw.save_firstWords(topicWordFile, outfolder, filename)
+
 
 
 ################################
@@ -137,14 +138,16 @@ topics = ["40","111","155","192"] # for lineplot/areaplot: select one or several
 target = "author" # for barchart, choose one: author-name|decade|subgenre|gender|idno|segmentID
 #tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
 
+
 ### plot_topTopics
-averageDatasets = wdir+"/7_aggregates/avg*author-name.csv" 
+### Creates a barchart of the top topic for each entry in a given category.
+averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 numberOfTopics = 250 # must be actual number of topics modeled.
-targetCategories = ["author-name"] # one or several: author-name|decade|subgenre|gender|idno|segmentID
+targetCategories = ["author-gender", "decade","title"] # one or several: author-name|decade|subgenre|gender|title|
 topTopicsShown = 20 
 fontscale = 1.0
-height = 0.300 # 0=automatic and variable
+height = 0 # 0=automatic and variable
 dpi = 300
 outfolder = wdir+"/8_visuals/topTopics/"
 tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)

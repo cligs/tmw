@@ -794,7 +794,6 @@ def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_te
     print("\nLaunched average_topicscores.")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-
     ## Get the matrix of all data, either by creating a new one or by loading an existing one.
     if mode == "create": 
         print("  Creating new mastermatrix from data. This could take a while.")
@@ -803,21 +802,20 @@ def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_te
         print("  Loading existing mastermatrix.")
         with open(mastermatrixfile, "r") as infile:
             mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
-
     print("  Performing calculations...")
+    
     ## Group by author, get median publication year and stdev per author.        
     #grouped = mastermatrix.groupby(target, axis=0)
     #publicationstats = grouped["year"].agg([np.median,np.std])
     #print(publicationstats)
-
+    
     ## Calculate average topic scores for each target category 
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
         avg_topicscores = avg_topicscores.drop(["year"], axis=1)
-        avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
+        #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
         #print(avg_topicscores.head())
-  
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
         resultfilepath = outfolder+resultfilename
@@ -847,7 +845,7 @@ def save_firstWords(topicWordFile, outfolder, filename):
             topic = int(topic)
             row = topicWords.loc[topic]
             row = row[2].split(" ")
-            row = str(row[0]+"-"+row[1]+"-"+row[2])
+            row = str(row[0]+"-"+row[1]+"-"+row[2]+"("+str(topic)+")")
             words.append(row)
         firstWords = dict(zip(topics, words))
         firstWordsSeries = pd.Series(firstWords, name="firstWords")
@@ -1160,7 +1158,7 @@ def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,hei
 
 def get_targetItems(average, targetCategory):
     """Get a list of items included in the target category."""
-    print(" Getting targetItems.")
+    print(" Getting targetItems for: "+targetCategory)
     with open(average, "r") as infile:
         averageTopicScores = pd.DataFrame.from_csv(infile, sep=",")
         #print(averageTopicScores.head())
@@ -1201,10 +1199,10 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     print("  Creating plot for: "+item)
     ## Doing the plotting.
     dataToPlot.plot(kind="bar", legend=None) 
-    plt.setp(plt.xticks()[1], rotation=75, fontsize = 10)   
-    plt.title("Top-Topics für: "+item, fontsize=20)
-    plt.ylabel("Scores", fontsize=16)
-    plt.xlabel("Topics", fontsize=16)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 11)   
+    plt.title("Top-Topics für: "+item, fontsize=15)
+    plt.ylabel("Scores", fontsize=13)
+    plt.xlabel("Topics", fontsize=13)
     if height != 0:
         plt.ylim((0.000,height))
     plt.tight_layout() 

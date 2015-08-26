@@ -71,7 +71,7 @@ inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "250"
 optimize_interval = "100"
-num_iterations = "100"
+num_iterations = "10000"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
@@ -96,7 +96,7 @@ left = 225 # image start at the left
 upper = 210 # image start at the top
 right = 2225 # image end on the right
 lower = 1310 # image end at the bottom
-tmw.crop_images(inpath, outfolder, left, upper, right, lower)
+#tmw.crop_images(inpath, outfolder, left, upper, right, lower)
 
 
 ### 5a - average_topicscores
@@ -105,35 +105,60 @@ mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
 #targets = ["author"] 
-targets = ["author-name","author-gender","decade","subgenre","idno","segmentID", "narration", "protagonist-policier"] 
+targets = ["author-name","author-gender","title", "decade","subgenre","idno","segmentID", "narration", "protagonist-policier"] 
 # targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 mode = "create" # load|create mastermatrix
 number_of_topics = 250
 outfolder = wdir+"7_aggregates/"
 #tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
 
+### save_firstWords
+topicWordFile = wdir+"6_mallet/topics-with-words.csv"
+outfolder = wdir+"7_aggregates/"
+filename = "firstWords.csv"
+#tmw.save_firstWords(topicWordFile, outfolder, filename)
 
 
-### 5b make_topic_distribution_plot
+################################
+###    VISUALIZATION         ###
+################################
+
+### make_topic_distribution_plot
 aggregates = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
 number_of_topics = 250 # must be actual number of topics modeled.
 entries_shown = 30 
 font_scale = 1.0
-height = 0 # for barchart; 0=automatic
+height = 0.020 # for barchart; 0=automatic
 dpi = 300
-mode = "barchart" # choose one: heatmap|lineplot|areaplot|barchart
+mode = "heatmap" # choose one: heatmap|lineplot|areaplot|barchart
 topics = ["40","111","155","192"] # for lineplot/areaplot: select one or several topics (list)
-target = "author-name" # for barchart, choose one: author-name|decade|subgenre|gender|idno|segmentID
+target = "author" # for barchart, choose one: author-name|decade|subgenre|gender|idno|segmentID
 #tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
 
+### plot_topTopics
+averageDatasets = wdir+"/7_aggregates/avg*author-name.csv" 
+firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
+numberOfTopics = 250 # must be actual number of topics modeled.
+targetCategories = ["author-name"] # one or several: author-name|decade|subgenre|gender|idno|segmentID
+topTopicsShown = 20 
+fontscale = 1.0
+height = 0.300 # 0=automatic and variable
+dpi = 300
+outfolder = wdir+"/8_visuals/topTopics/"
+tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
+
+
+
+################################
+###    OTHER/OBSOLETE        ###
+################################
 
 ### 5c show segment
 segmentID = "rf0546§000083"
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
-
 
 ### 6a - aggregate_using_bins_and_metadata
 corpuspath = wdir + "5_segs"

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Filename: tmw.py
+# Author: #cf
 
 ##################################################################
 ###  Topic Modeling Workflow (tmw)                             ###
@@ -9,8 +10,13 @@
 
 
 ##################################################################
-###  Reading XML files                                         ###
+###  PREPROCESSING                                             ###
 ##################################################################
+
+
+#################################
+# tei5reader                    #
+#################################
 
 def tei5reader_fulldocs(inpath, outfolder):
     """Script for reading selected text from TEI P5 files."""
@@ -71,10 +77,10 @@ def tei5reader_fulldocs(inpath, outfolder):
     
 
 
+#################################
+# segmenter                     #
+#################################
 
-#################################################################
-### segmenter                                                 ###    
-#################################################################
 
 # Utility function for writing into files
 def write(segment, file, mode = "w"):
@@ -200,9 +206,9 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
     print("Done.")
 
 
-################################################################
-### Binning                                                  ###
-################################################################
+#################################
+# Binning                       #
+#################################
 
 
 def segments_to_bins(inpath, outfile):
@@ -299,10 +305,9 @@ def segments_to_bins(inpath, outfile):
 
 
 
-##################################################################
-###  Preprocessing text segments                               ###
-##################################################################
-
+#################################
+# pretokenize                   #
+#################################
 
 
 def pretokenize(inputpath,outputfolder):
@@ -467,12 +472,7 @@ def pretokenize(inputpath,outputfolder):
             text = re.sub(" Sans "," sans ",text)
             text = re.sub(" Vos "," vos ",text)
             text = re.sub(" Votre "," votre ",text)
-            text = re.s                    elif mode == "esN":
-                        if "|" in lemma:
-                            lemmata.append(token.lower())
-                        elif "NC" in pos and "|" not in lemma and "<unknown>" not in lemma:
-                            lemmata.append(lemma.lower())
-ub(" Notre "," notre ",text)
+            text = re.sub(" Notre "," notre ",text)
             text = re.sub(" Peut-être "," peut-être ",text)
             text = re.sub(" Mes "," mes ",text)
             text = re.sub(" Celle "," celle ",text)
@@ -530,6 +530,10 @@ def nltk_stanfordpos(inpath, outfolder):
     print("Done.")
 
 
+#################################
+# call_treetagger               #
+#################################
+
 
 def call_treetagger(infolder, outfolder, tagger):
     """Function to call TreeTagger from Python"""
@@ -557,6 +561,9 @@ def call_treetagger(infolder, outfolder, tagger):
     print("Done.")
 
 
+#################################
+# make_lemmatext                #
+#################################
 
 def make_lemmatext(inpath, outfolder, mode, stoplist):
     """Function to extract lemmas from TreeTagger output."""
@@ -584,17 +591,17 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
                     pos = splitline[1]
                     token = splitline[0]
                     ## Select subset of lemmas according to parameter "mode"
-                    if mode == "N":
+                    if mode == "frN":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
-                    elif mode == "NV":
+                    elif mode == "frNV":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos or "VER" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
-                    elif mode == "NVAA":
+                    elif mode == "frNVAA":
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NOM" in pos or "VER" in pos or "ADJ" in pos or "ADV" in pos and "|" not in lemma and "<unknown>" not in lemma:
@@ -617,30 +624,36 @@ def make_lemmatext(inpath, outfolder, mode, stoplist):
 
 
 ##################################################################
-###  3. Importing and modeling with Mallet                     ###
+### TOPIC MODELLING WITH MALLET                                ###
 ##################################################################
 
+# TODO: Concatenate two stoplists first, one for errors, one for deliberate ommissions.
+
+
+#################################
+# call_mallet_import            #
+#################################
 
 
 def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist):
     """Function to import text data into Mallet."""
-    print("\nLaunched call_mallet_import.")
-    
+    print("\nLaunched call_mallet_import.")    
     import subprocess
     import os
-
     if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    
+        os.makedirs(outfolder)    
     ### Fixed parameters.
     token_regex = "'\p{L}[\p{L}\p{P}]*\p{L}'"
-    
+    ### Building the command line command    
     command = mallet_path + " import-dir --input " + infolder + " --output " + outfile + " --keep-sequence --token-regex " + token_regex + " --remove-stopwords TRUE --stoplist-file " + stoplist
-    #print(command)
+    ## Make the call 
     subprocess.call(command, shell=True)
     print("Done.\n")
 
 
+#################################
+# call_mallet_modeling          #
+#################################
 
 def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_interval,num_iterations,num_top_words,doc_topics_max):
     """Function to perform topic modeling with Mallet."""
@@ -667,143 +680,22 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
     print("Done.\n")
 
 
-##################################################################
-###  make_wordle_from_mallet                                   ###
-##################################################################
-
-# TODO: Crop image file automatically to remove big white margin.
-
-def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path, dpi):
-    """Generate wordles from Mallet output, using the wordcloud module."""
-    print("\nLaunched make_wordle_from_mallet.")
-    
-    import os
-    import pandas as pd
-    import random
-    import matplotlib.pyplot as plt
-    from wordcloud import WordCloud
-
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    
-    def read_mallet_output(word_weights_file):
-        """Reads Mallet output (topics with words and word weights) into dataframe.""" 
-        word_scores = pd.read_table(word_weights_file, header=None, sep="\t")
-        word_scores = word_scores.sort(columns=[0,2], axis=0, ascending=[True, False])
-        word_scores_grouped = word_scores.groupby(0)
-        #print(word_scores.head())
-        return word_scores_grouped
-
-    def get_wordlewords(words,topic):
-        """Transform Mallet output for wordle generation."""
-        topic_word_scores = read_mallet_output(word_weights_file).get_group(topic)
-        top_topic_word_scores = topic_word_scores.iloc[0:words]
-        topic_words = top_topic_word_scores.loc[:,1].tolist()
-        word_scores = top_topic_word_scores.loc[:,2].tolist()
-        wordlewords = ""
-        j = 0
-        for word in topic_words:
-            word = word
-            score = word_scores[j]
-            j += 1
-            wordlewords = wordlewords + ((word + " ") * score)
-        return wordlewords
-        
-    def get_color_scale(word, font_size, position, orientation, random_state=None):
-        """ Create color scheme for wordle."""
-        #return "hsl(0, 00%, %d%%)" % random.randint(80, 100) # Greys for black background.
-        return "hsl(221, 65%%, %d%%)" % random.randint(30, 35) # Dark blue for white background
-
-    ## Creates the wordle visualisation, using results from the above functions.
-    for topic in range(0,topics):
-        ## Defines filename and title for the wordle image.
-        figure_filename = "wordle_tp"+"{:03d}".format(topic) + ".png"
-        figure_title = "topic "+ str(topic)        
-        ## Gets the text for one topic.
-        text = get_wordlewords(words,topic)
-        #print(text)
-        ## Generates, recolors and saves the wordcloud.
-        #original# wordcloud = WordCloud(background_color="white", margin=5).generate(text)
-        #font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
-        wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
-        default_colors = wordcloud.to_array()
-        plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
-        plt.imshow(default_colors)
-        plt.imshow(wordcloud)
-        plt.title(figure_title, fontsize=24)
-        plt.axis("off")
-        plt.savefig(outfolder + figure_filename, dpi=dpi)
-        plt.close()
-    print("Done.")
-    
-
-
-def crop_images(inpath, outfolder, left, upper, right, lower):
-    """ Function to crop wordle files."""
-    print("Launched crop_images.")
-    from PIL import Image
-    import glob
-    import os
-
-    counter = 0
-    for file in glob.glob(inpath): 
-        original = Image.open(file)
-        filename = os.path.basename(file)[:-4]+"x.png"
-        box = (left, upper, right, lower)
-        cropped = original.crop(box)
-        cropped.save(outfolder + filename)
-        counter +=1
-    print("Done. Images cropped:" , counter)
-
-
-
 
 
 ##################################################################
-### average_topicscores: creating or loading mastermatrix      ###
+### POSTPROCESSING OF RAW DATA                                 ###
 ##################################################################
+
+
+
+##############################
+# average_topicscores        #
+##############################
 
 import numpy as np
 import pandas as pd
 import os
 import glob
-
-def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder):
-    """Function to calculate average topic scores based on metadata."""
-    print("\nLaunched average_topicscores.")
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-
-    ## Get the matrix of all data, either by creating a new one or by loading an existing one.
-    if mode == "create": 
-        print("  Creating new mastermatrix from data. This could take a while.")
-        mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics)
-    elif mode == "load":
-        print("  Loading existing mastermatrix.")
-        with open(mastermatrixfile, "r") as infile:
-            mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
-
-    print("  Performing calculations...")
-    ## Group by author, get median publication year and stdev per author.        
-    #grouped = mastermatrix.groupby(target, axis=0)
-    #publicationstats = grouped["year"].agg([np.median,np.std])
-    #print(publicationstats)
-
-    ## Calculate average topic scores for each target category 
-    for target in targets:
-        grouped = mastermatrix.groupby(target, axis=0)
-        avg_topicscores = grouped.agg(np.mean)
-        avg_topicscores = avg_topicscores.drop(["year"], axis=1)
-        avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
-        #print(avg_topicscores.head())
-  
-        ## Save grouped averages to CSV file for visualization.
-        resultfilename = "avgtopicscores_by-"+target+".csv"
-        resultfilepath = outfolder+resultfilename
-        ## TODO: Some reformatting here, or adapt make_heatmaps.
-        avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
-        print("  Saved average topic scores for:", target)    
-    print("Done.")
 
 def get_metadata(metadatafile):
     print("  Getting metadata...")
@@ -869,7 +761,6 @@ def get_docmatrix(corpuspath):
     #print("docmatrix\n", docmatrix)
     return docmatrix
     
-
 def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics):
     """Merges the three dataframes into one mastermatrix."""
     print("  Getting data...")
@@ -898,11 +789,177 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, numb
     print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
     return mastermatrix
 
+def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder):
+    """Function to calculate average topic scores based on metadata."""
+    print("\nLaunched average_topicscores.")
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+
+    ## Get the matrix of all data, either by creating a new one or by loading an existing one.
+    if mode == "create": 
+        print("  Creating new mastermatrix from data. This could take a while.")
+        mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics)
+    elif mode == "load":
+        print("  Loading existing mastermatrix.")
+        with open(mastermatrixfile, "r") as infile:
+            mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
+
+    print("  Performing calculations...")
+    ## Group by author, get median publication year and stdev per author.        
+    #grouped = mastermatrix.groupby(target, axis=0)
+    #publicationstats = grouped["year"].agg([np.median,np.std])
+    #print(publicationstats)
+
+    ## Calculate average topic scores for each target category 
+    for target in targets:
+        grouped = mastermatrix.groupby(target, axis=0)
+        avg_topicscores = grouped.agg(np.mean)
+        avg_topicscores = avg_topicscores.drop(["year"], axis=1)
+        avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
+        #print(avg_topicscores.head())
+  
+        ## Save grouped averages to CSV file for visualization.
+        resultfilename = "avgtopicscores_by-"+target+".csv"
+        resultfilepath = outfolder+resultfilename
+        ## TODO: Some reformatting here, or adapt make_heatmaps.
+        avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
+        print("  Saved average topic scores for:", target)    
+    print("Done.")
 
 
-############################################################
-### make_topic_distribution_plots                        ###
-############################################################
+
+#################################
+# save_firstWords               #
+#################################
+
+def save_firstWords(topicWordFile, outfolder, filename):
+    """Save a table of topics with their three most important words for each topic."""
+    print("Launched save_someFirstWords.")
+    import csv
+    with open(topicWordFile, "r") as infile:
+        firstWords = {}
+        topicWords = pd.read_csv(infile, sep="\t", header=None)
+        topicWords = topicWords.drop(1, axis=1)
+        topicWords = topicWords.iloc[:,1:2]
+        topics = topicWords.index.tolist()
+        words = []
+        for topic in topics:
+            topic = int(topic)
+            row = topicWords.loc[topic]
+            row = row[2].split(" ")
+            row = str(row[0]+"-"+row[1]+"-"+row[2])
+            words.append(row)
+        firstWords = dict(zip(topics, words))
+        firstWordsSeries = pd.Series(firstWords, name="firstWords")
+        firstWordsSeries.index.name = "topic"
+        ## Saving the file.
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)
+        outfile = outfolder + filename
+        with open(outfile, "w") as outfile: 
+            firstWordsSeries.to_csv(outfile)
+        print("Done.")
+
+
+
+
+##################################################################
+###    VISUALIZATION                                           ###
+##################################################################
+
+
+#################################
+# make_wordle_from_mallet       #
+#################################
+
+def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path, dpi):
+    """Generate wordles from Mallet output, using the wordcloud module."""
+    print("\nLaunched make_wordle_from_mallet.")
+    
+    import os
+    import pandas as pd
+    import random
+    import matplotlib.pyplot as plt
+    from wordcloud import WordCloud
+
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    
+    def read_mallet_output(word_weights_file):
+        """Reads Mallet output (topics with words and word weights) into dataframe.""" 
+        word_scores = pd.read_table(word_weights_file, header=None, sep="\t")
+        word_scores = word_scores.sort(columns=[0,2], axis=0, ascending=[True, False])
+        word_scores_grouped = word_scores.groupby(0)
+        #print(word_scores.head())
+        return word_scores_grouped
+
+    def get_wordlewords(words,topic):
+        """Transform Mallet output for wordle generation."""
+        topic_word_scores = read_mallet_output(word_weights_file).get_group(topic)
+        top_topic_word_scores = topic_word_scores.iloc[0:words]
+        topic_words = top_topic_word_scores.loc[:,1].tolist()
+        word_scores = top_topic_word_scores.loc[:,2].tolist()
+        wordlewords = ""
+        j = 0
+        for word in topic_words:
+            word = word
+            score = word_scores[j]
+            j += 1
+            wordlewords = wordlewords + ((word + " ") * score)
+        return wordlewords
+        
+    def get_color_scale(word, font_size, position, orientation, random_state=None):
+        """ Create color scheme for wordle."""
+        #return "hsl(0, 00%, %d%%)" % random.randint(80, 100) # Greys for black background.
+        return "hsl(221, 65%%, %d%%)" % random.randint(30, 35) # Dark blue for white background
+
+    ## Creates the wordle visualisation, using results from the above functions.
+    for topic in range(0,topics):
+        ## Defines filename and title for the wordle image.
+        figure_filename = "wordle_tp"+"{:03d}".format(topic) + ".png"
+        figure_title = "topic "+ str(topic)        
+        ## Gets the text for one topic.
+        text = get_wordlewords(words,topic)
+        #print(text)
+        ## Generates, recolors and saves the wordcloud.
+        #original# wordcloud = WordCloud(background_color="white", margin=5).generate(text)
+        #font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
+        wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
+        default_colors = wordcloud.to_array()
+        plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
+        plt.imshow(default_colors)
+        plt.imshow(wordcloud)
+        plt.title(figure_title, fontsize=24)
+        plt.axis("off")
+        plt.savefig(outfolder + figure_filename, dpi=dpi)
+        plt.close()
+    print("Done.")
+
+    
+def crop_images(inpath, outfolder, left, upper, right, lower):
+    """ Function to crop wordle files."""
+    print("Launched crop_images.")
+    from PIL import Image
+    import glob
+    import os
+
+    counter = 0
+    for file in glob.glob(inpath): 
+        original = Image.open(file)
+        filename = os.path.basename(file)[:-4]+"x.png"
+        box = (left, upper, right, lower)
+        cropped = original.crop(box)
+        cropped.save(outfolder + filename)
+        counter +=1
+    print("Done. Images cropped:" , counter)
+
+
+
+#################################
+# topic_distribution plots      #
+#################################
+
+# TODO: Split into several separate functions.
 
 import os
 import glob
@@ -1095,8 +1152,96 @@ def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,hei
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-  
-# TODO: Add overall topic score for sorting by overall importance.
+
+
+#################################
+# plot_topTopics                #
+#################################
+
+def get_targetItems(average, targetCategory):
+    """Get a list of items included in the target category."""
+    print(" Getting targetItems.")
+    with open(average, "r") as infile:
+        averageTopicScores = pd.DataFrame.from_csv(infile, sep=",")
+        #print(averageTopicScores.head())
+        targetItems = list(averageTopicScores.index.values)
+        #print(targetItems)
+        return(targetItems)    
+     
+def get_firstWords(firstWordsFile):
+    """Function to load list of top topic words into dataframe."""
+    #print("  Getting firstWords.")
+    with open(firstWordsFile, "r") as infile: 
+        firstWords = pd.DataFrame.from_csv(infile, header=None)
+        firstWords.columns = ["firstWords"]
+        #print(firstWords)
+        return(firstWords)
+
+def get_dataToPlot(average, firstWordsFile, topTopicsShown, item):
+    """From average topic score data, select data to be plotted."""
+    #print("  Getting dataToPlot.")
+    with open(average, "r") as infile:
+        ## Read the average topic score data
+        allData = pd.DataFrame.from_csv(infile, sep=",")
+        allData = allData.T
+        ## Add top topic words to table for display later
+        firstWords = get_firstWords(firstWordsFile)
+        allData["firstWords"] = firstWords.iloc[:,0].values
+        ## Create subset of data based on target.
+        dataToPlot = allData[[item,"firstWords"]]
+        dataToPlot = dataToPlot.sort(columns=item, ascending=False)
+        dataToPlot = dataToPlot[0:topTopicsShown]
+        dataToPlot = dataToPlot.set_index("firstWords")
+        #print(dataToPlot)         
+        return dataToPlot
+
+def create_barchart_topTopics(dataToPlot, targetCategory, item, 
+                              fontscale, height, dpi, outfolder):
+    """Function to make a topTopics barchart."""
+    print("  Creating plot for: "+item)
+    ## Doing the plotting.
+    dataToPlot.plot(kind="bar", legend=None) 
+    plt.setp(plt.xticks()[1], rotation=75, fontsize = 10)   
+    plt.title("Top-Topics für: "+item, fontsize=20)
+    plt.ylabel("Scores", fontsize=16)
+    plt.xlabel("Topics", fontsize=16)
+    if height != 0:
+        plt.ylim((0.000,height))
+    plt.tight_layout() 
+
+    ## Saving the plot to disk.
+    outfolder = outfolder+targetCategory+"/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    figure_filename = outfolder+"topTopics_"+item+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+def plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, 
+                   targetCategories, topTopicsShown, fontscale, 
+                   height, dpi, outfolder): 
+    """For each item in a category, plot the top n topics as a barchart."""
+    print("Launched plot_topTopics.")
+    for average in glob.glob(averageDatasets):
+        for targetCategory in targetCategories: 
+            if targetCategory in average:
+                targetItems = get_targetItems(average, targetCategory)
+                for item in targetItems:
+                    dataToPlot = get_dataToPlot(average, firstWordsFile, topTopicsShown, item)
+                    create_barchart_topTopics(dataToPlot, targetCategory, item, fontscale, height, dpi, outfolder)
+    print("Done.")
+
+
+
+
+
+
+
+
+##################################################################
+###    OTHER / OBSOLETE                                        ###
+##################################################################
+
 
 
 ###########################
@@ -1110,6 +1255,7 @@ def show_segment(wdir,segmentID, outfolder):
         os.makedirs(outfolder)
     shutil.copyfile(wdir+"2_segs/"+segmentID+".txt",outfolder+segmentID+".txt")
     
+
 
 
 

@@ -63,13 +63,13 @@ inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "frN" # frN=nouns, esN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs 
 stoplist_errors = "./extras/fr_stopwords_errors.txt" # in tmw folder
-tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
+#tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
+
 
 
 ################################
 ###    TOPIC MODELING        ###
 ################################
-
 
 ### call_mallet_import
 ### Imports text data into the Mallet corpus format.
@@ -80,7 +80,6 @@ outfile = outfolder + "corpus.mallet"
 stoplist_project = "./extras/fr_stopwords_project.txt" # in tmw folder
 #tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
 
-
 ### call_mallet_model
 ### Performs the actual topic modeling. 
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
@@ -88,7 +87,7 @@ inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "250"
 optimize_interval = "100"
-num_iterations = "10000"
+num_iterations = "100"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
@@ -100,19 +99,24 @@ num_threads = "4"
 ###    POSTPROCESSING DATA   ###
 ################################
 
-### average_topicscores
+### create_mastermatrix
 ### Creates the mastermatrix with all information in one place.
 corpuspath = wdir+"/2_segs/*.txt"
-mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
+outfolder = wdir+"7_aggregates/"
+mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
+number_of_topics = 250
+#tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics)
+
+### calculate_averageTopicScores
+### Based on the mastermatrix, calculates various average topic score datasets.
+mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
+outfolder = wdir+"7_aggregates/"
+# targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
            "idno", "segmentID", "narration", "protagonist-policier"] 
-# targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
-mode = "load" # load|create mastermatrix
-number_of_topics = 250
-outfolder = wdir+"7_aggregates/"
-#tmw.average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder)
+tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
@@ -138,7 +142,7 @@ dpi = 300
 #tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
 
 ### crop_images
-### Crops the wordles, use if needed.
+### Crops the wordle image files, use if needed.
 inpath = wdir + "8_visuals/wordles/*.png"
 outfolder = wdir + "8_visuals/wordles/"
 left = 225 # image start at the left
@@ -148,7 +152,7 @@ lower = 1310 # image end at the bottom
 #tmw.crop_images(inpath, outfolder, left, upper, right, lower)
 
 ### make_topic_distribution_plot
-### Creates a variety of plots 
+### Creates a variety of plots (to be separated out)
 aggregates = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/"
 topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
@@ -203,8 +207,3 @@ dpi = 300
 height = 0.050
 genres = ["detection","noir"] # User: set depending on metadata. Available: noir, detection, criminel, experim., archq., blanche, neopl., susp.
 #tmw.create_topicscores_lineplot(inpath,outfolder,topicwordfile,dpi,height,genres)
-
-
-
-
-

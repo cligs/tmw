@@ -206,10 +206,12 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
     print("Done.")
 
 
+
 #################################
 # Binning                       #
 #################################
 
+# TODO: Rewrite entirely to make compatible with mastermatrix.
 
 def segments_to_bins(inpath, outfile):
     """Script for sorting text segments into bins."""
@@ -308,7 +310,6 @@ def segments_to_bins(inpath, outfile):
 #################################
 # pretokenize                   #
 #################################
-
 
 def pretokenize(inputpath,outputfolder):
     """Deletion of unwanted elided and hyphenated words for better tokenization in TreeTagger. Optional."""
@@ -534,7 +535,6 @@ def nltk_stanfordpos(inpath, outfolder):
 # call_treetagger               #
 #################################
 
-
 def call_treetagger(infolder, outfolder, tagger):
     """Function to call TreeTagger from Python"""
     print("\nLaunched call_treetagger.")
@@ -575,7 +575,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    with open(stoplist, "r") as infile: 
+    with open(stoplist_errors, "r") as infile: 
         stoplist = infile.read()
     counter = 0
     for file in glob.glob(inpath):
@@ -691,7 +691,7 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
 
 
 ##############################
-# average_topicscores        #
+# create_mastermatrix        #
 ##############################
 
 import numpy as np
@@ -763,20 +763,18 @@ def get_docmatrix(corpuspath):
     #print("docmatrix\n", docmatrix)
     return docmatrix
     
-def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics):
+def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, 
+               number_of_topics):
     """Merges the three dataframes into one mastermatrix."""
     print("  Getting data...")
-
     ## Get all necessary data.
     metadata = get_metadata(metadatafile)
     docmatrix = get_docmatrix(corpuspath)
     topicscores = get_topicscores(topics_in_texts, number_of_topics)
-    
     ## For inspection only.
     #print("Metadata\n", metadata.head())
     #print("Docmatrix\n", docmatrix.head())
     #print("topicscores\n", topicscores.head())
-
     print("  Merging data...")    
     ## Merge metadata and docmatrix, matching each segment to its metadata.
     mastermatrix = pd.merge(docmatrix, metadata, how="inner", on="idno")  
@@ -787,37 +785,38 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, numb
     #print(topicscores)
     mastermatrix = pd.merge(mastermatrix, topicscores, on="segmentID", how="inner")
     #print("mastermatrix: all three\n", mastermatrix.head())
-    mastermatrix.to_csv(mastermatrixfile, sep=",", encoding="utf-8")
-    print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
     return mastermatrix
 
-def average_topicscores(corpuspath, mastermatrixfile, metadatafile, topics_in_texts, targets, mode, number_of_topics, outfolder):
-    """Function to calculate average topic scores based on metadata."""
-    print("\nLaunched average_topicscores.")
+def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, 
+                        topics_in_texts, number_of_topics):
+    """Builds the mastermatrix uniting all information about texts and topic scores."""
+    print("\nLaunched create_mastermatrix. (This could take a while.)")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    ## Get the matrix of all data, either by creating a new one or by loading an existing one.
-    if mode == "create": 
-        print("  Creating new mastermatrix from data. This could take a while.")
-        mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, number_of_topics)
-    elif mode == "load":
-        print("  Loading existing mastermatrix.")
-        with open(mastermatrixfile, "r") as infile:
-            mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
-    print("  Performing calculations...")
-    
-    ## Group by author, get median publication year and stdev per author.        
-    #grouped = mastermatrix.groupby(target, axis=0)
-    #publicationstats = grouped["year"].agg([np.median,np.std])
-    #print(publicationstats)
-    
+    mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, 
+                              mastermatrixfile, number_of_topics)
+    mastermatrix.to_csv(outfolder+mastermatrixfile, sep=",", encoding="utf-8")
+    print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
+
+
+
+################################
+# calculate_averageTopicScores #
+################################
+
+def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
+    """Function to calculate average topic scores based on the mastermatrix."""
+    print("\nLaunched calculate_averageTopicScores.")
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    with open(mastermatrixfile, "r") as infile:
+        mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
     ## Calculate average topic scores for each target category 
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
         avg_topicscores = avg_topicscores.drop(["year"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
-        #print(avg_topicscores.head())
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
         resultfilepath = outfolder+resultfilename
@@ -872,7 +871,8 @@ def save_firstWords(topicWordFile, outfolder, filename):
 # make_wordle_from_mallet       #
 #################################
 
-def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, font_path, dpi):
+def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, 
+                            font_path, dpi):
     """Generate wordles from Mallet output, using the wordcloud module."""
     print("\nLaunched make_wordle_from_mallet.")
     
@@ -1457,3 +1457,10 @@ def create_topicscores_lineplot(inpath,outfolder,topicwordfile,dpi,height,genres
 # TODO: find categories automatically and produce graphs for all without "genre" setting.
 # TODO: Make plots with lines for all categories in one plot.
 
+
+    ### From calculate average_topicscores ###
+    ## Group by author, get median publication year and stdev per author.        
+    #grouped = mastermatrix.groupby(target, axis=0)
+    #publicationstats = grouped["year"].agg([np.median,np.std])
+    #print(publicationstats)
+    

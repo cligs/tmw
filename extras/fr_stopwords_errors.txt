@@ -118,6 +118,7 @@ che
 chère
 cheux
 chez
+chourineur
 ci
 cinq
 cinquante
@@ -203,6 +204,7 @@ elle
 elle-même
 elles
 elles-mêmes
+embrun 
 émeri
 en
 encor
@@ -270,6 +272,7 @@ gerfaut
 gille
 gilles
 glisse
+goualeuse
 grave
 gris
 guère
@@ -419,6 +422,7 @@ né
 nérine
 ni
 no
+noir
 nommés
 non
 nos
@@ -705,6 +709,7 @@ vi
 viant
 vingt
 vint
+vis
 vit
 vite
 vivant

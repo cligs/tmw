@@ -2,7 +2,9 @@ air
 ais
 an
 année
+bras
 brousse
+chose
 chott
 côté
 coup
@@ -15,6 +17,7 @@ fait
 femme
 fois
 fond
+genre
 gens
 heure
 homme
@@ -36,13 +39,12 @@ parole
 pas
 peine
 personne
-personne
 personnes
 petit
 pied
-pied
 place
 sens
+sorte
 suite
 temps
 tête

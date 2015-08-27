@@ -6,7 +6,7 @@
 ###  Topic Modeling Workflow (tmw)                             ###
 ##################################################################
 
-
+# TODO: Use os.path.join everywhere for cross-platform compatibility.
 
 
 ##################################################################

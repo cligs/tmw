@@ -6,10 +6,17 @@
 ###  CONFIG FILE for: Topic Modeling Workflow (tmw)            ###
 ##################################################################
 
-# Used in the following paper: Christof Schoech, "Topic Modeling French Crime Fiction"
+# Used in the following paper: 
+# Christof Schoech, "Topic Modeling French Crime Fiction",
 # presented at the Digital Humanities Conference, Sydney, 2015.
 # For information on requirements and usage, see the README file.
 
+# This config file is structured as follows: 
+# 1. Preprocessing Texts
+# 2. Topic Modeling
+# 3. Posprocessing Data
+# 4. Visualization
+# 5. Other / Obsolete
 
 import tmw
 #print(help(topmod))
@@ -17,17 +24,15 @@ import tmw
 ### Set the general working directory.
 wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740c/" # end with slash.
 
-
-
 ################################
-###    PREPROCESSING         ###
+###    PREPROCESSING TEXTS   ###
 ################################
 
 ### tei5reader_fulldocs (standard option)
 ### Extract selected plain text from XML/TEI files.
 inpath = wdir + "master/*.xml"
 outfolder = wdir + "1_txt/"
-tmw.tei5reader_fulldocs(inpath,outfolder)
+#tmw.tei5reader_fulldocs(inpath,outfolder)
 
 ### segmenter
 ### Split entire texts into smaller segments.
@@ -36,7 +41,7 @@ outfolder = wdir + "2_segs/"
 target = 600
 sizetolerancefactor = 1.1 # 1 = exact target; >1 = with some tolerance (1.1 = +/- 10%).
 preserveparagraphs = True # True|False
-tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
+#tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins: inpath, outfile
 ### Sort text segments into a fixed number of bins. 
@@ -48,14 +53,14 @@ outfile = wdir + "segs-and-bins.csv"
 ### Perform some preliminary tokenization.
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_tokens/"
-tmw.pretokenize(inpath,outfolder)
+#tmw.pretokenize(inpath,outfolder)
 
 ### call_treetagger
 ### Perform lemmatization and POS tagging.
 infolder = wdir + "3_tokens/"
 outfolder = wdir + "4_tagged/"
 tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
-tmw.call_treetagger(infolder, outfolder, tagger) 
+#tmw.call_treetagger(infolder, outfolder, tagger) 
 
 ### make_lemmatext
 ### Extract selected lemmata from tagged text.
@@ -87,7 +92,7 @@ inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "250"
 optimize_interval = "100"
-num_iterations = "100"
+num_iterations = "5000"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"

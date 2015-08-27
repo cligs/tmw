@@ -179,7 +179,7 @@ numberOfTopics = 250 # must be actual number of topics modeled.
 targetCategories = ["author-name", "subgenre", "title", "decade", "author-gender"] 
 # choose one or several from: author-name, decade, subgenre, gender, idno, title, segmentID
 topItemsShown = 30 
-fontscale = 1.0
+fontscale = 0.8
 height = 0 # 0=automatic and flexible
 dpi = 300
 #tmw.plot_topItems(averageDatasets, outfolder, firstWordsFile, numberOfTopics, targetCategories, topItemsShown, fontscale, height, dpi)
@@ -189,25 +189,38 @@ dpi = 300
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 outfolder = wdir+"/8_visuals/distinctiveness/"
-targetCategories = ["author-name", "decade", "subgenre", "gender", "idno", "title"] 
+targetCategories = ["author-name", "decade", "subgenre", "gender"] 
 # one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
 numberOfTopics = 250 # must be actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
 dpi = 300
-tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
+#tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
+
+### plot_topicsOverTime
+### Creates lineplots or areaplots for topic development over time.
+averageDatasets = wdir+"/7_aggregates/avgtopicscores_by-decade.csv" 
+firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
+outfolder = wdir+"/8_visuals/overTime/"
+numberOfTopics = 250 # must be actual number of topics modeled.
+fontscale = 1.0
+dpi = 300
+height = 0 # for lineplot; 0=automatic
+mode = "line" # area|line for areaplot or lineplot
+topics = ["48","67","199"] # list of one or several topics
+tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
 
 
+################################
+###    OTHER/OBSOLETE        ###
+################################
 
-
-
-
-
-
-
-
+### 5c show segment
+segmentID = "rf0546§000083"
+outfolder = wdir+"/9_sel-segs/"
+#tmw.show_segment(wdir,segmentID, outfolder)
 
 
 
@@ -225,19 +238,6 @@ mode = "lineplot" # choose one: heatmap|lineplot|areaplot|barchart
 topics = ["48","67","199"] # for lineplot/areaplot: select one or several topics (list)
 target = "author" # for barchart, choose one: author-name|decade|subgenre|gender|idno|segmentID
 #tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
-
-
-
-
-
-################################
-###    OTHER/OBSOLETE        ###
-################################
-
-### 5c show segment
-segmentID = "rf0546§000083"
-outfolder = wdir+"/9_sel-segs/"
-#tmw.show_segment(wdir,segmentID, outfolder)
 
 ### 6a - aggregate_using_bins_and_metadata
 corpuspath = wdir + "5_segs"

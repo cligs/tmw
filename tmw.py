@@ -1182,10 +1182,10 @@ def create_distinctiveness_heatmap(dataToPlot,
     sns.set_context("poster", font_scale=fontscale)
     sns.heatmap(dataToPlot, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
-    plt.title("Verteilung der Topic Scores", fontsize=15)
-    plt.xlabel(targetCategory, fontsize=13)
-    plt.ylabel("Top topics (stdev)", fontsize=13)
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
+    plt.title("Verteilung der Topic Scores", fontsize=20)
+    plt.xlabel(targetCategory, fontsize=16)
+    plt.ylabel("Top topics (stdev)", fontsize=16)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 12)   
     plt.tight_layout() 
 
     ## Saving the plot to disk.
@@ -1221,6 +1221,258 @@ def plot_distinctiveness_heatmap(averageDatasets,
                                                fontscale,
                                                dpi, 
                                                outfolder)
+
+
+
+#################################
+# plot_topicsOverTime           #
+#################################
+
+
+def get_overTime_firstWords(firstWordsFile):
+    """Function to load list of top topic words into dataframe."""
+    #print("  Getting firstWords.")
+    with open(firstWordsFile, "r") as infile: 
+        firstWords = pd.read_csv(infile, header=None)
+        firstWords.drop(0, axis=1, inplace=True)
+        firstWords.rename(columns={1:"topicwords"}, inplace=True)
+        firstWords.index = firstWords.index.astype(np.int64)        
+        #print(firstWords)
+        return(firstWords)
+
+def get_overTime_dataToPlot(average, firstWordsFile, entriesShown, topics): 
+    """Function to build a dataframe with all data necessary for plotting."""
+    #print("  Getting data to plot.")
+    with open(average, "r") as infile:
+        allScores = pd.DataFrame.from_csv(infile, sep=",")
+        allScores = allScores.T        
+        #print(allScores.head())
+        ## Select the data for selected topics
+        someScores = allScores.loc[topics,:]
+        someScores.index = someScores.index.astype(np.int64)        
+        ## Add information about the firstWords of topics
+        firstWords = get_overTime_firstWords(firstWordsFile)
+        dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
+        dataToPlot = dataToPlot.set_index("topicwords")
+        dataToPlot = dataToPlot.T
+        #print(dataToPlot)
+        return dataToPlot
+
+def create_overTime_lineplot(dataToPlot, outfolder, fontscale, topics, dpi, height):
+    """This function does the actual plotting and saving to disk."""
+    print("  Creating lineplot for selected topics.")
+    ## Plot the selected data
+    dataToPlot.plot(kind="line", lw=3, marker="o")
+    plt.title("Entwicklung der Topic Scores", fontsize=20)
+    plt.ylabel("Topic scores (absolut)", fontsize=16)
+    plt.xlabel("Jahrzehnte", fontsize=16)
+    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
+    if height != 0:
+        plt.ylim((0.000,height))
+
+    ## Saving the plot to disk.
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Format the topic information for display
+    topicsLabel = "-".join(str(topic) for topic in topics)
+    figure_filename = outfolder+"lineplot-"+topicsLabel+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+def create_overTime_areaplot(dataToPlot, outfolder, fontscale, topics, dpi):
+    """This function does the actual plotting and saving to disk."""
+    print("  Creating areaplot for selected topics.")
+    ## Turn absolute data into percentages.
+    dataToPlot = dataToPlot.apply(lambda c: c / c.sum() * 100, axis=1)
+    ## Plot the selected data
+    dataToPlot.plot(kind="area")
+    plt.title("Entwicklung der Topic Scores", fontsize=20)
+    plt.ylabel("Topic scores (anteilig zueinander)", fontsize=16)
+    plt.xlabel("Jahrzehnte", fontsize=16)
+    plt.ylim((0,100))
+    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
+
+    ## Saving the plot to disk.
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Format the topic information for display
+    topicsLabel = "-".join(str(topic) for topic in topics)
+    figure_filename = outfolder+"areaplot-"+topicsLabel+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, 
+                        numberOfTopics, fontscale, dpi, height,  
+                        mode, topics):
+    """Function to plot development of topics over time using lineplots or areaplots."""
+    print("Launched plot_topicsOverTime.")
+    if mode == "line": 
+        for average in glob.glob(averageDatasets):
+            if "decade" in average:
+                entriesShown = numberOfTopics
+                dataToPlot = get_overTime_dataToPlot(average, firstWordsFile, 
+                                                     entriesShown, topics)
+                create_overTime_lineplot(dataToPlot, outfolder, fontscale, 
+                                         topics, dpi, height)
+    elif mode == "area":
+        for average in glob.glob(averageDatasets):
+            if "decade" in average:
+                entriesShown = numberOfTopics
+                dataToPlot = get_overTime_dataToPlot(average, firstWordsFile, 
+                                                     entriesShown, topics)
+                create_overTime_areaplot(dataToPlot, outfolder, fontscale, 
+                                         topics, dpi)
+    print("Done.")
+
+def get_topicscoredistribution(aggregate, entries_shown, mode):
+    with open(aggregate, "r") as infile:
+        topicscores = pd.DataFrame.from_csv(infile, sep=",")
+        topicscores = topicscores.T
+        #print("topicscores\n",topicscores.head())    
+        return topicscores
+
+def get_firstwords(topicwordfile, topicscores):
+    """Get three (or n) most important words for given topic."""
+    allfirstwords = []
+    with open(topicwordfile, "r") as infile:
+        topicwords = pd.read_csv(infile, sep="\t", header=None)
+        #print(topicwords.head())
+        topics = topicwords.index.tolist()
+        #print(topics)
+        for topic in topics:
+            topic = int(topic)
+            firstwords = topicwords.loc[topic]
+            firstwords = firstwords[2].split(" ")
+            firstwords = str(firstwords[0]+"-"+firstwords[1]+"-"+firstwords[2]+" "+str(topic)+"")
+            allfirstwords.append(firstwords)   
+        #allfirstwords["tp"+str(topic)] = firstwords
+        #print(allfirstwords)
+        return(allfirstwords)
+
+def create_heatmap(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,mode):
+    """Visualize topic score distribution data as heatmap. """
+    data_filename = os.path.basename(aggregate)[:-4]
+    print("   Creating heatmap for: "+data_filename)
+    ## Create output folder if needed
+    outfolder = outfolder+"heatmaps/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    sns.set_context("poster", font_scale=font_scale)
+    ## Calculate standard deviation and sort descending by it.
+    stdevs = topicscores.std(axis=1)
+    topicscores = pd.concat([topicscores, stdevs], axis=1)
+    topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
+    ## Alternatively, sort by one of the (existing!) target columns
+    #print(topicscores.head())
+    #topicscores = topicscores.sort(columns="blanche", axis=0, ascending=False)    
+    ## Limit display to top n topics.
+    topicscores = topicscores.iloc[:entries_shown,:-1] #rows,columns
+    ## Set column "ttw" to index so that they will be used for display
+    topicscores = topicscores.set_index("top_topic_words")
+    sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
+    # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
+    plt.title("Verteilung der Topic Scores", fontsize=24)
+    #plt.xlabel("Categories", fontsize=16)
+    plt.ylabel("Topics", fontsize=20)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 16)   
+    figure_filename = outfolder+"hm_"+ data_filename + ".png"
+    plt.tight_layout() 
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+
+def create_lineplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topics): 
+    """Visualize topic score distribution data as lineplot. """
+    data_filename = os.path.basename(aggregate)[:-4]
+    print("   Creating lineplot for: "+data_filename)
+    ## Create output folder if needed
+    outfolder = outfolder+"lineplots/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Create subset of data based on topics to be shown.
+    selected = topicscores.loc[topics,:]
+    selected = selected.set_index("top_topic_words")
+    selected = selected.T
+    ## Format the topic information
+    topic_numbers = str(topics)[1:-1]
+    topic_numbers = re.sub("[' ]","",topic_numbers)
+    topic_numbers = re.sub(",","-",topic_numbers)
+    ## Plot the selected data
+    selected.plot(kind="line", lw=3, marker="o")
+    plt.title("Entwicklung der Topic Scores", fontsize=20)
+    plt.ylabel("Topic scores (absolut)", fontsize=16)
+    plt.xlabel("Jahrzehnte", fontsize=16)
+    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
+    figure_filename = outfolder+"lp_topics-"+topic_numbers+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+
+def create_areaplot(aggregate,topicscores,outfolder,entries_shown,font_scale,dpi,topics): 
+    """Visualize topic score distribution data as lineplot. """
+    data_filename = os.path.basename(aggregate)[:-4]
+    print("   Creating lineplot for: "+data_filename)
+    ## Create output folder if needed
+    outfolder = outfolder+"areaplots/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Create subset of data based on topics to be shown.
+    selected = topicscores.loc[topics,:]
+    selected = selected.set_index("top_topic_words")
+    selected = selected.T
+    selected = selected.apply(lambda c: c / c.sum() * 100, axis=1)
+    ## Format the topic information
+    topic_numbers = str(topics)[1:-1]
+    topic_numbers = re.sub("[' ]","",topic_numbers)
+    topic_numbers = re.sub(",","-",topic_numbers)
+    ## Plot the selected data
+    #plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
+    selected.plot(kind="area")
+    plt.title("Evolution of topic scores", fontsize=24)
+    plt.ylabel("Topic scores (percentages)", fontsize=20)
+    plt.xlabel("Decades", fontsize=16)
+    plt.ylim((0,100))
+    figure_filename = outfolder+"ap_topics-"+topic_numbers+".png"
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+def create_barchart(aggregate,topicscores,outfolder,entries_shown,font_scale,height,dpi,topic,target): 
+    """Visualize topic score distribution data as barchart. """
+    data_filename = os.path.basename(aggregate)[:-4]
+    print("   Creating barchart for: "+data_filename, topic)
+    ## Create output folder if needed
+    outfolder = outfolder+"barcharts/"+target+"/"
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    ## Create subset of data based on topics and target to be shown.
+    selected = topicscores.iloc[topic,:-1]
+    top_topic_words = topicscores.iloc[topic,-1]
+    ## Sort by topic score and select only top-n targets
+    selected.sort(axis=0, ascending=False)
+    selected = selected[0:entries_shown]
+    #column_header = selected.columns.values.tolist()[0]
+    #selected = selected.sort(columns=column_header, axis=0, ascending=False)
+    #selected = selected.iloc[0:entries_shown,:] #rows,columns
+    #print(selected)
+    ## Plot the selected data
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)   
+    selected.plot(kind="bar") # "line" or "area"
+    plt.title("Topic-Verteilung: "+top_topic_words, fontsize=20)
+    plt.ylabel("Topic scores", fontsize=16)
+    plt.xlabel(target+"s", fontsize=16)
+    if height != 0:
+        plt.ylim((0.000,height))
+    figure_filename = outfolder+"bc_by-"+target+"_"+str(height)+"_topic-"+"{:02d}".format(topic)+".png"
+    plt.tight_layout() 
+    plt.savefig(figure_filename, dpi=dpi)
+    plt.close()
+
+
+
+
+
+
+
 
 
 

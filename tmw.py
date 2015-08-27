@@ -9,6 +9,12 @@
 # TODO: Use os.path.join everywhere for cross-platform compatibility.
 
 
+import re
+import os
+import glob
+import pandas as pd
+
+
 ##################################################################
 ###  PREPROCESSING                                             ###
 ##################################################################
@@ -22,9 +28,6 @@ def tei5reader_fulldocs(inpath, outfolder):
     """Script for reading selected text from TEI P5 files."""
     print("\nLaunched tei5reader_fulldocs.")
 
-    import re
-    import os
-    import glob
     from lxml import etree
     #print("Using LXML version: ", etree.LXML_VERSION)
 
@@ -167,11 +170,9 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
 def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs = False):
     """Script for turning plain text files into equal-sized segments, with limited respect for paragraph boundaries."""
     print("\nLaunched segmenter.")
-    import os
-    import re
+
     from os.path import join
     from nltk.tokenize import word_tokenize
-    import glob
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
@@ -213,197 +214,40 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
 # TODO: Rewrite entirely to make compatible with mastermatrix.
 
 
+
 #################################
 # pretokenize                   #
 #################################
 
-def pretokenize(inputpath,outputfolder):
+import csv
+
+def perform_multipleSubs(substitutionsFile, text):
+    """Search and replace from a table of string pairs."""
+    ## With code from http://stackoverflow.com/users/735204/emmett-j-butler
+    ## Load table and turn into dict
+    with open(substitutionsFile, "r") as subsFile: 
+        subs = csv.reader(subsFile)
+        for rows in subs:
+            subsDict = {rows[0]:rows[1] for rows in subs}
+        #print(subsDict)
+        ## Create a regular expression  from the dictionary keys
+        regex = re.compile("(%s)" % "|".join(map(re.escape, subsDict.keys())))
+        ## For each match, look-up corresponding value in dictionary
+        return regex.sub(lambda mo: subsDict[mo.string[mo.start():mo.end()]], text) 
+
+def pretokenize(inpath, substitutionsFile, outfolder):
     """Deletion of unwanted elided and hyphenated words for better tokenization in TreeTagger. Optional."""
     print("\nLaunched pretokenize.")
-
-    import re
-    import os
-    import glob
-
-    numberoffiles = 0
-    for file in glob.glob(inputpath):
-        numberoffiles +=1
+    for file in glob.glob(inpath):
         with open(file,"r") as text:
             text = text.read()
-
-### Idea for future implementation of replacements
-#        replacements = {"J'":"Je", "S'":"Se", "’":"'", "":""}
-#        for item in replacements:
-#            text = re.sub(replacements.key(), replacements.value(), text)
-
-            text = re.sub("’","'",text)
-            text = re.sub("J'","Je ",text)
-            text = re.sub("j'","je ",text)
-            text = re.sub("S'","Se ",text)
-            text = re.sub("s'","se ",text)
-            text = re.sub("C'","Ce ",text)
-            text = re.sub("c'","ce ",text)
-            text = re.sub("N'","Ne ",text)
-            text = re.sub("n'","ne ",text)
-            text = re.sub("D'","De ",text)
-            text = re.sub("d'","de ",text)
-            text = re.sub("L'","Le ",text)
-            text = re.sub("l'","la ",text)
-            text = re.sub("T'","tu ",text) ## tu|te
-            text = re.sub("t'","tu ",text) ## tu|te
-            text = re.sub("-le"," le",text)
-            text = re.sub("-moi"," moi",text)
-            text = re.sub("m'","me ",text)
-            text = re.sub("M'","Me ",text)
-            text = re.sub("-je"," je",text)
-            text = re.sub("-il"," il",text)
-            text = re.sub("-on"," on",text)
-            text = re.sub("-lui"," lui",text)
-            text = re.sub("-elle"," elle",text)
-            text = re.sub("-nous"," nous",text)
-            text = re.sub("-vous"," vous",text)
-            text = re.sub("-nous"," nous",text)
-            text = re.sub("-ce"," ce",text)
-            text = re.sub("-tu"," tu",text)
-            text = re.sub("-toi"," toi",text)
-            text = re.sub("jusqu'à'","jusque à",text) ##?
-            text = re.sub("aujourd'hui","aujourdhui",text) ##?
-            text = re.sub("-t","",text)
-            text = re.sub("-y"," y",text)
-            text = re.sub("-en"," en",text)
-            text = re.sub("-ci"," ci",text)
-            text = re.sub("-là"," là",text)
-            #text = re.sub("là-bas","là bas",text)
-            text = re.sub("Qu'","Que ",text)
-            text = re.sub("qu'","que ",text)
-            text = re.sub("-même"," même",text)
-
-            ## Sentence-initial capitals are a problem for TreeTagger
-            text = re.sub(" Il "," il ",text)
-            text = re.sub(" Ils "," ils ",text)
-            text = re.sub(" Elles "," elles ",text)
-            text = re.sub(" Elle "," elle ",text)
-            text = re.sub(" Je "," je ",text)
-            text = re.sub(" Tu "," tu ",text)
-            text = re.sub(" Toi "," toi ",text)
-            text = re.sub(" Nous "," nous ",text)
-            text = re.sub(" Vous "," vous ",text)
-            text = re.sub(" Mais "," mais ",text)
-            text = re.sub(" Ne "," ne ",text)
-            text = re.sub(" Et "," et ",text)
-            text = re.sub(" Pourquoi "," pourquoi ",text)
-            text = re.sub(" Alors "," alors ",text)
-            text = re.sub(" Aussi "," aussi ",text)
-            text = re.sub(" Car "," car ",text)
-            text = re.sub(" Au "," au ",text)
-            text = re.sub(" Ses "," ses ",text)
-            text = re.sub(" Se "," se ",text)
-            text = re.sub(" Moi "," moi ",text)
-            text = re.sub(" Toute "," toute ",text)
-            text = re.sub(" Tout "," tout ",text)
-            text = re.sub(" Hier "," hier ",text)
-            text = re.sub(" Non "," non ",text)
-            text = re.sub(" Comme "," comme ",text)
-            text = re.sub(" Dans "," dans ",text)
-            text = re.sub(" Pour "," pour ",text)
-            text = re.sub(" Voilà "," voilà ",text)
-            text = re.sub(" Son "," son ",text)
-            text = re.sub(" Une "," une ",text)
-            text = re.sub(" Un "," un ",text)
-            text = re.sub(" Où "," où ",text)
-            text = re.sub(" De "," de ",text)
-            text = re.sub(" Qui "," qui ",text)
-            text = re.sub(" Depuis "," depuis ",text)
-            text = re.sub(" Ça "," ça ",text)
-            text = re.sub(" Sur "," sur ",text)
-            text = re.sub(" Ensuite "," ensuite ",text)
-            text = re.sub(" Puis "," puis ",text)
-            text = re.sub(" On "," on ",text)
-            text = re.sub(" Si "," si ",text)
-            text = re.sub(" Même "," même ",text)
-            text = re.sub(" Toutefois "," toutefois ",text)
-            text = re.sub(" Ainsi "," ainsi ",text)
-            text = re.sub(" Aucun "," aucun ",text)
-            text = re.sub(" Ce "," ce ",text)
-            text = re.sub(" Ces "," ces ",text)
-            text = re.sub(" Toutes "," toutes ",text)
-            text = re.sub(" En "," en ",text)
-            text = re.sub(" Après "," après ",text)
-            text = re.sub(" Quel "," quel ",text)
-            text = re.sub(" Quelle "," quelle ",text)
-            text = re.sub(" Quand "," quand ",text)
-            text = re.sub(" Celle "," celle ",text)
-            text = re.sub(" Puisque "," puisque ",text)
-            text = re.sub(" Tous "," tous ",text)
-            text = re.sub(" Dès "," dès ",text)
-            text = re.sub(" Cet "," cet ",text)
-            text = re.sub(" Lorsque "," lorsque ",text)
-            text = re.sub(" Lui "," lui ",text)
-            text = re.sub(" Sauf "," sauf ",text)
-            text = re.sub(" Moins "," moins ",text)
-            text = re.sub(" Encore "," encore ",text)
-            text = re.sub(" Cependant "," cependant ",text)
-            text = re.sub(" Comment "," comment ",text)
-            text = re.sub(" Assez "," assez ",text)
-            text = re.sub(" Ma "," ma ",text)
-            text = re.sub(" Quelques "," quelques ",text)
-            text = re.sub(" Leurs "," leurs ",text)
-            text = re.sub(" Ceux "," ceux ",text)
-            text = re.sub(" Par "," par ",text)
-            text = re.sub(" Devant "," devant ",text)
-            text = re.sub(" Bien "," bien ",text)
-            text = re.sub(" Personne "," personne ",text)
-            text = re.sub(" Près "," près ",text)
-            text = re.sub(" Avant "," avant ",text)
-            text = re.sub(" Rien "," rien ",text)
-            text = re.sub(" Partout "," partout ",text)
-            text = re.sub(" Pourtant "," pourtant ",text)
-            text = re.sub(" Déjà "," déjà ",text)
-            text = re.sub(" Enfin "," enfin ",text)
-            text = re.sub(" Maintenant "," maintenant ",text)
-            text = re.sub(" Quoi "," quoi ",text)
-            text = re.sub(" Eh "," eh ",text)
-            text = re.sub(" Ah "," ah ",text)
-            text = re.sub(" Oh "," oh ",text)
-            text = re.sub(" Jamais "," jamais ",text)
-            text = re.sub(" Mon "," mon ",text)
-            text = re.sub(" Cela "," cela ",text)
-            text = re.sub(" Du "," du ",text)
-            text = re.sub(" Oui "," oui ",text)
-            text = re.sub(" Ou "," ou ",text)
-            text = re.sub(" Sa "," sa ",text)
-            text = re.sub(" Celui "," celui ",text)
-            text = re.sub(" Cette "," cette ",text)
-            text = re.sub(" Des "," des ",text)
-            text = re.sub(" Naturellement "," naturellement ",text)
-            text = re.sub(" Sans "," sans ",text)
-            text = re.sub(" Vos "," vos ",text)
-            text = re.sub(" Votre "," votre ",text)
-            text = re.sub(" Notre "," notre ",text)
-            text = re.sub(" Peut-être "," peut-être ",text)
-            text = re.sub(" Mes "," mes ",text)
-            text = re.sub(" Celle "," celle ",text)
-            text = re.sub(" Tant "," tant ",text)
-            text = re.sub(" Demain "," demain ",text)
-
-            #A few tokenizations need to be fixed again
-            text = re.sub(" Qu "," que ",text)
-            text = re.sub(" qu "," que ",text)
-            text = re.sub(" quelqu "," quelque ",text)
-            text = re.sub(" jusqu "," jusque ",text)
-            text = re.sub(" Jusqu "," jusque ",text)
-            text = re.sub(" aujourd hui "," aujourd'hui ",text)
-            text = re.sub("  ","  ",text)
-
-
+            text = perform_multipleSubs(substitutionsFile, text)
             basename = os.path.basename(file)
             cleanfilename = basename
-            #print(cleanfilename)
-            if not os.path.exists(outputfolder):
-                os.makedirs(outputfolder)
-        with open(os.path.join(outputfolder, cleanfilename),"w") as output:
+            if not os.path.exists(outfolder):
+                os.makedirs(outfolder)
+        with open(os.path.join(outfolder, cleanfilename),"w") as output:
             output.write(text)
-    #print("Number of files treated: " + str(numberoffiles))
     print("Done.")
 
 
@@ -436,6 +280,7 @@ def call_treetagger(infolder, outfolder, tagger):
         subprocess.call(command, shell=True)
     print("Files treated: ", counter)
     print("Done.")
+
 
 
 #################################
@@ -528,6 +373,7 @@ def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist_projec
     ## Make the call 
     subprocess.call(command, shell=True)
     print("Done.\n")
+
 
 
 #################################
@@ -740,12 +586,12 @@ def save_firstWords(topicWordFile, outfolder, filename):
 
 
 
-
 ##################################################################
 ###    VISUALIZATION                                           ###
 ##################################################################
 
 import matplotlib.pyplot as plt
+
 
 
 #################################
@@ -814,7 +660,6 @@ def make_wordle_from_mallet(word_weights_file,topics,words,outfolder,
         plt.savefig(outfolder + figure_filename, dpi=dpi)
         plt.close()
     print("Done.")
-
     
 def crop_images(inpath, outfolder, left, upper, right, lower):
     """ Function to crop wordle files."""

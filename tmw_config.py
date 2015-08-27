@@ -44,16 +44,14 @@ preserveparagraphs = True # True|False
 #tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins: inpath, outfile
-### Sort text segments into a fixed number of bins. 
-inpath = wdir + "2_segs/*.txt"
-outfile = wdir + "segs-and-bins.csv"
-##tmw.segments_to_bins(inpath,outfile)
+### Currently not implemented any more / yet. 
 
 ### pretokenize
 ### Perform some preliminary tokenization.
-inpath = wdir + "2_segs/*.txt"
-outfolder = wdir + "3_tokens/"
-#tmw.pretokenize(inpath,outfolder)
+inpath = wdir + "2_test/*.txt"
+substitutionsFile = "./extras/fr_pretokenize_subs.csv"
+outfolder = wdir + "3_test/"
+tmw.pretokenize(inpath, substitutionsFile, outfolder)
 
 ### call_treetagger
 ### Perform lemmatization and POS tagging.
@@ -208,7 +206,7 @@ dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
 topics = ["48","67","199"] # list of one or several topics
-tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
+#tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
 

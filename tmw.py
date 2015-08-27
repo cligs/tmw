@@ -81,7 +81,6 @@ def tei5reader_fulldocs(inpath, outfolder):
 # segmenter                     #
 #################################
 
-
 # Utility function for writing into files
 def write(segment, file, mode = "w"):
     with open(file, mode) as output:
@@ -212,99 +211,6 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
 #################################
 
 # TODO: Rewrite entirely to make compatible with mastermatrix.
-
-def segments_to_bins(inpath, outfile):
-    """Script for sorting text segments into bins."""
-    print("\nLaunched segments_to_bins.")
-
-    import os
-    import glob
-    from collections import Counter
-    import pandas as pd
-
-    ### Define various objects for later use.
-    txtids = []
-    segids = []
-    #binsnb = 5
-    filenames = []
-    binids = []
-
-
-    ### Get filenames, text identifiers, segment identifiers.
-    for file in glob.glob(inpath):
-        filename = os.path.basename(file)[:-4]
-        txtid = filename[:6]
-        txtids.append(txtid)
-        segid = filename[-4:]
-        #print(filename, txtid, segid)
-        segids.append(segid)
-    #txtids_sr = pd.Series(txtids)
-    #segids_sr = pd.Series(segids)
-
-    ### For each text identifier, get number of segments.
-    txtids_ct = Counter(txtids)
-    sum_segnbs = 0
-    for txtid in txtids_ct:
-        segnb = txtids_ct[txtid]
-        #print(segnb)
-        sum_segnbs = sum_segnbs + segnb
-        #print(txtid, segnb)
-    print("Total number of segments: ", sum_segnbs)
-
-
-    ### Match each filename to the number of segments of the text.
-
-    bcount0 = 0
-    bcount1 = 0
-    bcount2 = 0
-    bcount3 = 0
-    bcount4 = 0
-
-    for file in glob.glob(inpath):
-        filename = os.path.basename(file)[:-4]
-        for txtid in txtids_ct:
-            if txtid in filename:
-                filename = filename + "$" + str(txtids_ct[txtid])
-                #print(filename)
-
-    ### For each filename, compute and append bin number
-        txtid = filename[0:6]
-        segid = filename[7:11]
-        segnb = filename[12:]
-        #print(txtid,segid,segnb)
-        binid = ""
-
-        segprop = int(segid) / int(segnb)
-        #print(txtid, segid, segnb, segprop)
-        if segprop > 0 and segprop <= 0.21:
-            binid = 1
-            bcount0 += 1
-        if segprop > 0.21 and segprop <= 0.41:
-            binid = 2
-            bcount1 += 1
-        if segprop > 0.41 and segprop <= 0.61:
-            binid = 3
-            bcount2 += 1
-        if segprop > 0.61 and segprop <= 0.81:
-            binid = 4
-            bcount3 += 1
-        if segprop > 0.81 and segprop <= 1:
-            binid = 5
-            bcount4 += 1
-        #print(segprop, binid)
-
-        filenames.append(filename[:10])
-        binids.append(binid)
-    filenames_sr = pd.Series(filenames, name="filenames")
-    binids_sr = pd.Series(binids, name="binids")
-    files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
-
-    print("chunks per bin: ", bcount0,bcount1,bcount2,bcount3,bcount4)
-    with open(outfile, "w") as outfile:
-        files_and_bins.to_csv(outfile, index=False)
-
-    print("Done.")
-
 
 
 #################################

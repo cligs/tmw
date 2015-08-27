@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Filename: tmw.py
 # Author: #cf
+# Version 0.2.0 (2015-08-27)
 
 ##################################################################
 ###  Topic Modeling Workflow (tmw)                             ###

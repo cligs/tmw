@@ -48,10 +48,10 @@ preserveparagraphs = True # True|False
 
 ### pretokenize
 ### Perform some preliminary tokenization.
-inpath = wdir + "2_test/*.txt"
+inpath = wdir + "2_segs/*.txt"
 substitutionsFile = "./extras/fr_pretokenize_subs.csv"
-outfolder = wdir + "3_test/"
-tmw.pretokenize(inpath, substitutionsFile, outfolder)
+outfolder = wdir + "3_segs/"
+#tmw.pretokenize(inpath, substitutionsFile, outfolder)
 
 ### call_treetagger
 ### Perform lemmatization and POS tagging.
@@ -205,7 +205,7 @@ fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
-topics = ["48","67","199"] # list of one or several topics
+topics = ["56"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 

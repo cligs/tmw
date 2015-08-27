@@ -24,7 +24,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740c/" # end with slash.
+wdir = "/home/.../" # end with slash.
 
 ################################
 ###    PREPROCESSING TEXTS   ###
@@ -50,10 +50,10 @@ preserveparagraphs = True # True|False
 
 ### pretokenize
 ### Perform some preliminary tokenization.
-inpath = wdir + "2_test/*.txt"
+inpath = wdir + "2_segs/*.txt"
+outfolder = wdir + "3_tokens/"
 substitutionsFile = "./extras/fr_pretokenize_subs.csv"
-outfolder = wdir + "3_test/"
-tmw.pretokenize(inpath, substitutionsFile, outfolder)
+#tmw.pretokenize(inpath, substitutionsFile, outfolder)
 
 ### call_treetagger
 ### Perform lemmatization and POS tagging.

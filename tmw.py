@@ -408,35 +408,6 @@ def pretokenize(inputpath,outputfolder):
 
 
 
-def nltk_stanfordpos(inpath, outfolder):
-    """POS-Tagging French text with Stanford POS-Tagger via NLTK."""
-    print("\nLaunched nltk_stanfordpos.")
-
-    import os
-    import glob
-    from nltk.tag.stanford import POSTagger
-
-    for file in glob.glob(inpath):
-        st = POSTagger('/home/christof/Programs/stanfordpos/models/french.tagger', '/home/christof/Programs/stanfordpos/stanford-postagger.jar', encoding="utf8")
-        with open(file, "r", encoding="utf-8") as infile:
-            untagged = infile.read()
-            tagged = st.tag(untagged.split())
-
-            taggedstring = ""
-            for item in tagged:
-                item = "\t".join(item)
-                taggedstring = taggedstring + str(item) + "\n"
-            #print(taggedstring)
-
-            basename = os.path.basename(file)
-            cleanfilename = basename
-            if not os.path.exists(outfolder):
-                os.makedirs(outfolder)
-            with open(os.path.join(outfolder, cleanfilename),"w") as output:
-                output.write(taggedstring)
-    print("Done.")
-
-
 #################################
 # call_treetagger               #
 #################################

@@ -966,8 +966,9 @@ def get_firstWords(firstWordsFile):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
     with open(firstWordsFile, "r") as infile: 
-        firstWords = pd.read_csv(infile)
-        #firstWords.columns = ["firstWords"]
+        firstWords = pd.read_csv(infile, header=None)
+        firstWords.drop(0, axis=1, inplace=True)
+        firstWords.rename(columns={1:"topicwords"}, inplace=True)
         #print(firstWords)
         return(firstWords)
 
@@ -1142,7 +1143,8 @@ def get_heatmap_firstWords(firstWordsFile):
         #print(firstWords)
         return(firstWords)
 
-def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown, numberOfTopics):
+def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown, 
+                           numberOfTopics):
     """From average topic score data, select data to be plotted."""
     #print("  Getting dataToPlot.")
     with open(average, "r") as infile:
@@ -1155,16 +1157,18 @@ def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown, numberOfTopi
         allScores = allScores.sort(columns=0, axis=0, ascending=False)
         someScores = allScores[0:topTopicsShown]
         someScores = someScores.drop(0, axis=1)
-        print(someScores)
+        ## Necessary step to align dtypes of indexes for concat.
+        someScores.index = someScores.index.astype(np.int64)        
+        #print("dtype firstWords: ", type(firstWords.index))
+        #print("dtype someScores: ", type(someScores.index))
+        #print("\n==intersection==\n",someScores.index.intersection(firstWords.index))
         ## Add top topic words to table for display later
         firstWords = get_heatmap_firstWords(firstWordsFile)
-        print(firstWords)
-        #dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
-        dataToPlot = pd.merge(someScores, firstWords, left_index=True, right_index=True, how='inner')
-        #dataToPlot = someScores
-        print(dataToPlot)
+        dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
+        dataToPlot = dataToPlot.set_index("topicwords")
+        #print(dataToPlot)
         ## Optionally, limit display to part of the columns
-        #dataToPlot = dataToPlot.iloc[:,0:20]
+        #dataToPlot = dataToPlot.iloc[:,0:40]
         #print(dataToPlot)
         return dataToPlot
 
@@ -1205,7 +1209,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
     print("Launched plot_distinctiveness_heatmap.")
     for average in glob.glob(averageDatasets):
         for targetCategory in targetCategories: 
-            if targetCategory in average:
+            if targetCategory in average and targetCategory != "segmentID":
                 print(" Plotting for: "+targetCategory)
                 dataToPlot = get_heatmap_dataToPlot(average, 
                                                     firstWordsFile, 
@@ -1218,47 +1222,11 @@ def plot_distinctiveness_heatmap(averageDatasets,
                                                dpi, 
                                                outfolder)
 
-                
-                
-                
-    ## Create output folder if needed
-    #data_filename = os.path.basename(aggregate)[:-4]
-    #print("   Creating heatmap for: "+data_filename)
-    #outfolder = outfolder+"heatmaps/"
-    #if not os.path.exists(outfolder):
-    #    os.makedirs(outfolder)
-    #sns.set_context("poster", font_scale=font_scale)
-    ### Calculate standard deviation and sort descending by it.
-    #stdevs = topicscores.std(axis=1)
-    #topicscores = pd.concat([topicscores, stdevs], axis=1)
-    #topicscores = topicscores.sort(columns=0, axis=0, ascending=False)
-    ### Alternatively, sort by one of the (existing!) target columns
-    #print(topicscores.head())
-    #topicscores = topicscores.sort(columns="blanche", axis=0, ascending=False)    
-    ## Limit display to top n topics.
-    #topicscores = topicscores.iloc[:entries_shown,:-1] #rows,columns
-    ## Set column "ttw" to index so that they will be used for display
-    #topicscores = topicscores.set_index("top_topic_words")
-    #sns.heatmap(topicscores, annot=False, cmap="YlOrRd", square=False)
-    # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
-    #plt.title("Verteilung der Topic Scores", fontsize=24)
-    #plt.xlabel("Categories", fontsize=16)
-    #plt.ylabel("Topics", fontsize=20)
-    #plt.setp(plt.xticks()[1], rotation=90, fontsize = 16)   
-    #figure_filename = outfolder+"hm_"+ data_filename + ".png"
-    #plt.tight_layout() 
-    #plt.savefig(figure_filename, dpi=dpi)
-    #plt.close()
-
-
-
-
 
 
 ##################################################################
 ###    OTHER / OBSOLETE                                        ###
 ##################################################################
-
 
 
 

@@ -212,32 +212,18 @@ tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopi
 
 
 
-
 ################################
 ###    OTHER/OBSOLETE        ###
 ################################
 
 ### 5c show segment
+## To read a specific segment, better than looking in the folder.
 segmentID = "rf0546§000083"
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
 
 
 
-### make_topic_distribution_plot
-### Creates a variety of plots (to be separated out)
-aggregates = wdir+"/7_aggregates/avg*.csv" 
-outfolder = wdir+"/8_visuals/"
-topicwordfile = wdir+"/6_mallet/topics-with-words.csv"
-number_of_topics = 250 # must be actual number of topics modeled.
-entries_shown = 30 
-font_scale = 1.0
-height = 0.020 # for barchart; 0=automatic
-dpi = 300
-mode = "lineplot" # choose one: heatmap|lineplot|areaplot|barchart
-topics = ["48","67","199"] # for lineplot/areaplot: select one or several topics (list)
-target = "author" # for barchart, choose one: author-name|decade|subgenre|gender|idno|segmentID
-#tmw.make_topic_distribution_plot(aggregates,outfolder,topicwordfile, number_of_topics,entries_shown,font_scale, height, dpi, mode, topics, target)
 
 ### 6a - aggregate_using_bins_and_metadata
 corpuspath = wdir + "5_segs"

@@ -222,18 +222,6 @@ segmentID = "rf0546§000083"
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
 
-
-
-
-### 6a - aggregate_using_bins_and_metadata
-corpuspath = wdir + "5_segs"
-outfolder = wdir + "7_aggregates/"
-topics_in_texts = wdir + "6_mallet/" + "topics-in-texts.csv"
-metadatafile = wdir + "metadata.csv"
-bindatafile = wdir + "segs-and-bins.csv" # USER: segments or scenes?
-target = "subtype" # User: set ranges in tmw.py
-#tmw.aggregate_using_bins_and_metadata(corpuspath, outfolder, topics_in_texts, metadatafile, bindatafile, target)
-
 ### 6b - create_topicscores_lineplot
 inpath = wdir + "7_aggregates/*-lp.csv"  # narrow down as needed
 outfolder = wdir + "8_visuals/lineplots/"

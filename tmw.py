@@ -741,7 +741,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     outfolder = outfolder+targetCategory+"/"
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"topTopics_"+item+".png"
+    figure_filename = outfolder+"tT_"+item+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
@@ -796,7 +796,7 @@ def create_topItems_barchart(dataToPlot, firstWords, targetCategory, topic,
     print("  Creating plot for topic: "+str(topic))
     ## Doing the plotting.
     dataToPlot.plot(kind="bar", legend=None) 
-    plt.title("Top "+targetCategory+" für topic "+str(topic)+" ("+str(firstWords)+")", fontsize=15)
+    plt.title("Top "+targetCategory+" für topic: "+str(firstWords), fontsize=15)
     plt.ylabel("Scores", fontsize=13)
     plt.xlabel(targetCategory, fontsize=13)
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 11)   
@@ -808,7 +808,7 @@ def create_topItems_barchart(dataToPlot, firstWords, targetCategory, topic,
     outfolder = outfolder+targetCategory+"/"
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"topItems_"+str(topic)+".png"
+    figure_filename = outfolder+"tI_by-"+targetCategory+"-{:03d}".format(topic)+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 

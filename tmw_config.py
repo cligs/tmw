@@ -49,8 +49,8 @@ preserveparagraphs = True # True|False
 ### pretokenize
 ### Perform some preliminary tokenization.
 inpath = wdir + "2_segs/*.txt"
+outfolder = wdir + "3_tokens/"
 substitutionsFile = "./extras/fr_pretokenize_subs.csv"
-outfolder = wdir + "3_segs/"
 #tmw.pretokenize(inpath, substitutionsFile, outfolder)
 
 ### call_treetagger
@@ -174,7 +174,8 @@ averageDatasets = wdir+"/7_aggregates/avg*.csv"
 outfolder = wdir+"/8_visuals/topItems/"
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 numberOfTopics = 250 # must be actual number of topics modeled. 
-targetCategories = ["author-name", "subgenre", "title", "decade", "author-gender"] 
+targetCategories = ["segmentID"] 
+#targetCategories = ["author-name", "subgenre", "title", "decade", "author-gender"] 
 # choose one or several from: author-name, decade, subgenre, gender, idno, title, segmentID
 topItemsShown = 30 
 fontscale = 0.8
@@ -205,7 +206,7 @@ fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
-topics = ["56"] # list of one or several topics
+topics = ["115"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
@@ -216,9 +217,9 @@ topics = ["56"] # list of one or several topics
 
 ### 5c show segment
 ## To read a specific segment, better than looking in the folder.
-segmentID = "rf0546§000083"
+segmentID = "rf0166§0118"
 outfolder = wdir+"/9_sel-segs/"
-#tmw.show_segment(wdir,segmentID, outfolder)
+tmw.show_segment(wdir,segmentID, outfolder)
 
 ### 6b - create_topicscores_lineplot
 inpath = wdir + "7_aggregates/*-lp.csv"  # narrow down as needed

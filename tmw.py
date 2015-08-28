@@ -728,8 +728,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     plt.xlabel("Topics", fontsize=13)
     if height != 0:
         plt.ylim((0.000,height))
-    plt.tight_layout() 
-
+<   
     ## Saving the plot to disk.
     outfolder = outfolder+targetCategory+"/"
     if not os.path.exists(outfolder):

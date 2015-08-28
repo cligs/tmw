@@ -84,7 +84,7 @@ infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
 stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
-tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
+#tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
 
 ### call_mallet_model
 ### Performs the actual topic modeling. 
@@ -102,7 +102,7 @@ num_iterations = "1000"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
-tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
+#tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
 
 
 
@@ -127,14 +127,14 @@ mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
 targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
            "idno", "segmentID", "narration", "protagonist-policier"] 
-tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
+#tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
 topicWordFile = wdir+"6_mallet/topics-with-words.csv"
 outfolder = wdir+"7_aggregates/"
 filename = "firstWords.csv"
-tmw.save_firstWords(topicWordFile, outfolder, filename)
+#tmw.save_firstWords(topicWordFile, outfolder, filename)
 
 
 
@@ -216,7 +216,7 @@ dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
 topics = ["25","60"] # list of one or several topics
-tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
+#tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
 
@@ -228,7 +228,7 @@ tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopi
 ## To read a specific segment, better than looking in the folder.
 segmentID = "rf0166§0118"
 outfolder = wdir+"/9_sel-segs/"
-tmw.show_segment(wdir,segmentID, outfolder)
+#tmw.show_segment(wdir,segmentID, outfolder)
 
 ### 6b - create_topicscores_lineplot
 inpath = wdir + "7_aggregates/*-lp.csv"  # narrow down as needed

@@ -22,7 +22,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740d/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740c/" # end with slash.
 
 ################################
 ###    PREPROCESSING TEXTS   ###
@@ -118,7 +118,7 @@ mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
 number_of_topics = 250
-tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics)
+#tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
@@ -217,6 +217,24 @@ height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
 topics = ["25","60"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
+
+### topic_clustering ###
+### This function will create a dendrogram grouping topics based on their word weight similarity.
+### wordsPerTopic: Number of top words for each topic to take into account for similarity measure.
+### method: The clustering method used to build the dendrogram. 
+###   Options: ward|single|complete|average|weighted|centroid|median
+###   See http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.linkage.html 
+### metric: The distance measure used to build the distance matrix.
+###   Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
+###   See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+wordWeightsFile = wdir + "6_mallet/" + "word-weights.txt"
+outfolder = wdir + "8_visuals/clustering/"
+topicsToUse = 250 # should be identical to all topics modeled.
+wordsPerTopic = 10
+method="complete" 
+metric="cosine"
+tmw.topicClustering(wordWeightsFile, wordsPerTopic, outfolder, method, metric, topicsToUse)
+
 
 
 

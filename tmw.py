@@ -728,7 +728,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     plt.xlabel("Topics", fontsize=13)
     if height != 0:
         plt.ylim((0.000,height))
-<   
+   
     ## Saving the plot to disk.
     outfolder = outfolder+targetCategory+"/"
     if not os.path.exists(outfolder):
@@ -1037,6 +1037,69 @@ def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder,
                                          topics, dpi)
     print("Done.")
 
+
+
+###########################
+## topic_clustering     ###
+###########################
+
+import scipy.cluster as sc
+
+def get_topWordScores(wordWeightsFile, WordsPerTopic):
+    """Reads Mallet output (topics with words and word weights) into dataframe.""" 
+    print("- getting topWordScores...")
+    wordScores = pd.read_table(wordWeightsFile, header=None, sep="\t")
+    wordScores = wordScores.sort(columns=[0,2], axis=0, ascending=[True, False])
+    topWordScores = wordScores.groupby(0).head(WordsPerTopic)
+    #print(topWordScores)
+    return topWordScores
+
+def build_scoreMatrix(topWordScores, topicsToUse):
+    """Transform Mallet output for wordle generation."""
+    print("- building frequency table...")
+    topWordScores = topWordScores.groupby(0)
+    listOfWordScores = []
+    for topic,data in topWordScores:
+        if topic in list(range(0,topicsToUse)):
+            words = data.loc[:,1].tolist()
+            scores = data.loc[:,2].tolist()
+            wordScores = dict(zip(words, scores))
+            wordScores = pd.Series(wordScores, name=topic)
+            listOfWordScores.append(wordScores)
+        scoreMatrix = pd.concat(listOfWordScores, axis=1)
+        scoreMatrix = scoreMatrix.fillna(10)
+    #print(scoreMatrix.head)
+    scoreMatrix = scoreMatrix.T
+    return scoreMatrix
+
+def perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder): 
+    print("- performing clustering...")
+    distanceMatrix = sc.hierarchy.linkage(scoreMatrix, method=method, metric=metric)
+    #print(distanceMatrix)
+    sc.hierarchy.dendrogram(distanceMatrix)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 2)   
+    plt.tight_layout() 
+    #plt.show()
+
+    ## Saving the image file.
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    figure_filename = "clustering_"+method+"-"+metric+"-"+str(wordsPerTopic)+"words"+".svg"
+    plt.savefig(outfolder + figure_filename, dpi=300)
+    plt.close()
+    
+
+def topicClustering(wordWeightsFile, wordsPerTopic, outfolder, 
+                    method, metric, topicsToUse):
+    """Display dendrogram of topic similarity using clustering."""
+    print("Launched topicClustering.")
+    ## Gets the necessary data: the word scores for each topic
+    topWordScores = get_topWordScores(wordWeightsFile, wordsPerTopic)
+    ## Turn the data into a dataframe for further processing
+    scoreMatrix = build_scoreMatrix(topWordScores, topicsToUse)
+    ## Do clustering on the dataframe
+    perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder)
+    print("Done.")
 
 
 

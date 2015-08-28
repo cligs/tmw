@@ -384,10 +384,8 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
     """Function to perform topic modeling with Mallet."""
     print("\nLaunched call_mallet_modeling.")
 
-    ### Getting ready.
     import os
     import subprocess
-    
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
 
@@ -513,7 +511,8 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile,
 def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, 
                         topics_in_texts, number_of_topics):
     """Builds the mastermatrix uniting all information about texts and topic scores."""
-    print("\nLaunched create_mastermatrix. (This could take a while.)")
+    print("\nLaunched create_mastermatrix.")
+    print("(Warning: This is very memory-intensive and may take a while.)")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, 
@@ -593,73 +592,67 @@ def save_firstWords(topicWordFile, outfolder, filename):
 import matplotlib.pyplot as plt
 
 
-
 #################################
 # make_wordle_from_mallet       #
 #################################
 
-def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, 
+from wordcloud import WordCloud
+import random
+
+
+def read_mallet_output(word_weights_file):
+    """Reads Mallet output (topics with words and word weights) into dataframe.""" 
+    word_scores = pd.read_table(word_weights_file, header=None, sep="\t")
+    word_scores = word_scores.sort(columns=[0,2], axis=0, ascending=[True, False])
+    word_scores_grouped = word_scores.groupby(0)
+    #print(word_scores.head())
+    return word_scores_grouped
+
+def get_wordlewords(words, word_weights_file, topic):
+    """Transform Mallet output for wordle generation."""
+    topic_word_scores = read_mallet_output(word_weights_file).get_group(topic)
+    top_topic_word_scores = topic_word_scores.iloc[0:words]
+    topic_words = top_topic_word_scores.loc[:,1].tolist()
+    word_scores = top_topic_word_scores.loc[:,2].tolist()
+    wordlewords = ""
+    j = 0
+    for word in topic_words:
+        word = word
+        score = word_scores[j]
+        j += 1
+        wordlewords = wordlewords + ((word + " ") * score)
+    return wordlewords
+        
+def get_color_scale(word, font_size, position, orientation, random_state=None):
+    """ Create color scheme for wordle."""
+    #return "hsl(0, 00%, %d%%)" % random.randint(80, 100) # Greys for black background.
+    return "hsl(221, 65%%, %d%%)" % random.randint(30, 35) # Dark blue for white background
+
+def make_wordle_from_mallet(word_weights_file, 
+                            topics,words,outfolder, 
                             font_path, dpi):
     """Generate wordles from Mallet output, using the wordcloud module."""
     print("\nLaunched make_wordle_from_mallet.")
-
-    from wordcloud import WordCloud
-    import random
-
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    
-    def read_mallet_output(word_weights_file):
-        """Reads Mallet output (topics with words and word weights) into dataframe.""" 
-        word_scores = pd.read_table(word_weights_file, header=None, sep="\t")
-        word_scores = word_scores.sort(columns=[0,2], axis=0, ascending=[True, False])
-        word_scores_grouped = word_scores.groupby(0)
-        #print(word_scores.head())
-        return word_scores_grouped
-
-    def get_wordlewords(words,topic):
-        """Transform Mallet output for wordle generation."""
-        topic_word_scores = read_mallet_output(word_weights_file).get_group(topic)
-        top_topic_word_scores = topic_word_scores.iloc[0:words]
-        topic_words = top_topic_word_scores.loc[:,1].tolist()
-        word_scores = top_topic_word_scores.loc[:,2].tolist()
-        wordlewords = ""
-        j = 0
-        for word in topic_words:
-            word = word
-            score = word_scores[j]
-            j += 1
-            wordlewords = wordlewords + ((word + " ") * score)
-        return wordlewords
-        
-    def get_color_scale(word, font_size, position, orientation, random_state=None):
-        """ Create color scheme for wordle."""
-        #return "hsl(0, 00%, %d%%)" % random.randint(80, 100) # Greys for black background.
-        return "hsl(221, 65%%, %d%%)" % random.randint(30, 35) # Dark blue for white background
-
-# TODO: pack this into a proper separate function.
-
-    ## Creates the wordle visualisation, using results from the above functions.
     for topic in range(0,topics):
-        ## Defines filename and title for the wordle image.
-        figure_filename = "wordle_tp"+"{:03d}".format(topic) + ".png"
-        figure_title = "topic "+ str(topic)        
         ## Gets the text for one topic.
-        text = get_wordlewords(words,topic)
-        #print(text)
-        ## Generates, recolors and saves the wordcloud.
-        #original# wordcloud = WordCloud(background_color="white", margin=5).generate(text)
-        #font_path = "/home/christof/.fonts/AveriaSans-Regular.ttf"
+        text = get_wordlewords(words, word_weights_file, topic)
         wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
         default_colors = wordcloud.to_array()
+        figure_title = "topic "+ str(topic)        
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
         plt.title(figure_title, fontsize=24)
         plt.axis("off")
+        
+        ## Saving the image file.
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)
+        figure_filename = "wordle_tp"+"{:03d}".format(topic) + ".png"
         plt.savefig(outfolder + figure_filename, dpi=dpi)
         plt.close()
     print("Done.")
+
     
 def crop_images(inpath, outfolder, left, upper, right, lower):
     """ Function to crop wordle files."""

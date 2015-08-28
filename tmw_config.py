@@ -22,7 +22,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740c/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740d/" # end with slash.
 
 ################################
 ###    PREPROCESSING TEXTS   ###
@@ -36,11 +36,14 @@ outfolder = wdir + "1_txt/"
 
 ### segmenter
 ### Split entire texts into smaller segments.
+### target: The desired length of each text segment in words. 
+### sizetolerancefactor: 1=exact target; >1 = some tolerance, e.g. 1.1= +/-10%.
+### preserveparagraphs: True|False, whether \n from input are kept in output.
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
 target = 600
-sizetolerancefactor = 1.1 # 1 = exact target; >1 = with some tolerance (1.1 = +/- 10%).
-preserveparagraphs = True # True|False
+sizetolerancefactor = 1.1
+preserveparagraphs = True
 #tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins: inpath, outfile
@@ -66,7 +69,7 @@ inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "frN" # frN=nouns, esN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs 
 stoplist_errors = wdir+"extras/fr_stopwords_errors.txt" # in tmw folder
-tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
+#tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
 
 
@@ -81,20 +84,25 @@ infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
 stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
-#tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
+tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
 
 ### call_mallet_model
 ### Performs the actual topic modeling. 
+### num_topics: Number of different topics the model should find.
+### optimize_interval: interval between hypermarameter optimization.
+### num_iterations: How many times the model is improved. 
+### num_top_words: Number of words to save and display for each topic.
+### num_threads: Number of parallel processing threads to use. 
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "250"
 optimize_interval = "100"
-num_iterations = "5000"
+num_iterations = "1000"
 num_top_words = "200"
 doc_topics_max = num_topics
 num_threads = "4"
-#tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
+tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
 
 
 
@@ -110,23 +118,23 @@ mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
 number_of_topics = 250
-#tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics)
+tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
+### targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
-# targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
            "idno", "segmentID", "narration", "protagonist-policier"] 
-#tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
+tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
 topicWordFile = wdir+"6_mallet/topics-with-words.csv"
 outfolder = wdir+"7_aggregates/"
 filename = "firstWords.csv"
-#tmw.save_firstWords(topicWordFile, outfolder, filename)
+tmw.save_firstWords(topicWordFile, outfolder, filename)
 
 
 
@@ -156,27 +164,28 @@ lower = 1310 # image end at the bottom
 
 ### plot_topTopics
 ### For each item from a category, creates a barchart of the top topics.
+### targetCategories: one or several: "author-name", "author-gender", "decade", "subgenre", "title"
+### numberOfTopics: Must be the actual number of topics modeled before.
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-numberOfTopics = 250 # must be actual number of topics modeled.
 targetCategories = ["author-name", "author-gender", "decade", "subgenre", "title"] 
-# one or several: "author-name", "author-gender", "decade", "subgenre", "title"
 topTopicsShown = 30 
+numberOfTopics = 250 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
 outfolder = wdir+"/8_visuals/topTopics/"
 #tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
 
-### plot_topItems
+### plot_topItems ###
 ### For each topic, creates a barchart with top items from a category. 
+### targetCategories: one or several from the following list:
+### "author-name", "decade", "subgenre", "gender", "idno", "title", "segmentID"
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/topItems/"
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 numberOfTopics = 250 # must be actual number of topics modeled. 
-targetCategories = ["segmentID"] 
-#targetCategories = ["author-name", "subgenre", "title", "decade", "author-gender"] 
-# choose one or several from: author-name, decade, subgenre, gender, idno, title, segmentID
+targetCategories = ["author-name", "subgenre", "title", "decade", "author-gender", "segmentID"] 
 topItemsShown = 30 
 fontscale = 0.8
 height = 0 # 0=automatic and flexible
@@ -196,7 +205,7 @@ fontscale = 1.0
 dpi = 300
 #tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
 
-### plot_topicsOverTime
+### plot_topicsOverTime ###
 ### Creates lineplots or areaplots for topic development over time.
 averageDatasets = wdir+"/7_aggregates/avgtopicscores_by-decade.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"

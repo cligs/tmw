@@ -65,8 +65,8 @@ tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "frN" # frN=nouns, esN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs 
-stoplist_errors = "./extras/fr_stopwords_errors.txt" # in tmw folder
-#tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
+stoplist_errors = wdir+"extras/fr_stopwords_errors.txt" # in tmw folder
+tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
 
 
@@ -80,7 +80,7 @@ mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
-stoplist_project = "./extras/fr_stopwords_project.txt" # in tmw folder
+stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
 #tmw.call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project)
 
 ### call_mallet_model
@@ -206,8 +206,8 @@ fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
-topics = ["115"] # list of one or several topics
-#tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
+topics = ["25","60"] # list of one or several topics
+tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
 

@@ -1044,6 +1044,8 @@ def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder,
 ## topicClustering     ###
 ###########################
 
+# TOOD: Add figsize and orientation parameters.
+
 import scipy.cluster as sc
 
 def get_topWordScores(wordWeightsFile, WordsPerTopic):
@@ -1110,8 +1112,10 @@ def topicClustering(wordWeightsFile, wordsPerTopic, outfolder,
 
 
 ###########################
-## itemClustering     ###
+## itemClustering       ###
 ###########################
+
+# TOOD: Add orientation to parameters.
 
 import scipy.cluster as sc
 

@@ -1045,6 +1045,7 @@ def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder,
 ###########################
 
 # TOOD: Add figsize and orientation parameters.
+# TODO: Add "firstwords" as leaf labels instead of topic numbers.
 
 import scipy.cluster as sc
 

@@ -1151,7 +1151,7 @@ def perform_itemClustering(itemScoreMatrix, targetCategory, method, metric,
     sc.hierarchy.dendrogram(itemDistanceMatrix, labels=itemLabels, orientation="right")
 
     ## Format items labels to x-axis tick labels
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 12)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)
     plt.title("Item Clustering Dendrogramm: "+targetCategory, fontsize=20)
     plt.ylabel("Distance", fontsize=16)
     plt.xlabel("Parameter: "+method+" clustering - "+metric+" distance - "+str(topicsPerItem)+" topics", fontsize=16)
@@ -1161,7 +1161,7 @@ def perform_itemClustering(itemScoreMatrix, targetCategory, method, metric,
     print("- saving image file.")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = "item-clustering_"+targetCategory+"_"+metric+"-"+method+"-"+str(topicsPerItem)+"topics"+"-"+sortingCriterium+".png"
+    figure_filename = "item-clustering_"+targetCategory+"_"+metric+"-"+method+"-"+str(topicsPerItem)+"topics"+"-"+sortingCriterium+".svg"
     plt.savefig(outfolder + figure_filename, dpi=600)
     plt.close()
     
@@ -1180,6 +1180,66 @@ def itemClustering(averageDatasets, figsize, outfolder, topicsPerItem,
                                        method, metric, topicsPerItem, 
                                        sortingCriterium, figsize, outfolder)
     print("Done.")
+
+
+
+
+###########################
+## itemPCA              ###
+###########################
+
+from sklearn.decomposition import PCA
+
+#def build_itemScoreMatrix(averageDatasets, targetCategory, 
+#                          topicsPerItem, sortingCriterium):
+#    """Reads Mallet output (topics with words and word weights) into dataframe.""" 
+#    print("- building item score matrix...")
+#    for averageFile in glob.glob(averageDatasets): 
+#        if targetCategory in averageFile:
+#            itemScores = pd.read_table(averageFile, header=0, index_col=0, sep=",")
+#            itemScores = itemScores.T 
+#            if sortingCriterium == "std": 
+#                itemScores["sorting"] = itemScores.std(axis=1)
+#            elif sortingCriterium == "mean": 
+#                itemScores["sorting"] = itemScores.mean(axis=1)
+#            itemScores = itemScores.sort(columns=["sorting"], axis=0, ascending=False)
+#            itemScoreMatrix = itemScores.iloc[0:topicsPerItem,0:-1]
+#            itemScoreMatrix = itemScoreMatrix.T
+#            #print(itemScoreMatrix)
+#            return itemScoreMatrix
+
+def perform_itemPCA(itemScoreMatrix, targetCategory, topicsPerItem, 
+                    sortingCriterium, figsize, outfolder):
+    print("- doing the PCA...")
+    itemScoreMatrix = itemScoreMatrix.T
+    targetDimensions = 2
+    pca = PCA(n_components=targetDimensions)
+    pca = pca.fit(itemScoreMatrix)
+    pca = pca.transform(itemScoreMatrix)
+#   plt.scatter(pca[0,0:20], pca[1,0:20])
+    for i in list(range(0,len(pca)-1)):
+        plt.scatter(pca[i,:], pca[i+1,:])
+
+
+def itemPCA(averageDatasets, targetCategories, 
+            topicsPerItem, sortingCriterium, figsize, outfolder): 
+    """Function to perform PCA on per-item topic scores and plot the result."""
+    print("Launched itemPCA.")
+    for targetCategory in targetCategories: 
+        ## Load topic scores per item and turn into score matrix
+        ## (Using the function from itemClustering above!)
+        itemScoreMatrix = build_itemScoreMatrix(averageDatasets, targetCategory, 
+                                            topicsPerItem, sortingCriterium)
+        ## Do clustering on the dataframe
+        perform_itemPCA(itemScoreMatrix, targetCategory, topicsPerItem, sortingCriterium, figsize, outfolder)
+    print("Done.")
+
+    
+    
+
+    
+
+
 
 
 

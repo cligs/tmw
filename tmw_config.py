@@ -260,15 +260,27 @@ metrics=["cosine"] # list
 #  Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
 #  See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
 #  Interesting combination: *weighted+cosine  
-averageDatasets = wdir+"/7_aggregates/avg*.csv" 
-figsize = (10,20) # width,height
+averageDatasets = wdir+"/7_aggregates/avg*title.csv" 
+figsize = (10,80) # width,height
 outfolder = wdir + "8_visuals/clustering/"
-topicsPerItem = 250 
+topicsPerItem = 250
 sortingCriterium = "std" # std|mean
-targetCategories = ["author-name", "title", "decade"] # list
+targetCategories = ["title"] # list
 methods=["weighted"] # list
 metrics=["cosine"] # list
-tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
+#tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
+
+
+### itemPCA ###
+averageDatasets = wdir+"/7_aggregates/avg*.csv" 
+figsize = (10,10) # width,height
+outfolder = wdir + "8_visuals/clustering/"
+topicsPerItem = 250
+sortingCriterium = "std" # std|mean
+targetCategories = ["subgenre"] # list
+methods=["weighted"] # list
+metrics=["cosine"] # list
+tmw.itemPCA(averageDatasets, targetCategories, topicsPerItem, sortingCriterium, figsize, outfolder)
 
 
 

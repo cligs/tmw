@@ -9,11 +9,12 @@ tmw is a python module for topic modeling, including some preprocessing of texts
 
 * The bad news: tmw has been developed for and tested only on Linux (Ubuntu 14.04)
 * Make sure you have Python 3 (tested with 3.4), Mallet (tested with 2.0.7) and TreeTagger installed.
-* Make sure you have the Python 3 packages numpy, pandas, matplotlib, lxml, scipy, seaborn, wordcloud. 
+* Make sure you have the Python 3 packages numpy, pandas, matplotlib, lxml, scipy, seaborn, wordcloud.
+* Warning: This set of functions is experimental in nature and quality.
 
 ## Usage
 
-* Download the module files tmw.py (the module) and my_tmw.py (the configuration file) to a convenient location
+* Download the module files tmw.py (the module) and tmw_config.py (the configuration file) to a convenient location
 * Make sure all your document files are in one directory (your working directory)
 * If you would like to use a stoplist when using Mallet, add this to a subdirectory called "extras"
 * The workflow accepts TEI-encoded or plain text documents as input and expects each file to contain one document

@@ -1056,7 +1056,7 @@ def get_topWordScores(wordWeightsFile, WordsPerTopic):
 
 def build_scoreMatrix(topWordScores, topicsToUse):
     """Transform Mallet output for wordle generation."""
-    print("- building frequency table...")
+    print("- building score matrix...")
     topWordScores = topWordScores.groupby(0)
     listOfWordScores = []
     for topic,data in topWordScores:
@@ -1076,29 +1076,34 @@ def perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder):
     print("- performing clustering...")
     distanceMatrix = sc.hierarchy.linkage(scoreMatrix, method=method, metric=metric)
     #print(distanceMatrix)
+    plt.figure(figsize=(25,10))
     sc.hierarchy.dendrogram(distanceMatrix)
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 2)   
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 6)   
+    plt.title("Topic-Clustering Dendrogramm", fontsize=20)
+    plt.ylabel("Distanz", fontsize=16)
+    plt.xlabel("Parameter: "+method+" clustering - "+metric+" distance measure - "+str(wordsPerTopic)+" words", fontsize=16)
     plt.tight_layout() 
-    #plt.show()
 
     ## Saving the image file.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = "clustering_"+method+"-"+metric+"-"+str(wordsPerTopic)+"words"+".svg"
-    plt.savefig(outfolder + figure_filename, dpi=300)
+    figure_filename = "clustering_"+metric+"-"+method+"-"+str(wordsPerTopic)+"words"+".png"
+    plt.savefig(outfolder + figure_filename, dpi=600)
     plt.close()
     
 
 def topicClustering(wordWeightsFile, wordsPerTopic, outfolder, 
-                    method, metric, topicsToUse):
+                    methods, metrics, topicsToUse):
     """Display dendrogram of topic similarity using clustering."""
-    print("Launched topicClustering.")
+    print("\nLaunched topicClustering.")
     ## Gets the necessary data: the word scores for each topic
     topWordScores = get_topWordScores(wordWeightsFile, wordsPerTopic)
     ## Turn the data into a dataframe for further processing
     scoreMatrix = build_scoreMatrix(topWordScores, topicsToUse)
     ## Do clustering on the dataframe
-    perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder)
+    for method in methods: 
+        for metric in metrics: 
+            perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder)
     print("Done.")
 
 

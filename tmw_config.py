@@ -218,7 +218,7 @@ mode = "line" # area|line for areaplot or lineplot
 topics = ["25","60"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
-### topic_clustering ###
+### topicClustering ###
 ### This function will create a dendrogram grouping topics based on their word weight similarity.
 ### wordsPerTopic: Number of top words for each topic to take into account for similarity measure.
 ### method: The clustering method used to build the dendrogram. 
@@ -227,13 +227,14 @@ topics = ["25","60"] # list of one or several topics
 ### metric: The distance measure used to build the distance matrix.
 ###   Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
 ###   See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+###   Interesting combination: *weighted+cosine  
 wordWeightsFile = wdir + "6_mallet/" + "word-weights.txt"
 outfolder = wdir + "8_visuals/clustering/"
 topicsToUse = 250 # should be identical to all topics modeled.
-wordsPerTopic = 10
-method="complete" 
-metric="cosine"
-tmw.topicClustering(wordWeightsFile, wordsPerTopic, outfolder, method, metric, topicsToUse)
+wordsPerTopic = 50
+methods=["weighted"] # list
+metrics=["cosine"] # list
+tmw.topicClustering(wordWeightsFile, wordsPerTopic, outfolder, methods, metrics, topicsToUse)
 
 
 

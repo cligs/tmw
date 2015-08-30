@@ -1039,8 +1039,9 @@ def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder,
 
 
 
+
 ###########################
-## topic_clustering     ###
+## topicClustering     ###
 ###########################
 
 import scipy.cluster as sc
@@ -1072,7 +1073,7 @@ def build_scoreMatrix(topWordScores, topicsToUse):
     scoreMatrix = scoreMatrix.T
     return scoreMatrix
 
-def perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder): 
+def perform_topicClustering(scoreMatrix, method, metric, wordsPerTopic, outfolder): 
     print("- performing clustering...")
     distanceMatrix = sc.hierarchy.linkage(scoreMatrix, method=method, metric=metric)
     #print(distanceMatrix)
@@ -1081,13 +1082,13 @@ def perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder):
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 6)   
     plt.title("Topic-Clustering Dendrogramm", fontsize=20)
     plt.ylabel("Distanz", fontsize=16)
-    plt.xlabel("Parameter: "+method+" clustering - "+metric+" distance measure - "+str(wordsPerTopic)+" words", fontsize=16)
+    plt.xlabel("Parameter: "+method+" clustering - "+metric+" distance - "+str(wordsPerTopic)+" words", fontsize=16)
     plt.tight_layout() 
 
     ## Saving the image file.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = "clustering_"+metric+"-"+method+"-"+str(wordsPerTopic)+"words"+".png"
+    figure_filename = "topic-clustering_"+metric+"-"+method+"-"+str(wordsPerTopic)+"words"+".png"
     plt.savefig(outfolder + figure_filename, dpi=600)
     plt.close()
     
@@ -1103,7 +1104,76 @@ def topicClustering(wordWeightsFile, wordsPerTopic, outfolder,
     ## Do clustering on the dataframe
     for method in methods: 
         for metric in metrics: 
-            perform_clustering(scoreMatrix, method, metric, wordsPerTopic, outfolder)
+            perform_topicClustering(scoreMatrix, method, metric, wordsPerTopic, outfolder)
+    print("Done.")
+
+
+
+###########################
+## itemClustering     ###
+###########################
+
+import scipy.cluster as sc
+
+def build_itemScoreMatrix(averageDatasets, targetCategory, 
+                          topicsPerItem, sortingCriterium):
+    """Reads Mallet output (topics with words and word weights) into dataframe.""" 
+    print("- getting topWordScores...")
+    for averageFile in glob.glob(averageDatasets): 
+        if targetCategory in averageFile:
+            itemScores = pd.read_table(averageFile, header=0, index_col=0, sep=",")
+            itemScores = itemScores.T 
+            if sortingCriterium == "std": 
+                itemScores["sorting"] = itemScores.std(axis=1)
+            elif sortingCriterium == "mean": 
+                itemScores["sorting"] = itemScores.mean(axis=1)
+            itemScores = itemScores.sort(columns=["sorting"], axis=0, ascending=False)
+            itemScoreMatrix = itemScores.iloc[0:topicsPerItem,0:-1]
+            itemScoreMatrix = itemScoreMatrix.T
+            #print(itemScoreMatrix)
+            return itemScoreMatrix
+
+def perform_itemClustering(itemScoreMatrix, targetCategory, method, metric, 
+                           topicsPerItem, sortingCriterium, figsize, outfolder): 
+    print("- performing clustering...")
+
+    ## Perform the actual clustering
+    itemDistanceMatrix = sc.hierarchy.linkage(itemScoreMatrix, method=method, metric=metric)
+        
+    ## Plot the distance matrix as a dendrogram
+    plt.figure(figsize=figsize) # TODO: this could be a a parameter.
+    itemLabels = itemScoreMatrix.index.values
+    sc.hierarchy.dendrogram(itemDistanceMatrix, labels=itemLabels, orientation="right")
+
+    ## Format items labels to x-axis tick labels
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 12)
+    plt.title("Item Clustering Dendrogramm: "+targetCategory, fontsize=20)
+    plt.ylabel("Distance", fontsize=16)
+    plt.xlabel("Parameter: "+method+" clustering - "+metric+" distance - "+str(topicsPerItem)+" topics", fontsize=16)
+    plt.tight_layout() 
+
+    ## Save the image file.
+    print("- saving image file.")
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    figure_filename = "item-clustering_"+targetCategory+"_"+metric+"-"+method+"-"+str(topicsPerItem)+"topics"+"-"+sortingCriterium+".png"
+    plt.savefig(outfolder + figure_filename, dpi=600)
+    plt.close()
+    
+def itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, 
+                   targetCategories, methods, metrics, sortingCriterium):
+    """Display dendrogram of topic-based item similarity using clustering."""
+    print("\nLaunched itemClustering.")
+    for targetCategory in targetCategories: 
+        ## Load topic scores per itema and turn into score matrix
+        itemScoreMatrix = build_itemScoreMatrix(averageDatasets, targetCategory, 
+                                                topicsPerItem, sortingCriterium)
+        ## Do clustering on the dataframe
+        for method in methods: 
+            for metric in metrics: 
+                perform_itemClustering(itemScoreMatrix, targetCategory, 
+                                       method, metric, topicsPerItem, 
+                                       sortingCriterium, figsize, outfolder)
     print("Done.")
 
 

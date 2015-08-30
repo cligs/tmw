@@ -15,8 +15,9 @@
 # 1. Preprocessing Texts
 # 2. Topic Modeling
 # 3. Posprocessing Data
-# 4. Visualization
-# 5. Other / Obsolete
+# 4. Basic Visualizations
+# 5. Advanced Visualizations
+# 6. Other / Obsolete
 
 import tmw
 #print(help(topmod))
@@ -139,7 +140,7 @@ filename = "firstWords.csv"
 
 
 ################################
-###    VISUALIZATION         ###
+###  BASIC VISUALIZATION     ###
 ################################
 
 ### make_wordle_from_mallet
@@ -192,7 +193,13 @@ height = 0 # 0=automatic and flexible
 dpi = 300
 #tmw.plot_topItems(averageDatasets, outfolder, firstWordsFile, numberOfTopics, targetCategories, topItemsShown, fontscale, height, dpi)
 
-### plot_distinctiveness_heatmap
+
+
+################################
+###  ADVANCED VISUALIZATION  ###
+################################
+
+### plot_distinctiveness_heatmap ###
 ### For each category, make a heatmap of most distinctive topics. 
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
@@ -219,23 +226,49 @@ topics = ["25","60"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 ### topicClustering ###
-### This function will create a dendrogram grouping topics based on their word weight similarity.
-### wordsPerTopic: Number of top words for each topic to take into account for similarity measure.
-### method: The clustering method used to build the dendrogram. 
-###   Options: ward|single|complete|average|weighted|centroid|median
-###   See http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.linkage.html 
-### metric: The distance measure used to build the distance matrix.
-###   Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
-###   See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
-###   Interesting combination: *weighted+cosine  
+# This function will create a dendrogram grouping topics based on their word weight similarity.
+# Parameters 
+# wordsPerTopic: Number of top words for each topic to take into account for similarity measure.
+# method: The clustering method used to build the dendrogram. 
+#  Options: ward|single|complete|average|weighted|centroid|median
+#  See http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.linkage.html 
+# metric: The distance measure used to build the distance matrix.
+#  Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
+#  See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+#  Interesting combination: *weighted+cosine  
 wordWeightsFile = wdir + "6_mallet/" + "word-weights.txt"
 outfolder = wdir + "8_visuals/clustering/"
-topicsToUse = 250 # should be identical to all topics modeled.
+topicsToUse = 250 # = all topics modeled
 wordsPerTopic = 50
 methods=["weighted"] # list
 metrics=["cosine"] # list
-tmw.topicClustering(wordWeightsFile, wordsPerTopic, outfolder, methods, metrics, topicsToUse)
+#tmw.topicClustering(wordWeightsFile, wordsPerTopic, outfolder, methods, metrics, topicsToUse)
 
+### itemClustering ###
+# This function creates a dendrogram of items in a category (authors, titles).
+# The clustering is based on the topic scores of the items. 
+# Input: the average topic score file for the category of interest. 
+# Parameters
+# figsize: The size of the resulting figure in inches, width x height.
+# sortingCriterium: Topics to be used are sorted by this criterium (descending)
+# topicsPerItem: Number of top topics to be used as the basis for clustering.
+# targetCategories: Things like author, title, year, depending on available data.
+# method: The clustering method used to build the dendrogram. 
+#  Options: ward|single|complete|average|weighted|centroid|median
+#  See http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.linkage.html 
+# metric: The distance measure used to build the distance matrix.
+#  Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
+#  See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
+#  Interesting combination: *weighted+cosine  
+averageDatasets = wdir+"/7_aggregates/avg*.csv" 
+figsize = (10,20) # width,height
+outfolder = wdir + "8_visuals/clustering/"
+topicsPerItem = 250 
+sortingCriterium = "std" # std|mean
+targetCategories = ["author-name", "title", "decade"] # list
+methods=["weighted"] # list
+metrics=["cosine"] # list
+tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
 
 
 

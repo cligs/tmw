@@ -65,21 +65,12 @@ def tei5reader_fulldocs(inpath, outfolder):
             text = "\n".join(text)
 
             ### Some cleaning up
-<<<<<<< HEAD
             text = re.sub("[ ]{1,20}", " ", text)
             text = re.sub("\t\n", "\n", text)
             text = re.sub("\n{1,10}", "\n", text)
             text = re.sub("\n \n", "\n", text)
             text = re.sub("\n.\n", "\n", text)
             text = re.sub("[ ]{1,20}", " ", text)
-=======
-            text = re.sub("  ", "", text)
-            #text = re.sub("    ", "", text)
-          #  text = re.sub("\n{1,6}", " ", text)
-            #text = re.sub("\n{1,6}", "\n", text)
-          #  text = re.sub("\n \n", "\n", text)
-           # text = re.sub("\t\n", "", text)
->>>>>>> dhd2016
 
             outtext = str(text)
             outfile = outfolder + filename + ".txt"
@@ -96,28 +87,18 @@ def writesegment(segment, outfolder, filename, counter, mode="w"):
         output.write(' '.join(segment))
     output.close()
 
-<<<<<<< HEAD
 #################################
 # segmenter                     #
 #################################
 
-=======
->>>>>>> dhd2016
 # Utility function for writing into files
 def write(segment, file, mode = "w"):
     with open(file, mode) as output:
         output.write(' '.join(segment))
         output.close()
 
-<<<<<<< HEAD
 # global segment counter
 counter = 0
-=======
-
-# global segment counter
-counter = 0
-
->>>>>>> dhd2016
 # global current segment size
 currentsegmentsize = 0
 
@@ -126,49 +107,22 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
     from os.path import join
     global currentsegmentsize
     global counter
-<<<<<<< HEAD
-    # ignore empty segments
-    if segment == ["\n"] or len(segment) < 1:
-        return
-=======
-
-
-
 
     # ignore empty segments
     if segment == ["\n"] or len(segment) < 1:
         return
 
-
->>>>>>> dhd2016
     # workaround for easy inter line-spacing in case of paragraph removal for lines combined into one segment
     if not preserveparagraphs and segment[-1] == "\n":
         segment = segment[0:len(segment) - 1]
         segment[-1] += " "
-<<<<<<< HEAD
-    segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
-    relname = filename + "§{:04d}".format(counter) + ".txt"
-=======
-
-
     segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
     relname = filename + "§{:04d}".format(counter) + ".txt"
 
-
-
->>>>>>> dhd2016
     # case: last segment is too small => fill with (slice of) new segment
     if currentsegmentsize * tolerancefactor < target: # min size limit not reached => split
         #split segment
         wordsliceindex = target - currentsegmentsize
-<<<<<<< HEAD
-        # if it's too big: slice!
-        if currentsegmentsize + len(segment) > target * tolerancefactor:
-            #print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(wordsliceindex) + "\t for a total of " + str((currentsegmentsize + wordsliceindex)))
-            write(segment[0:wordsliceindex], segname, "a")
-            currentsegmentsize += wordsliceindex
-            segment = segment[wordsliceindex:len(segment)]
-=======
 
         # if it's too big: slice!
         if currentsegmentsize + len(segment) > target * tolerancefactor:
@@ -177,7 +131,6 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
             currentsegmentsize += wordsliceindex
             segment = segment[wordsliceindex:len(segment)]
 
->>>>>>> dhd2016
             # segment is filled. continue with next one
             counter += 1
             currentsegmentsize = 0
@@ -187,24 +140,12 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
                 os.remove(segname)
         # else just add text to current segment
         else:
-<<<<<<< HEAD
-            #print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(len(segment)) + "\t for a total of " + str((currentsegmentsize + len(segment))))
-=======
             print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(len(segment)) + "\t for a total of " + str((currentsegmentsize + len(segment))))
->>>>>>> dhd2016
             # segment fits so append
             write(segment, segname, "a")
             currentsegmentsize += len(segment) - segment.count("\n") # take possible segment end into account!
             # done
             return
-<<<<<<< HEAD
-    # case: new segment is too big
-    # if segment > target: slice segment
-    while len(segment) > target * tolerancefactor:
-        #print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(target) + "\t for a total of " + str((currentsegmentsize + target)))
-        write(segment[0:target], segname)
-        segment = segment[target:len(segment)]
-=======
 
     # case: new segment is too big
     # if segment > target: slice segment
@@ -213,7 +154,6 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
         write(segment[0:target], segname)
         segment = segment[target:len(segment)]
 
->>>>>>> dhd2016
         # segment is filled. continue with next one
         counter += 1
         currentsegmentsize = 0
@@ -221,24 +161,15 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
         relname = filename + "§{:04d}".format(counter) + ".txt"
         if os.path.isfile(segname):
             os.remove(segname)
-<<<<<<< HEAD
-        #print(relname + "\t New segment with size \t0")
-=======
         print(relname + "\t New segment with size \t0")
 
->>>>>>> dhd2016
     # now size of segment is < target
     if (len(segment) == 0):
         #segment was perfectly sliced so we are done
         return
-<<<<<<< HEAD
-    # there's some part of segment left, write this into file
-=======
 
     # there's some part of segment left, write this into file
 
-
->>>>>>> dhd2016
     # if the remaining part is exceeding current segment's capacity start new segment
     if currentsegmentsize + len(segment) > target * tolerancefactor:
         # segment is filled. continue with next one
@@ -248,19 +179,7 @@ def writesegment(segment, outfolder, filename, target, tolerancefactor, preserve
         relname = filename + "§{:04d}".format(counter) + ".txt"
         if os.path.isfile(segname):
             os.remove(segname)
-<<<<<<< HEAD
-        #print(relname + "\t New segment with size \t0")
-    #print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(len(segment)) + "\t for a total of " + str((currentsegmentsize + len(segment))))
-    currentsegmentsize += len(segment) - segment.count("\n") # take possible segment end into account!
-    write(segment, segname, "a")
 
-def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs = False):
-    """Script for turning plain text files into equal-sized segments, with limited respect for paragraph boundaries."""
-    print("\nLaunched segmenter.")
-
-    from os.path import join
-    from nltk.tokenize import word_tokenize
-=======
         print(relname + "\t New segment with size \t0")
 
     print(relname + "\t Last segment size: " + str(currentsegmentsize) + "\t appending " + str(len(segment)) + "\t for a total of " + str((currentsegmentsize + len(segment))))
@@ -268,17 +187,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
     write(segment, segname, "a")
 
 
-
-# Parameters:
-#   - inpath:               path to search documents in
-#   - outfolder:            path to save segments in
-#   - target:               number of words per segment
-#   - sizetolerancefactor:  factor of which exceedance of target is tolerated before slicing paragraphs
-#                               1 for zero tolerance
-#                              -1 for infinity tolerance
-#   - preserveparagraphs:   if True, segments will contain linebreaks according to paragraphs
-#
-def segmenter(inpath, outfolder, target, sizetolerancefactor = 1, preserveparagraphs = False):
+def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs):
     """Script for turning plain text files into equal-sized segments, without respecting paragraph boundaries."""
     print("\nLaunched segmenter.")
     import os
@@ -287,7 +196,6 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = 1, preserveparagr
     from os.path import join
     from nltk.tokenize import word_tokenize
     import glob
->>>>>>> dhd2016
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
@@ -295,7 +203,6 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = 1, preserveparagr
     global currentsegmentsize
     # work on files in inpath
     for relfile in glob.glob(inpath):
-<<<<<<< HEAD
         # get absolut filename
         file = join(inpath, relfile)
         with open(file, "r") as infile:
@@ -308,26 +215,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = 1, preserveparagr
                 os.remove(segname)
             # segment contains words assigned to the current segment
             segment = []
-=======
 
-
-        # get absolut filename
-        file = join(inpath, relfile)
-
-        with open(file, "r") as infile:
-            filename = os.path.basename(file)[:-4]
-
-            counter = 0
-            currentsegmentsize = 0
-            segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
-            relname = filename + "§{:04d}".format(counter) + ".txt"
-            if os.path.isfile(segname):
-                os.remove(segname)
-
-            # segment contains words assigned to the current segment
-            segment = []
-
->>>>>>> dhd2016
             # go thru paragraphs one by one
             for line in infile:
                 text = line
@@ -335,28 +223,19 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = 1, preserveparagr
                 text = re.sub("[,;\.!?—\t\r\n\v\f]", " ", text)
                 text = re.sub("-", " ", text)
                 text = re.sub("[ ]{1,9}", " ", text)
-<<<<<<< HEAD
+
                 # tokenize text
                 words = word_tokenize(text)
                 words.append("\n")
                 writesegment(words, outfolder, filename, target, sizetolerancefactor, preserveparagraphs)
     print("Done.")
-=======
->>>>>>> dhd2016
 
-                # tokanize text
-                words = word_tokenize(text)
 
-<<<<<<< HEAD
 
 #################################
 # Binning                       #
 #################################
-=======
-                words.append("\n")
-                writesegment(words, outfolder, filename, target, sizetolerancefactor, preserveparagraphs)
 
-    print("Done.")
 
 def segments_to_bins(inpath, outfile, binsnb = 5):
     """Script for sorting text segments into bins."""
@@ -450,10 +329,6 @@ def segments_to_bins(inpath, outfile, binsnb = 5):
     print("chunks per bin: ", bcount)
     with open(outfile, "w") as outfile:
         files_and_bins.to_csv(outfile, index=False)
->>>>>>> dhd2016
-
-# TODO: Rewrite entirely to make compatible with mastermatrix.
-
 
 
 #################################

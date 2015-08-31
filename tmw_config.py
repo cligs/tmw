@@ -48,7 +48,9 @@ preserveparagraphs = True
 #tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins: inpath, outfile
-### Currently not implemented any more / yet. 
+inpath = wdir + "2_segs/*.txt"
+outfile = wdir + "segs-and-bins.csv"
+#tmw.segments_to_bins(inpath,outfile)
 
 ### pretokenize
 ### Perform some preliminary tokenization.

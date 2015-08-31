@@ -399,15 +399,11 @@ def call_treetagger(infolder, outfolder, tagger):
 
 
 
-<<<<<<< HEAD
 #################################
 # make_lemmatext                #
 #################################
 
 def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
-=======
-def make_lemmatext(inpath, outfolder, mode, stoplist):
->>>>>>> dhd2016
     """Function to extract lemmas from TreeTagger output."""
     print("\nLaunched make_lemmatext.")
 

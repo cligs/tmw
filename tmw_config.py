@@ -23,7 +23,7 @@ import tmw
 #print(help(topmod))
 
 ### Set the general working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf740c/" # end with slash.
+wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf10/" # end with slash.
 
 ################################
 ###    PREPROCESSING TEXTS   ###
@@ -45,12 +45,12 @@ outfolder = wdir + "2_segs/"
 target = 600
 sizetolerancefactor = 1.1
 preserveparagraphs = True
-#tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
+tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"
 outfile = wdir + "segs-and-bins.csv"
-#tmw.segments_to_bins(inpath,outfile)
+tmw.segments_to_bins(inpath,outfile)
 
 ### pretokenize
 ### Perform some preliminary tokenization.
@@ -282,7 +282,7 @@ sortingCriterium = "std" # std|mean
 targetCategories = ["subgenre"] # list
 methods=["weighted"] # list
 metrics=["cosine"] # list
-tmw.itemPCA(averageDatasets, targetCategories, topicsPerItem, sortingCriterium, figsize, outfolder)
+#tmw.itemPCA(averageDatasets, targetCategories, topicsPerItem, sortingCriterium, figsize, outfolder)
 
 
 

@@ -25,7 +25,9 @@ outfolder = wdir + "1_txt/"
 inpath = wdir + "1_txt/*.txt"
 outpath = wdir + "2_segs/"
 segment_length = 1000
-#tmw.segmenter(inpath,outpath,segment_length)
+sizetolerancefactor = 1 # 1 = zero tolerance; 1.1 = +/- 10% tolerance.
+preserveparagraphs = False
+#tmw.segmenter(inpath,outpath,segment_length, sizetolerancefactor, preserveparagraphs)
 
 ### 1c - segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"
@@ -48,7 +50,9 @@ tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
 ### 2c - make_lemmatext
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
-#tmw.make_lemmatext(inpath,outfolder)
+mode = "esN" # esN=nouns, frN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs
+stoplist = ["<unknown>", "unknown"]
+#tmw.make_lemmatext(inpath, outfolder, mode, stoplist)
 
 
 

@@ -236,8 +236,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
 # Binning                       #
 #################################
 
-
-def segments_to_bins(inpath, outfile, binsnb = 5):
+def segments_to_bins(inpath, outfile, binsnb):
     """Script for sorting text segments into bins."""
     print("\nLaunched segments_to_bins.")
 
@@ -325,10 +324,12 @@ def segments_to_bins(inpath, outfile, binsnb = 5):
     filenames_sr = pd.Series(filenames, name="filenames")
     binids_sr = pd.Series(binids, name="binids")
     files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
-
     print("chunks per bin: ", bcount)
+
     with open(outfile, "w") as outfile:
         files_and_bins.to_csv(outfile, index=False)
+
+
 
 
 #################################

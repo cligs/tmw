@@ -42,15 +42,16 @@ outfolder = wdir + "1_txt/"
 ### preserveparagraphs: True|False, whether \n from input are kept in output.
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
-target = 600
+target = 2000
 sizetolerancefactor = 1.1
 preserveparagraphs = True
 tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
-### segments_to_bins: inpath, outfile
+### segments_to_bins
 inpath = wdir + "2_segs/*.txt"
 outfile = wdir + "segs-and-bins.csv"
-tmw.segments_to_bins(inpath,outfile)
+binsnb = 5 # number of bins
+tmw.segments_to_bins(inpath,outfile, binsnb)
 
 ### pretokenize
 ### Perform some preliminary tokenization.

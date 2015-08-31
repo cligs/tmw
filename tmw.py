@@ -242,10 +242,11 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor = 1, preserveparagr
 
     print("Done.")
 
-def segments_to_bins(inpath, outfile):
+def segments_to_bins(inpath, outfile, binsnb = 5):
     """Script for sorting text segments into bins."""
     print("\nLaunched segments_to_bins.")
 
+    import math, sys
     import os
     import glob
     from collections import Counter
@@ -254,10 +255,11 @@ def segments_to_bins(inpath, outfile):
     ### Define various objects for later use.
     txtids = []
     segids = []
-    #binsnb = 5
+
     filenames = []
     binids = []
 
+    offset = sys.maxsize # used to track wrong segmenting (i.e. with segment numbering not starting with 0)
 
     ### Get filenames, text identifiers, segment identifiers.
     for file in glob.glob(inpath):
@@ -267,8 +269,12 @@ def segments_to_bins(inpath, outfile):
         segid = filename[-4:]
         #print(filename, txtid, segid)
         segids.append(segid)
+        offset = min(offset, int(segid))
     #txtids_sr = pd.Series(txtids)
     #segids_sr = pd.Series(segids)
+
+    if offset > 0:
+        print("Warning! Segment numbering should start at 0. Using offset: " + str(offset))
 
     ### For each text identifier, get number of segments.
     txtids_ct = Counter(txtids)
@@ -280,14 +286,16 @@ def segments_to_bins(inpath, outfile):
         #print(txtid, segnb)
     print("Total number of segments: ", sum_segnbs)
 
+    for txtid in txtids_ct:
+        countsegs = txtids_ct[txtid]
+        if binsnb > int(countsegs):
+            print("Warning! You are expecting more bins than segments available! Bins will not be filled continuously!")
 
     ### Match each filename to the number of segments of the text.
 
-    bcount0 = 0
-    bcount1 = 0
-    bcount2 = 0
-    bcount3 = 0
-    bcount4 = 0
+    bcount = dict()
+    for i in range(0, binsnb):
+        bcount[i] = 0
 
     for file in glob.glob(inpath):
         filename = os.path.basename(file)[:-4]
@@ -303,32 +311,27 @@ def segments_to_bins(inpath, outfile):
         #print(txtid,segid,segnb)
         binid = ""
 
-        segprop = int(segid) / int(segnb)
+        segprop = (int(segid) - offset) / int(segnb)
         #print(txtid, segid, segnb, segprop)
-        if segprop > 0 and segprop <= 0.21:
-            binid = 1
-            bcount0 += 1
-        if segprop > 0.21 and segprop <= 0.41:
-            binid = 2
-            bcount1 += 1
-        if segprop > 0.41 and segprop <= 0.61:
-            binid = 3
-            bcount2 += 1
-        if segprop > 0.61 and segprop <= 0.81:
-            binid = 4
-            bcount3 += 1
-        if segprop > 0.81 and segprop <= 1:
-            binid = 5
-            bcount4 += 1
+
+
+        binid = math.floor(segprop * binsnb)
+
+        if binid == binsnb: # avoid 1.0 beeing in seperate bin (should never happen due to offset!)
+            print("Error: Segment numbering is wrong! Continuing anyway...")
+            binid -= 1
+
+        bcount[binid] += 1
+
         #print(segprop, binid)
 
-        filenames.append(filename[:10])
+        filenames.append(filename[:11])
         binids.append(binid)
     filenames_sr = pd.Series(filenames, name="filenames")
     binids_sr = pd.Series(binids, name="binids")
     files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
 
-    print("chunks per bin: ", bcount0,bcount1,bcount2,bcount3,bcount4)
+    print("chunks per bin: ", bcount)
     with open(outfile, "w") as outfile:
         files_and_bins.to_csv(outfile, index=False)
 

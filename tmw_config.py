@@ -141,7 +141,7 @@ targets = ["author", "subgenre", "binID", "decade"]
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
 targets = ["subgenre", "binID"] # 2 targets to combine
-tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
+#tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
@@ -268,7 +268,7 @@ dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "sel" # all|sel 
 topics = ["25", "44", "12"] # if mode="sel": list of topics
-tmw.simpleProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
+#tmw.simpleProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
 
@@ -281,10 +281,10 @@ tmw.simpleProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics,
 ### complexProgression ###
 ### Creates a lineplot of topic development over textual progression, 
 ### but does so separatedly for different target categories.
-averageDataset = wdir+"/7_aggregates/complex-avgtopicscores_by*.csv" 
+averageDataset = wdir+"/7_aggregates/complex-avgtopicscores_by-subgenre+binID.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 outfolder = wdir+"/8_visuals/progression/complex/"
-numberOfTopics = 50 # must be actual number of topics modeled.
+numberOfTopics = 1 # must be actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
@@ -311,15 +311,3 @@ targetCategories = ["subgenre"] # list
 methods=["weighted"] # list
 metrics=["cosine"] # list
 #tmw.itemPCA(averageDatasets, targetCategories, topicsPerItem, sortingCriterium, figsize, outfolder)
-
-
-
-
-### 6b - create_topicscores_lineplot
-inpath = wdir + "7_aggregates/*-lp.csv"  # narrow down as needed
-outfolder = wdir + "8_visuals/lineplots/"
-topicwordfile = wdir + "6_mallet/topics-with-words.csv"
-dpi = 300
-height = 0.050
-genres = ["detection","noir"] # User: set depending on metadata. Available: noir, detection, criminel, experim., archq., blanche, neopl., susp.
-#tmw.create_topicscores_lineplot(inpath,outfolder,topicwordfile,dpi,height,genres)

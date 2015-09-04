@@ -704,7 +704,6 @@ def calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder):
     identifierstring = '+'.join(map(str, targets))
     resultfilename = "complex-avgtopicscores_by-"+identifierstring+".csv"
     resultfilepath = outfolder+resultfilename
-    ## TODO: Some reformatting here, or adapt make_heatmaps.
     avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
     print("Done. Saved average topic scores for: "+identifierstring)    
 
@@ -1346,20 +1345,8 @@ def itemClustering(averageDatasets, figsize, outfolder, topicsPerItem,
 
 
 
-
-
-
-
-
-
-##################################################################
-###    OTHER / OBSOLETE / DEV                                  ###
-##################################################################
-
-
-
 ###########################
-## textual Progression  ###
+## simple progression   ###
 ###########################
 
 
@@ -1491,32 +1478,27 @@ def simpleProgression(averageDataset, firstWordsFile, outfolder,
     else: 
         print("Please select a valid value for 'mode'.")
     print("Done.")
-    
-    
 
 
 
 
+
+
+##################################################################
+###    OTHER / OBSOLETE / DEV                                  ###
+##################################################################
 
 
 ###########################
+## complex progression  ###        IN DEVELOPMENT
+###########################
 
 
-def get_overTime_firstWords(firstWordsFile):
-    """Function to load list of top topic words into dataframe."""
-    #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
-        firstWords = pd.read_csv(infile, header=None)
-        firstWords.drop(0, axis=1, inplace=True)
-        firstWords.rename(columns={1:"topicwords"}, inplace=True)
-        firstWords.index = firstWords.index.astype(np.int64)        
-        #print(firstWords)
-        return(firstWords)
-
-def get_overTime_dataToPlot(average, firstWordsFile, entriesShown, topics): 
+def get_selComplexProgression_dataToPlot(averageDataset, firstWordsFile, 
+                               entriesShown, topics): 
     """Function to build a dataframe with all data necessary for plotting."""
-    #print("  Getting data to plot.")
-    with open(average, "r") as infile:
+    print("- getting data to plot...")
+    with open(averageDataset, "r") as infile:
         allScores = pd.DataFrame.from_csv(infile, sep=",")
         allScores = allScores.T        
         #print(allScores.head())
@@ -1524,21 +1506,23 @@ def get_overTime_dataToPlot(average, firstWordsFile, entriesShown, topics):
         someScores = allScores.loc[topics,:]
         someScores.index = someScores.index.astype(np.int64)        
         ## Add information about the firstWords of topics
-        firstWords = get_overTime_firstWords(firstWordsFile)
+        firstWords = get_progression_firstWords(firstWordsFile)
         dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
         dataToPlot = dataToPlot.set_index("topicwords")
         dataToPlot = dataToPlot.T
         #print(dataToPlot)
         return dataToPlot
-
-def create_overTime_lineplot(dataToPlot, outfolder, fontscale, topics, dpi, height):
+    
+    
+def create_selComplexProgression_lineplot(dataToPlot, outfolder, fontscale, 
+                                topics, dpi, height):
     """This function does the actual plotting and saving to disk."""
-    print("  Creating lineplot for selected topics.")
+    print("- creating the plot...")
     ## Plot the selected data
     dataToPlot.plot(kind="line", lw=3, marker="o")
-    plt.title("Entwicklung der Topic Scores", fontsize=20)
+    plt.title("Entwicklung ausgewählter Topics über den Textverlauf", fontsize=20)
     plt.ylabel("Topic scores (absolut)", fontsize=16)
-    plt.xlabel("Jahrzehnte", fontsize=16)
+    plt.xlabel("Textabschnitte", fontsize=16)
     plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
     if height != 0:
         plt.ylim((0.000,height))
@@ -1548,32 +1532,88 @@ def create_overTime_lineplot(dataToPlot, outfolder, fontscale, topics, dpi, heig
         os.makedirs(outfolder)
     ## Format the topic information for display
     topicsLabel = "-".join(str(topic) for topic in topics)
-    figure_filename = outfolder+"lineplot-"+topicsLabel+".png"
+    figure_filename = outfolder+"sel_"+topicsLabel+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-def create_overTime_areaplot(dataToPlot, outfolder, fontscale, topics, dpi):
+def get_allComplexProgression_dataToPlot(averageDataset, firstWordsFile, 
+                               entriesShown, topic): 
+    """Function to build a dataframe with all data necessary for plotting."""
+    print("- getting data to plot...")
+    with open(averageDataset, "r") as infile:
+        allScores = pd.DataFrame.from_csv(infile, sep=",", index_col=None)
+        #allScores = allScores.T
+        print(allScores)
+        groupedScores = allScores.groupby("binID").groups
+        print(groupedScores)
+        ## Select the data for current topics
+        #someScores = allScores.loc[topic,:]
+        #someScores.index = someScores.index.astype(np.int64)
+        #dataToPlot = someScores
+        #print(dataToPlot)
+        #return dataToPlot
+        
+# TODO: Make sure this is only read once and then select when plotting.
+    
+    
+def create_allComplexProgression_lineplot(dataToPlot, outfolder, fontscale, 
+                                firstWordsFile, topic, dpi, height):
     """This function does the actual plotting and saving to disk."""
-    print("  Creating areaplot for selected topics.")
-    ## Turn absolute data into percentages.
-    dataToPlot = dataToPlot.apply(lambda c: c / c.sum() * 100, axis=1)
+    print("- creating the plot for topic " + topic)
+    ## Get the first words info for the topic
+    firstWords = get_progression_firstWords(firstWordsFile)
+    topicFirstWords = firstWords.iloc[int(topic),0]
+    #print(topicFirstWords)
     ## Plot the selected data
-    dataToPlot.plot(kind="area")
-    plt.title("Entwicklung der Topic Scores", fontsize=20)
-    plt.ylabel("Topic scores (anteilig zueinander)", fontsize=16)
-    plt.xlabel("Jahrzehnte", fontsize=16)
-    plt.ylim((0,100))
+    dataToPlot.plot(kind="line", lw=3, marker="o")
+    plt.title("Entwicklung über den Textverlauf für "+topicFirstWords, fontsize=20)
+    plt.ylabel("Topic scores (absolut)", fontsize=16)
+    plt.xlabel("Textabschnitte", fontsize=16)
     plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
+    if height != 0:
+        plt.ylim((0.000,height))
 
     ## Saving the plot to disk.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     ## Format the topic information for display
-    topicsLabel = "-".join(str(topic) for topic in topics)
-    figure_filename = outfolder+"areaplot-"+topicsLabel+".png"
+    topicsLabel = str(topic)
+    figure_filename = outfolder+"all_"+topicsLabel+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
+
+def complexProgression(averageDataset, firstWordsFile, outfolder, 
+                           numberOfTopics, 
+                           fontscale, dpi, height, mode, topics):
+    """Function to plot topic development over textual progression."""
+    print("Launched textualProgression.")
+    if mode == "sel": 
+        entriesShown = numberOfTopics
+        dataToPlot = get_selSimpleProgression_dataToPlot(averageDataset, 
+                                                      firstWordsFile, 
+                                                      entriesShown, 
+                                                      topics)
+        create_selSimpleProgression_lineplot(dataToPlot, outfolder, 
+                                          fontscale, topics, 
+                                          dpi, height)
+    elif mode == "all": 
+        entriesShown = numberOfTopics
+        topics = list(range(0, numberOfTopics))
+        for topic in topics:
+            topic = str(topic)
+            dataToPlot = get_allComplexProgression_dataToPlot(averageDataset, 
+                                                             firstWordsFile, 
+                                                             entriesShown, 
+                                                             topic)
+            #create_allComplexProgression_lineplot(dataToPlot, outfolder, 
+            #                                     fontscale, firstWordsFile, 
+            #                                     topic, dpi, height)
+    else: 
+        print("Please select a valid value for 'mode'.")
+    print("Done.")
+    
+    
 
 
 ###########################
@@ -1590,9 +1630,8 @@ def show_segment(wdir,segmentID, outfolder):
 
 
 
-
 ###########################
-## itemPCA              ###
+## itemPCA              ###            IN DEVELOPMENT
 ###########################
 
 from sklearn.decomposition import PCA

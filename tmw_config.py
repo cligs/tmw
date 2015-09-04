@@ -131,7 +131,7 @@ binDataFile = wdir+"7_aggregates/segs-and-bins.csv"
 ### Based on the mastermatrix, calculates various average topic score datasets.
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
-targets = ["author", "subgenre", "binID"] 
+targets = ["author", "subgenre", "binID", "decade"] 
 #targets = ["author", "author-gender", "title", "decade", "subgenre", 
 #           "idno", "segmentID", "narration", "protagonist-policier", "binID"] 
 #tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
@@ -212,7 +212,7 @@ numberOfTopics = 50 # must be actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
 dpi = 300
-tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
+#tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
 
 ### plot_topicsOverTime ###
 ### Creates lineplots or areaplots for topic development over time.
@@ -224,20 +224,11 @@ fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
-topics = ["25","60"] # list of one or several topics
+topics = ["25", "44"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 ### topicClustering ###
 # This function will create a dendrogram grouping topics based on their word weight similarity.
-# Parameters 
-# wordsPerTopic: Number of top words for each topic to take into account for similarity measure.
-# method: The clustering method used to build the dendrogram. 
-#  Options: ward|single|complete|average|weighted|centroid|median
-#  See http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.linkage.html 
-# metric: The distance measure used to build the distance matrix.
-#  Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
-#  See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
-#  Interesting combination: *weighted+cosine  
 wordWeightsFile = wdir + "6_mallet/" + "word-weights.txt"
 outfolder = wdir + "8_visuals/clustering/"
 topicsToUse = 50 # = all topics modeled
@@ -259,9 +250,31 @@ metrics=["cosine"] # list
 #tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
 
 
+
+
 ################################
-###    OTHER/OBSOLETE        ###
+###  OTHER / OBSOLETE / DEV  ###
 ################################
+
+
+### simpleProgression ###
+### Creates a lineplot of topic development over textual progression.
+averageDataset = wdir+"/7_aggregates/avgtopicscores_by-binID.csv" 
+firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
+outfolder = wdir+"/8_visuals/progression/simple/"
+numberOfTopics = 50 # must be actual number of topics modeled.
+fontscale = 1.0
+dpi = 300
+height = 0 # for lineplot; 0=automatic
+mode = "sel" # all|sel 
+topics = ["25", "44", "12"] # if mode="sel": list of topics
+tmw.simpleProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
+
+
+
+
+
+
 
 ### 5c show segment
 ## To read a specific segment, better than looking in the folder.

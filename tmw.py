@@ -322,7 +322,7 @@ def segments_to_bins(inpath, outfile, binsnb):
         filenames.append(filename[:11])
         binids.append(binid)
     filenames_sr = pd.Series(filenames, name="segmentID")
-    binids_sr = pd.Series(binids, name="binid")
+    binids_sr = pd.Series(binids, name="binID")
     files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
     print("chunks per bin: ", bcount)
 
@@ -667,7 +667,10 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
-        avg_topicscores = avg_topicscores.drop(["year"], axis=1)
+        if target != "year":
+            avg_topicscores = avg_topicscores.drop(["year"], axis=1)
+        if target != "binID":
+            avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
@@ -704,7 +707,7 @@ def save_firstWords(topicWordFile, outfolder, filename):
         #firstWordsSeries.index.name = "topic"
         #firstWordsSeries = firstWordsSeries.rename(columns = {'two':'new_name'})
         firstWordsSeries.reindex_axis(["firstwords"])
-        print(firstWordsSeries)
+        #print(firstWordsSeries)
         ## Saving the file.
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
@@ -728,7 +731,6 @@ import matplotlib.pyplot as plt
 
 from wordcloud import WordCloud
 import random
-
 
 def read_mallet_output(word_weights_file):
     """Reads Mallet output (topics with words and word weights) into dataframe.""" 
@@ -849,13 +851,14 @@ def get_dataToPlot(average, firstWordsFile, topTopicsShown, item):
 def create_barchart_topTopics(dataToPlot, targetCategory, item, 
                               fontscale, height, dpi, outfolder):
     """Function to make a topTopics barchart."""
-    print("  Creating plot for: "+item)
+    print("  Creating plot for: "+str(item))
     ## Doing the plotting.
     dataToPlot.plot(kind="bar", legend=None) 
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 11)   
-    plt.title("Top-Topics für: "+item, fontsize=15)
+    plt.title("Top-Topics für: "+str(item), fontsize=15)
     plt.ylabel("Scores", fontsize=13)
     plt.xlabel("Topics", fontsize=13)
+    plt.tight_layout() 
     if height != 0:
         plt.ylim((0.000,height))
    
@@ -863,7 +866,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     outfolder = outfolder+targetCategory+"/"
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"tT_"+item+".png"
+    figure_filename = outfolder+"tT_"+str(item)+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
@@ -996,11 +999,12 @@ def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown,
         allScores = pd.DataFrame.from_csv(infile, sep=",")
         allScores = allScores.T
         ## Create subset of data based on target.
-        stdevs = allScores.std(axis=1)
-        allScores = pd.concat([allScores, stdevs], axis=1)
-        allScores = allScores.sort(columns=0, axis=0, ascending=False)
+        standardDeviations = allScores.std(axis=1)
+        standardDeviations.name = "std"
+        allScores = pd.concat([allScores, standardDeviations], axis=1)
+        allScores = allScores.sort(columns="std", axis=0, ascending=False)
+        allScores = allScores.drop("std", axis=1)
         someScores = allScores[0:topTopicsShown]
-        someScores = someScores.drop(0, axis=1)
         ## Necessary step to align dtypes of indexes for concat.
         someScores.index = someScores.index.astype(np.int64)        
         #print("dtype firstWords: ", type(firstWords.index))

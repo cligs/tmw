@@ -100,10 +100,10 @@ stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
-num_topics = "250" # string
+num_topics = "50" # string
 optimize_interval = "100" # string
 num_iterations = "1000" # string
-num_top_words = "200" # string
+num_top_words = "100" # string
 doc_topics_max = num_topics
 num_threads = "4" # string
 #tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
@@ -122,17 +122,18 @@ outfolder = wdir+"7_aggregates/"
 mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-number_of_topics = 250
+number_of_topics = 50
 useBins = True # True|False
 binDataFile = wdir+"7_aggregates/segs-and-bins.csv"
-tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile)
+#tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
-targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
-           "idno", "segmentID", "narration", "protagonist-policier"] 
+targets = ["author", "subgenre", "binID"] 
+#targets = ["author", "author-gender", "title", "decade", "subgenre", 
+#           "idno", "segmentID", "narration", "protagonist-policier", "binID"] 
 #tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
@@ -151,7 +152,7 @@ filename = "firstWords.csv"
 ### make_wordle_from_mallet
 ### Creates a wordle for each topic.
 word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
-topics = 250
+topics = 50
 words = 40
 outfolder = wdir + "8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
@@ -172,9 +173,9 @@ lower = 1310 # image end at the bottom
 ### For each item from a category, creates a barchart of the top topics.
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-targetCategories = ["author-name", "author-gender", "decade", "subgenre", "title"] 
+targetCategories = ["author", "subgenre", "binID"] 
 topTopicsShown = 30 
-numberOfTopics = 250 
+numberOfTopics = 50 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
@@ -186,8 +187,8 @@ outfolder = wdir+"/8_visuals/topTopics/"
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/topItems/"
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-numberOfTopics = 250 # must be actual number of topics modeled. 
-targetCategories = ["author-name", "subgenre", "title", "decade", "author-gender", "segmentID"] 
+numberOfTopics = 50 # must be actual number of topics modeled. 
+targetCategories = ["author", "subgenre", "binID"] 
 topItemsShown = 30 
 fontscale = 0.8
 height = 0 # 0=automatic and flexible
@@ -205,20 +206,20 @@ dpi = 300
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 outfolder = wdir+"/8_visuals/distinctiveness/"
-targetCategories = ["author-name", "decade", "subgenre", "gender"] 
+targetCategories = ["author", "subgenre", "binID"] 
 # one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
-numberOfTopics = 250 # must be actual number of topics modeled.
+numberOfTopics = 50 # must be actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
 dpi = 300
-#tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
+tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
 
 ### plot_topicsOverTime ###
 ### Creates lineplots or areaplots for topic development over time.
 averageDatasets = wdir+"/7_aggregates/avgtopicscores_by-decade.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 outfolder = wdir+"/8_visuals/overTime/"
-numberOfTopics = 250 # must be actual number of topics modeled.
+numberOfTopics = 50 # must be actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
@@ -239,7 +240,7 @@ topics = ["25","60"] # list of one or several topics
 #  Interesting combination: *weighted+cosine  
 wordWeightsFile = wdir + "6_mallet/" + "word-weights.txt"
 outfolder = wdir + "8_visuals/clustering/"
-topicsToUse = 250 # = all topics modeled
+topicsToUse = 50 # = all topics modeled
 wordsPerTopic = 50
 methods=["weighted"] # list
 metrics=["cosine"] # list
@@ -250,25 +251,12 @@ metrics=["cosine"] # list
 averageDatasets = wdir+"/7_aggregates/avg*title.csv" 
 figsize = (10,80) # width,height
 outfolder = wdir + "8_visuals/clustering/"
-topicsPerItem = 250
+topicsPerItem = 50
 sortingCriterium = "std" # std|mean
 targetCategories = ["title"] # list
 methods=["weighted"] # list
 metrics=["cosine"] # list
 #tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
-
-
-### itemPCA ###
-averageDatasets = wdir+"/7_aggregates/avg*.csv" 
-figsize = (10,10) # width,height
-outfolder = wdir + "8_visuals/clustering/"
-topicsPerItem = 250
-sortingCriterium = "std" # std|mean
-targetCategories = ["subgenre"] # list
-methods=["weighted"] # list
-metrics=["cosine"] # list
-#tmw.itemPCA(averageDatasets, targetCategories, topicsPerItem, sortingCriterium, figsize, outfolder)
-
 
 
 ################################
@@ -280,6 +268,20 @@ metrics=["cosine"] # list
 segmentID = "rf0166§0118"
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
+
+### itemPCA ### CURRENTLY NOT WORKING
+averageDatasets = wdir+"/7_aggregates/avg*.csv" 
+figsize = (10,10) # width,height
+outfolder = wdir + "8_visuals/clustering/"
+topicsPerItem = 50
+sortingCriterium = "std" # std|mean
+targetCategories = ["subgenre"] # list
+methods=["weighted"] # list
+metrics=["cosine"] # list
+#tmw.itemPCA(averageDatasets, targetCategories, topicsPerItem, sortingCriterium, figsize, outfolder)
+
+
+
 
 ### 6b - create_topicscores_lineplot
 inpath = wdir + "7_aggregates/*-lp.csv"  # narrow down as needed

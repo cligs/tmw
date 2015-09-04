@@ -136,6 +136,13 @@ targets = ["author", "subgenre", "binID", "decade"]
 #           "idno", "segmentID", "narration", "protagonist-policier", "binID"] 
 #tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
+### calculate_complexAverageTopicScores
+### Based on the mastermatrix, calculates average topic scores for two target categories at once.
+mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
+outfolder = wdir+"7_aggregates/"
+targets = ["subgenre", "binID"] # 2 targets to combine
+tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
+
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
 topicWordFile = wdir+"6_mallet/topics-with-words.csv"
@@ -250,13 +257,6 @@ metrics=["cosine"] # list
 #tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
 
 
-
-
-################################
-###  OTHER / OBSOLETE / DEV  ###
-################################
-
-
 ### simpleProgression ###
 ### Creates a lineplot of topic development over textual progression.
 averageDataset = wdir+"/7_aggregates/avgtopicscores_by-binID.csv" 
@@ -272,6 +272,25 @@ tmw.simpleProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics,
 
 
 
+
+################################
+###  OTHER / OBSOLETE / DEV  ###
+################################
+
+
+### complexProgression ###
+### Creates a lineplot of topic development over textual progression, 
+### but does so separatedly for different target categories.
+averageDataset = wdir+"/7_aggregates/complex-avgtopicscores_by*.csv" 
+firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
+outfolder = wdir+"/8_visuals/progression/complex/"
+numberOfTopics = 50 # must be actual number of topics modeled.
+fontscale = 1.0
+dpi = 300
+height = 0 # for lineplot; 0=automatic
+mode = "all" # all|sel 
+topics = ["25", "44", "12"] # if mode="sel": list of topics
+tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
 
 
 

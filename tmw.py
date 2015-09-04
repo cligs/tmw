@@ -681,6 +681,34 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     print("Done.")
 
 
+################################
+# complexAverageTopicScores    #
+################################
+
+def calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder):
+    """Function to calculate average topic scores based on the mastermatrix."""
+    print("\nLaunched calculate_complexAverageTopicScores.")
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    with open(mastermatrixfile, "r") as infile:
+        mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
+    ## Calculate average topic scores for each target category 
+    grouped = mastermatrix.groupby(targets, axis=0)
+    avg_topicscores = grouped.agg(np.mean)
+    if "year" not in targets:
+        avg_topicscores = avg_topicscores.drop(["year"], axis=1)
+    if "binID" not in targets:
+        avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
+    #print(avg_topicscores)
+    ## Save grouped averages to CSV file for visualization.
+    identifierstring = '+'.join(map(str, targets))
+    resultfilename = "complex-avgtopicscores_by-"+identifierstring+".csv"
+    resultfilepath = outfolder+resultfilename
+    ## TODO: Some reformatting here, or adapt make_heatmaps.
+    avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
+    print("Done. Saved average topic scores for: "+identifierstring)    
+
+
 
 #################################
 # save_firstWords               #

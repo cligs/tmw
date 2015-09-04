@@ -321,8 +321,8 @@ def segments_to_bins(inpath, outfile, binsnb):
 
         filenames.append(filename[:11])
         binids.append(binid)
-    filenames_sr = pd.Series(filenames, name="filenames")
-    binids_sr = pd.Series(binids, name="binids")
+    filenames_sr = pd.Series(filenames, name="segmentID")
+    binids_sr = pd.Series(binids, name="binid")
     files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
     print("chunks per bin: ", bcount)
 
@@ -539,7 +539,7 @@ import os
 import glob
 
 def get_metadata(metadatafile):
-    print("  Getting metadata...")
+    print("- getting metadata...")
     """Read metadata file and create DataFrame."""
     metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=",")
     #print("metadata\n", metadata)
@@ -547,7 +547,7 @@ def get_metadata(metadatafile):
 
 def get_topicscores(topics_in_texts, number_of_topics): 
     """Create a matrix of segments x topics, with topic score values, from Mallet output.""" 
-    print("  Getting topicscores...")   
+    print("- getting topicscores...")   
     ## Load Mallet output (strange format)
     topicsintexts = pd.read_csv(topics_in_texts, header=None, skiprows=[0], sep="\t", index_col=0)
     #topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
@@ -587,7 +587,7 @@ def get_topicscores(topics_in_texts, number_of_topics):
         
 def get_docmatrix(corpuspath):
     """Create a matrix containing segments with their idnos."""
-    print("  Getting docmatrix...")
+    print("- getting docmatrix...")
     ## Create dataframe with filenames of segments and corresponding idnos.
     segs = []
     idnos = []
@@ -605,7 +605,7 @@ def get_docmatrix(corpuspath):
 def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, 
                number_of_topics):
     """Merges the three dataframes into one mastermatrix."""
-    print("  Getting data...")
+    print("- getting data...")
     ## Get all necessary data.
     metadata = get_metadata(metadatafile)
     docmatrix = get_docmatrix(corpuspath)
@@ -614,7 +614,7 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile,
     #print("Metadata\n", metadata.head())
     #print("Docmatrix\n", docmatrix.head())
     #print("topicscores\n", topicscores.head())
-    print("  Merging data...")    
+    print("- merging data...")    
     ## Merge metadata and docmatrix, matching each segment to its metadata.
     mastermatrix = pd.merge(docmatrix, metadata, how="inner", on="idno")  
     #print("mastermatrix: metadata and docmatrix\n", mastermatrix)
@@ -626,8 +626,18 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile,
     #print("mastermatrix: all three\n", mastermatrix.head())
     return mastermatrix
 
+def add_binData(mastermatrix, binDataFile): 
+    print("- adding bin data...")
+    ## Read the information about bins
+    binData = pd.read_csv(binDataFile, sep=",")
+    print(binData)
+    ## Merge existing mastermatrix and binData.
+    mastermatrix = pd.merge(mastermatrix, binData, how="inner", on="segmentID")  
+    #print(mastermatrix)
+    return mastermatrix
+
 def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, 
-                        topics_in_texts, number_of_topics):
+                        topics_in_texts, number_of_topics, useBins, binDataFile):
     """Builds the mastermatrix uniting all information about texts and topic scores."""
     print("\nLaunched create_mastermatrix.")
     print("(Warning: This is very memory-intensive and may take a while.)")
@@ -635,8 +645,10 @@ def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile,
         os.makedirs(outfolder)
     mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, 
                               mastermatrixfile, number_of_topics)
+    if useBins == True: 
+        mastermatrix = add_binData(mastermatrix, binDataFile)
     mastermatrix.to_csv(outfolder+mastermatrixfile, sep=",", encoding="utf-8")
-    print("  Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
+    print("Done. Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
 
 
 

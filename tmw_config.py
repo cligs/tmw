@@ -45,13 +45,13 @@ outfolder = wdir + "2_segs/"
 target = 2000
 sizetolerancefactor = 1.1
 preserveparagraphs = True
-tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
+#tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins
 inpath = wdir + "2_segs/*.txt"
-outfile = wdir + "segs-and-bins.csv"
+outfile = wdir + "7_aggregates/segs-and-bins.csv"
 binsnb = 5 # number of bins
-tmw.segments_to_bins(inpath,outfile, binsnb)
+#tmw.segments_to_bins(inpath,outfile, binsnb)
 
 ### pretokenize
 ### Perform some preliminary tokenization.
@@ -100,12 +100,12 @@ stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
-num_topics = "250"
-optimize_interval = "100"
-num_iterations = "1000"
-num_top_words = "200"
+num_topics = "250" # string
+optimize_interval = "100" # string
+num_iterations = "1000" # string
+num_top_words = "200" # string
 doc_topics_max = num_topics
-num_threads = "4"
+num_threads = "4" # string
 #tmw.call_mallet_modeling(mallet_path, inputfile, outfolder, num_topics, optimize_interval, num_iterations, num_top_words, doc_topics_max)
 
 
@@ -115,18 +115,20 @@ num_threads = "4"
 ################################
 
 ### create_mastermatrix
-### Creates the mastermatrix with all information in one place.
+### Creates a matrix with all information (metadata and topic scores for 
+### each segment) in one place.
 corpuspath = wdir+"/2_segs/*.txt"
 outfolder = wdir+"7_aggregates/"
 mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
 number_of_topics = 250
-#tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics)
+useBins = True # True|False
+binDataFile = wdir+"7_aggregates/segs-and-bins.csv"
+tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
-### targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
 targets = ["author-name", "author-gender", "title", "decade", "subgenre", 
@@ -168,8 +170,6 @@ lower = 1310 # image end at the bottom
 
 ### plot_topTopics
 ### For each item from a category, creates a barchart of the top topics.
-### targetCategories: one or several: "author-name", "author-gender", "decade", "subgenre", "title"
-### numberOfTopics: Must be the actual number of topics modeled before.
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
 targetCategories = ["author-name", "author-gender", "decade", "subgenre", "title"] 
@@ -183,8 +183,6 @@ outfolder = wdir+"/8_visuals/topTopics/"
 
 ### plot_topItems ###
 ### For each topic, creates a barchart with top items from a category. 
-### targetCategories: one or several from the following list:
-### "author-name", "decade", "subgenre", "gender", "idno", "title", "segmentID"
 averageDatasets = wdir+"/7_aggregates/avg*.csv" 
 outfolder = wdir+"/8_visuals/topItems/"
 firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
@@ -249,20 +247,6 @@ metrics=["cosine"] # list
 
 ### itemClustering ###
 # This function creates a dendrogram of items in a category (authors, titles).
-# The clustering is based on the topic scores of the items. 
-# Input: the average topic score file for the category of interest. 
-# Parameters
-# figsize: The size of the resulting figure in inches, width x height.
-# sortingCriterium: Topics to be used are sorted by this criterium (descending)
-# topicsPerItem: Number of top topics to be used as the basis for clustering.
-# targetCategories: Things like author, title, year, depending on available data.
-# method: The clustering method used to build the dendrogram. 
-#  Options: ward|single|complete|average|weighted|centroid|median
-#  See http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.linkage.html 
-# metric: The distance measure used to build the distance matrix.
-#  Options: euclidean|minkowski|cityblock|seuclidean|sqeuclidean|cosine|correlation|hamming|jaccard etc.
-#  See: http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.pdist.html
-#  Interesting combination: *weighted+cosine  
 averageDatasets = wdir+"/7_aggregates/avg*title.csv" 
 figsize = (10,80) # width,height
 outfolder = wdir + "8_visuals/clustering/"

@@ -17,7 +17,7 @@
 # 3. Posprocessing Data
 # 4. Basic Visualizations
 # 5. Advanced Visualizations
-# 6. Other / Obsolete
+# 6. Other / Obsolete / in development
 
 import tmw
 #print(help(topmod))
@@ -122,7 +122,7 @@ outfolder = wdir+"7_aggregates/"
 mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"/metadata.csv"
 topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
-number_of_topics = 50
+number_of_topics = num_topics
 useBins = True # True|False
 binDataFile = wdir+"7_aggregates/segs-and-bins.csv"
 #tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile)
@@ -158,10 +158,10 @@ filename = "firstWords.csv"
 
 ### make_wordle_from_mallet
 ### Creates a wordle for each topic.
-word_weights_file = wdir + "6_mallet/" + "word-weights.txt"
-topics = 50
+word_weights_file = wdir+"6_mallet/" + "word-weights.txt"
+topics = num_topics
 words = 40
-outfolder = wdir + "8_visuals/wordles/"
+outfolder = wdir+"8_visuals/wordles/"
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 dpi = 300
 #tmw.make_wordle_from_mallet(word_weights_file,topics,words,outfolder,font_path,dpi)
@@ -178,11 +178,11 @@ lower = 1310 # image end at the bottom
 
 ### plot_topTopics
 ### For each item from a category, creates a barchart of the top topics.
-averageDatasets = wdir+"/7_aggregates/avg*.csv" 
-firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
+averageDatasets = wdir+"7_aggregates/avg*.csv" 
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 targetCategories = ["author", "subgenre", "binID"] 
 topTopicsShown = 30 
-numberOfTopics = 50 
+numberOfTopics = num_topics 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
@@ -191,10 +191,10 @@ outfolder = wdir+"/8_visuals/topTopics/"
 
 ### plot_topItems ###
 ### For each topic, creates a barchart with top items from a category. 
-averageDatasets = wdir+"/7_aggregates/avg*.csv" 
-outfolder = wdir+"/8_visuals/topItems/"
-firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-numberOfTopics = 50 # must be actual number of topics modeled. 
+averageDatasets = wdir+"7_aggregates/avg*.csv" 
+outfolder = wdir+"8_visuals/topItems/"
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
+numberOfTopics = num_topics # must be actual number of topics modeled. 
 targetCategories = ["author", "subgenre", "binID"] 
 topItemsShown = 30 
 fontscale = 0.8
@@ -210,23 +210,23 @@ dpi = 300
 
 ### plot_distinctiveness_heatmap ###
 ### For each category, make a heatmap of most distinctive topics. 
-averageDatasets = wdir+"/7_aggregates/avg*.csv" 
-firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-outfolder = wdir+"/8_visuals/distinctiveness/"
+averageDatasets = wdir+"7_aggregates/avg*.csv" 
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
+outfolder = wdir+"8_visuals/distinctiveness/"
 targetCategories = ["author", "subgenre", "binID"] 
 # one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
-numberOfTopics = 50 # must be actual number of topics modeled.
+numberOfTopics = num_topics # must be actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
 dpi = 300
 #tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)
 
 ### plot_topicsOverTime ###
-### Creates lineplots or areaplots for topic development over time.
-averageDatasets = wdir+"/7_aggregates/avgtopicscores_by-decade.csv" 
-firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-outfolder = wdir+"/8_visuals/overTime/"
-numberOfTopics = 50 # must be actual number of topics modeled.
+###     
+averageDatasets = wdir+"7_aggregates/avgtopicscores_by-decade.csv" 
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
+outfolder = wdir+"8_visuals/overTime/"
+numberOfTopics = num_topics # must be actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
@@ -236,9 +236,9 @@ topics = ["25", "44"] # list of one or several topics
 
 ### topicClustering ###
 # This function will create a dendrogram grouping topics based on their word weight similarity.
-wordWeightsFile = wdir + "6_mallet/" + "word-weights.txt"
-outfolder = wdir + "8_visuals/clustering/"
-topicsToUse = 50 # = all topics modeled
+wordWeightsFile = wdir+"6_mallet/"+"word-weights.txt"
+outfolder = wdir+"8_visuals/clustering/"
+topicsToUse = num_topics # = all topics modeled
 wordsPerTopic = 50
 methods=["weighted"] # list
 metrics=["cosine"] # list
@@ -246,10 +246,10 @@ metrics=["cosine"] # list
 
 ### itemClustering ###
 # This function creates a dendrogram of items in a category (authors, titles).
-averageDatasets = wdir+"/7_aggregates/avg*title.csv" 
+averageDatasets = wdir+"7_aggregates/avg*title.csv" 
 figsize = (10,80) # width,height
-outfolder = wdir + "8_visuals/clustering/"
-topicsPerItem = 50
+outfolder = wdir+"8_visuals/clustering/"
+topicsPerItem = num_topics
 sortingCriterium = "std" # std|mean
 targetCategories = ["title"] # list
 methods=["weighted"] # list
@@ -259,10 +259,10 @@ metrics=["cosine"] # list
 
 ### simpleProgression ###
 ### Creates a lineplot of topic development over textual progression.
-averageDataset = wdir+"/7_aggregates/avgtopicscores_by-binID.csv" 
-firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-outfolder = wdir+"/8_visuals/progression/simple/"
-numberOfTopics = 50 # must be actual number of topics modeled.
+averageDataset = wdir+"7_aggregates/avgtopicscores_by-binID.csv" 
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
+outfolder = wdir+"8_visuals/progression/simple/"
+numberOfTopics = num_topics # must be actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
@@ -281,10 +281,10 @@ topics = ["25", "44", "12"] # if mode="sel": list of topics
 ### complexProgression ###
 ### Creates a lineplot of topic development over textual progression, 
 ### but does so separatedly for different target categories.
-averageDataset = wdir+"/7_aggregates/complex-avgtopicscores_by-subgenre+binID.csv" 
-firstWordsFile = wdir+"/7_aggregates/firstWords.csv"
-outfolder = wdir+"/8_visuals/progression/complex/"
-numberOfTopics = 1 # must be actual number of topics modeled.
+averageDataset = wdir+"7_aggregates/complex-avgtopicscores_by-subgenre+binID.csv" 
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
+outfolder = wdir+"8_visuals/progression/complex/"
+numberOfTopics = num_topics # must be actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
@@ -297,14 +297,14 @@ tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numberOfTopics
 
 ### 5c show segment
 ## To read a specific segment, better than looking in the folder.
-segmentID = "rf0166§0118"
+segmentID = "rf0166§0118" # indicate here, manually
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
 
 ### itemPCA ### CURRENTLY NOT WORKING
-averageDatasets = wdir+"/7_aggregates/avg*.csv" 
+averageDatasets = wdir+"7_aggregates/avg*.csv" 
 figsize = (10,10) # width,height
-outfolder = wdir + "8_visuals/clustering/"
+outfolder = wdir+"8_visuals/clustering/"
 topicsPerItem = 50
 sortingCriterium = "std" # std|mean
 targetCategories = ["subgenre"] # list

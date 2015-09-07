@@ -216,12 +216,12 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
             # segment contains words assigned to the current segment
             segment = []
 
-            # go thru paragraphs one by one
+            # go through paragraphs one by one
             for line in infile:
                 text = line
-                # remove special characters and space-chains
-                text = re.sub("[,;\.!?—\t\r\n\v\f]", " ", text)
-                text = re.sub("-", " ", text)
+                # (optional) remove punctuation, special characters and space-chains
+                #text = re.sub("[,;\.:!?¿\(\)—-]", " ", text)
+                text = re.sub("[\t\r\n\v\f]", " ", text)
                 text = re.sub("[ ]{1,9}", " ", text)
 
                 # tokenize text

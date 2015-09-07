@@ -35,6 +35,8 @@ wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf10/" # end with slash.
 tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
 ### Path to Mallet installation directory
 mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
+### Path to the font for wordle generation
+font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 
 
 ################################
@@ -174,7 +176,7 @@ word_weights_file = wdir+"6_mallet/" + "word-weights.txt"
 numOfTopics = numOfTopics
 words = 40
 outfolder = wdir+"8_visuals/wordles/"
-font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
+font_path = font_path
 dpi = 300
 #tmw.make_wordle_from_mallet(word_weights_file,numOfTopics,words,outfolder,font_path,dpi)
 

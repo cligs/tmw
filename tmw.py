@@ -1540,26 +1540,31 @@ def create_selComplexProgression_lineplot(dataToPlot, outfolder, fontscale,
     plt.close()
 
 def get_allComplexProgression_dataToPlot(averageDataset, firstWordsFile, 
-                               entriesShown, topic): 
+                                         entriesShown, topic, targetCategories): 
     """Function to build a dataframe with all data necessary for plotting."""
     print("- getting data to plot...")
     with open(averageDataset, "r") as infile:
         allScores = pd.DataFrame.from_csv(infile, sep=",", index_col=None)
-        #allScores = allScores.T
-        print(allScores)
-        groupedScores = allScores.groupby("binID").groups
-        print(groupedScores)
+        #print(allScores)
         ## Select the data for current topics
-        #someScores = allScores.loc[topic,:]
-        #someScores.index = someScores.index.astype(np.int64)
-        #dataToPlot = someScores
+        target1 = targetCategories[0]
+        target2 = targetCategories[1]
+        target1data = allScores.loc[:,target1]
+        target2data = allScores.loc[:,target2]
+        topicScores = allScores.loc[:,topic]
+        #print(target1data)
+        #print(target2data)
+        #print(topicScores)
+        dataToPlot = pd.concat([target1data, target2data], axis=1)
+        dataToPlot = pd.concat([dataToPlot, topicScores], axis=1)
         #print(dataToPlot)
-        #return dataToPlot
+        return dataToPlot
         
 # TODO: Make sure this is only read once and then select when plotting.
-    
-    
-def create_allComplexProgression_lineplot(dataToPlot, outfolder, fontscale, 
+
+        
+def create_allComplexProgression_lineplot(dataToPlot, targetCategories, 
+                                          outfolder, fontscale, 
                                 firstWordsFile, topic, dpi, height):
     """This function does the actual plotting and saving to disk."""
     print("- creating the plot for topic " + topic)
@@ -1567,11 +1572,35 @@ def create_allComplexProgression_lineplot(dataToPlot, outfolder, fontscale,
     firstWords = get_progression_firstWords(firstWordsFile)
     topicFirstWords = firstWords.iloc[int(topic),0]
     #print(topicFirstWords)
-    ## Plot the selected data
-    dataToPlot.plot(kind="line", lw=3, marker="o")
+    ## Split plotting data into parts (for target1)
+    target1data = dataToPlot.iloc[:,0]
+    #print(target1data)
+    numPartialData = len(set(target1data))
+    ## Initialize plot for several lines
+    completeData = []
+    #print(dataToPlot)
+    for target in set(target1data):
+        #print("  - plotting "+target)
+        partialData = dataToPlot.groupby(targetCategories[0])
+        partialData = partialData.get_group(target)
+        partialData.rename(columns={topic:target}, inplace=True)
+        partialData = partialData.iloc[:,2:3]
+        completeData.append(partialData)
+    #print(completeData)
+    ## Plot the selected data, one after the other
+    plt.figure()
+    plt.figure(figsize=(15,10))
+    for i in range(0, numPartialData):
+        print(completeData[i])
+        label = completeData[i].columns.values.tolist()
+        label = str(label[0])
+        plt.plot(completeData[i], lw=4, marker="o", label=label)
+        plt.legend()
     plt.title("Entwicklung über den Textverlauf für "+topicFirstWords, fontsize=20)
     plt.ylabel("Topic scores (absolut)", fontsize=16)
     plt.xlabel("Textabschnitte", fontsize=16)
+    plt.legend()
+    plt.locator_params(axis = 'x', nbins = 5)
     plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
     if height != 0:
         plt.ylim((0.000,height))
@@ -1581,25 +1610,32 @@ def create_allComplexProgression_lineplot(dataToPlot, outfolder, fontscale,
         os.makedirs(outfolder)
     ## Format the topic information for display
     topicsLabel = str(topic)
-    figure_filename = outfolder+"all_"+topicsLabel+".png"
+    figure_filename = outfolder+"all_"+str(targetCategories[0])+"-"+topicsLabel+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
 
-def complexProgression(averageDataset, firstWordsFile, outfolder, 
-                           numOfTopics, 
-                           fontscale, dpi, height, mode, topics):
+def complexProgression(averageDataset, 
+                       firstWordsFile, 
+                       outfolder, 
+                       numOfTopics, 
+                       targetCategories, 
+                       fontscale, 
+                       dpi, height, 
+                       mode, topics):
     """Function to plot topic development over textual progression."""
-    print("Launched textualProgression.")
+    print("Launched complexProgression.")
     if mode == "sel": 
-        entriesShown = numberOfTopics
+        entriesShown = numOfTopics
         dataToPlot = get_selSimpleProgression_dataToPlot(averageDataset, 
-                                                      firstWordsFile, 
-                                                      entriesShown, 
-                                                      topics)
-        create_selSimpleProgression_lineplot(dataToPlot, outfolder, 
-                                          fontscale, topics, 
-                                          dpi, height)
+                                                         firstWordsFile, 
+                                                         entriesShown, 
+                                                         topics)
+        create_selSimpleProgression_lineplot(dataToPlot, 
+                                             outfolder, 
+                                             fontscale, 
+                                             topics, 
+                                             dpi, height)
     elif mode == "all": 
         entriesShown = numOfTopics
         topics = list(range(0, numOfTopics))
@@ -1608,10 +1644,12 @@ def complexProgression(averageDataset, firstWordsFile, outfolder,
             dataToPlot = get_allComplexProgression_dataToPlot(averageDataset, 
                                                              firstWordsFile, 
                                                              entriesShown, 
-                                                             topic)
-            #create_allComplexProgression_lineplot(dataToPlot, outfolder, 
-            #                                     fontscale, firstWordsFile, 
-            #                                     topic, dpi, height)
+                                                             topic,
+                                                             targetCategories)
+            create_allComplexProgression_lineplot(dataToPlot, targetCategories,
+                                                  outfolder, 
+                                                  fontscale, firstWordsFile, 
+                                                  topic, dpi, height)
     else: 
         print("Please select a valid value for 'mode'.")
     print("Done.")

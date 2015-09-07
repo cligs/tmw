@@ -154,8 +154,8 @@ targets = ["author", "subgenre", "binID", "decade"]
 ### Based on the mastermatrix, calculates average topic scores for two target categories at once.
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
-targets = ["subgenre", "binID"] # 2 targets to combine
-#tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
+targets = ["decade", "binID"] # 2 targets to combine
+tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
@@ -294,16 +294,18 @@ topics = ["25", "44", "12"] # if mode="sel": list of topics
 ### complexProgression ###
 ### Creates a lineplot of topic development over textual progression, 
 ### but does so separatedly for different target categories.
-averageDataset = wdir+"7_aggregates/complex-avgtopicscores_by-subgenre+binID.csv" 
+averageDataset = wdir+"7_aggregates/complex-avgtopicscores_by-decade+binID.csv" 
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 outfolder = wdir+"8_visuals/progression/complex/"
-numOfTopics = numOfTopics # must be actual number of topics modeled.
+numOfTopics = 3 # for testing.
+#numOfTopics = numOfTopics # must be actual number of topics modeled.
+targetCategories = ["decade","binID"] # two values, corresponding to averageDataset
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
-mode = "all" # all|sel 
+mode = "all" # all|sel ### only all is implemented ##
 topics = ["25", "44", "12"] # if mode="sel": list of topics
-#tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, fontscale, dpi, height, mode, topics)
+tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, targetCategories, fontscale, dpi, height, mode, topics)
 
 
 

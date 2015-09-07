@@ -236,7 +236,7 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
 # Binning                       #
 #################################
 
-def segments_to_bins(inpath, outfile, binsnb):
+def segments_to_bins(inpath, outfolder, binsnb):
     """Script for sorting text segments into bins."""
     print("\nLaunched segments_to_bins.")
 
@@ -326,6 +326,9 @@ def segments_to_bins(inpath, outfile, binsnb):
     files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
     print("chunks per bin: ", bcount)
 
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    outfile = outfolder+"segs-and-bins.csv"
     with open(outfile, "w") as outfile:
         files_and_bins.to_csv(outfile, index=False)
 
@@ -498,7 +501,7 @@ def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist_projec
 # call_mallet_modeling          #
 #################################
 
-def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_interval,num_iterations,num_top_words,doc_topics_max):
+def call_mallet_modeling(mallet_path, inputfile,outfolder,numOfTopics,optimize_interval,num_iterations,num_top_words,doc_topics_max):
     """Function to perform topic modeling with Mallet."""
     print("\nLaunched call_mallet_modeling.")
 
@@ -515,7 +518,7 @@ def call_mallet_modeling(mallet_path, inputfile,outfolder,num_topics,optimize_in
     output_topic_state = outfolder + "topic_state.gz"
     
     ### Constructing Mallet command from parameters.
-    command = mallet_path +" train-topics --input "+ inputfile +" --num-topics "+ num_topics +" --optimize-interval "+ optimize_interval +" --num-iterations " + num_iterations +" --num-top-words " + num_top_words +" --word-topic-counts-file "+ word_topics_counts_file + " --topic-word-weights-file "+ topic_word_weights_file +" --output-state topic-state.gz"+" --output-topic-keys "+ output_topic_keys +" --output-doc-topics "+ output_doc_topics +" --doc-topics-max "+ doc_topics_max + " --output-state " + output_topic_state
+    command = mallet_path +" train-topics --input "+ inputfile +" --num-topics "+ numOfTopics +" --optimize-interval "+ optimize_interval +" --num-iterations " + num_iterations +" --num-top-words " + num_top_words +" --word-topic-counts-file "+ word_topics_counts_file + " --topic-word-weights-file "+ topic_word_weights_file +" --output-state topic-state.gz"+" --output-topic-keys "+ output_topic_keys +" --output-doc-topics "+ output_doc_topics +" --doc-topics-max "+ doc_topics_max + " --output-state " + output_topic_state
     #print(command)
     subprocess.call(command, shell=True)
     print("Done.\n")
@@ -545,7 +548,7 @@ def get_metadata(metadatafile):
     #print("metadata\n", metadata)
     return metadata
 
-def get_topicscores(topics_in_texts, number_of_topics): 
+def get_topicscores(topics_in_texts, numOfTopics): 
     """Create a matrix of segments x topics, with topic score values, from Mallet output.""" 
     print("- getting topicscores...")   
     ## Load Mallet output (strange format)
@@ -565,7 +568,7 @@ def get_topicscores(topics_in_texts, number_of_topics):
         scores = []
         ## For each segment, get the topic number and its score
         i +=1
-        for j in range(1,number_of_topics,2):
+        for j in range(1,numOfTopics,2):
             k = j+1
             topic = topicsintexts.iloc[i,j]
             score = topicsintexts.iloc[i,k]
@@ -603,13 +606,13 @@ def get_docmatrix(corpuspath):
     return docmatrix
     
 def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, 
-               number_of_topics):
+               numOfTopics):
     """Merges the three dataframes into one mastermatrix."""
     print("- getting data...")
     ## Get all necessary data.
     metadata = get_metadata(metadatafile)
     docmatrix = get_docmatrix(corpuspath)
-    topicscores = get_topicscores(topics_in_texts, number_of_topics)
+    topicscores = get_topicscores(topics_in_texts, numOfTopics)
     ## For inspection only.
     #print("Metadata\n", metadata.head())
     #print("Docmatrix\n", docmatrix.head())
@@ -630,21 +633,21 @@ def add_binData(mastermatrix, binDataFile):
     print("- adding bin data...")
     ## Read the information about bins
     binData = pd.read_csv(binDataFile, sep=",")
-    print(binData)
+    #print(binData)
     ## Merge existing mastermatrix and binData.
     mastermatrix = pd.merge(mastermatrix, binData, how="inner", on="segmentID")  
     #print(mastermatrix)
     return mastermatrix
 
 def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, 
-                        topics_in_texts, number_of_topics, useBins, binDataFile):
+                        topics_in_texts, numOfTopics, useBins, binDataFile):
     """Builds the mastermatrix uniting all information about texts and topic scores."""
     print("\nLaunched create_mastermatrix.")
     print("(Warning: This is very memory-intensive and may take a while.)")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, 
-                              mastermatrixfile, number_of_topics)
+                              mastermatrixfile, numOfTopics)
     if useBins == True: 
         mastermatrix = add_binData(mastermatrix, binDataFile)
     mastermatrix.to_csv(outfolder+mastermatrixfile, sep=",", encoding="utf-8")
@@ -788,11 +791,11 @@ def get_color_scale(word, font_size, position, orientation, random_state=None):
     return "hsl(221, 65%%, %d%%)" % random.randint(30, 35) # Dark blue for white background
 
 def make_wordle_from_mallet(word_weights_file, 
-                            topics,words,outfolder, 
+                            numOfTopics,words,outfolder, 
                             font_path, dpi):
     """Generate wordles from Mallet output, using the wordcloud module."""
     print("\nLaunched make_wordle_from_mallet.")
-    for topic in range(0,topics):
+    for topic in range(0,numOfTopics):
         ## Gets the text for one topic.
         text = get_wordlewords(words, word_weights_file, topic)
         wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
@@ -897,7 +900,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-def plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, 
+def plot_topTopics(averageDatasets, firstWordsFile, numOfTopics, 
                    targetCategories, topTopicsShown, fontscale, 
                    height, dpi, outfolder): 
     """For each item in a category, plot the top n topics as a barchart."""
@@ -968,7 +971,7 @@ def create_topItems_barchart(dataToPlot, firstWords, targetCategory, topic,
 def plot_topItems(averageDatasets, 
                   outfolder, 
                   firstWordsFile,  
-                  numberOfTopics, 
+                  numOfTopics, 
                   targetCategories, 
                   topItemsShown, 
                   fontscale, 
@@ -980,7 +983,7 @@ def plot_topItems(averageDatasets,
         for targetCategory in targetCategories:
             if targetCategory in average:
                 print(" Plotting for: "+targetCategory)
-                topics = list(range(0,numberOfTopics))
+                topics = list(range(0,numOfTopics))
                 for topic in topics:
                     firstWords = get_topItems_firstWords(firstWordsFile, 
                                                          topic)
@@ -1018,7 +1021,7 @@ def get_heatmap_firstWords(firstWordsFile):
         return(firstWords)
 
 def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown, 
-                           numberOfTopics):
+                           numOfTopics):
     """From average topic score data, select data to be plotted."""
     #print("  Getting dataToPlot.")
     with open(average, "r") as infile:
@@ -1076,7 +1079,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                                  firstWordsFile, 
                                  outfolder, 
                                  targetCategories, 
-                                 numberOfTopics, 
+                                 numOfTopics, 
                                  topTopicsShown, 
                                  fontscale, 
                                  dpi):
@@ -1089,7 +1092,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                 dataToPlot = get_heatmap_dataToPlot(average, 
                                                     firstWordsFile, 
                                                     topTopicsShown,
-                                                    numberOfTopics)
+                                                    numOfTopics)
                 create_distinctiveness_heatmap(dataToPlot, 
                                                topTopicsShown,
                                                targetCategory, 
@@ -1176,14 +1179,14 @@ def create_overTime_areaplot(dataToPlot, outfolder, fontscale, topics, dpi):
     plt.close()
 
 def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, 
-                        numberOfTopics, fontscale, dpi, height,  
+                        numOfTopics, fontscale, dpi, height,  
                         mode, topics):
     """Function to plot development of topics over time using lineplots or areaplots."""
     print("Launched plot_topicsOverTime.")
     if mode == "line": 
         for average in glob.glob(averageDatasets):
             if "decade" in average:
-                entriesShown = numberOfTopics
+                entriesShown = numOfTopics
                 dataToPlot = get_overTime_dataToPlot(average, firstWordsFile, 
                                                      entriesShown, topics)
                 create_overTime_lineplot(dataToPlot, outfolder, fontscale, 
@@ -1191,7 +1194,7 @@ def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder,
     elif mode == "area":
         for average in glob.glob(averageDatasets):
             if "decade" in average:
-                entriesShown = numberOfTopics
+                entriesShown = numOfTopics
                 dataToPlot = get_overTime_dataToPlot(average, firstWordsFile, 
                                                      entriesShown, topics)
                 create_overTime_areaplot(dataToPlot, outfolder, fontscale, 
@@ -1450,12 +1453,12 @@ def create_allSimpleProgression_lineplot(dataToPlot, outfolder, fontscale,
 
 
 def simpleProgression(averageDataset, firstWordsFile, outfolder, 
-                           numberOfTopics, 
+                           numOfTopics, 
                            fontscale, dpi, height, mode, topics):
     """Function to plot topic development over textual progression."""
     print("Launched textualProgression.")
     if mode == "selected" or mode == "sel": 
-        entriesShown = numberOfTopics
+        entriesShown = numOfTopics
         dataToPlot = get_selSimpleProgression_dataToPlot(averageDataset, 
                                                       firstWordsFile, 
                                                       entriesShown, 
@@ -1464,8 +1467,8 @@ def simpleProgression(averageDataset, firstWordsFile, outfolder,
                                           fontscale, topics, 
                                           dpi, height)
     elif mode == "all": 
-        entriesShown = numberOfTopics
-        topics = list(range(0, numberOfTopics))
+        entriesShown = numOfTopics
+        topics = list(range(0, numOfTopics))
         for topic in topics:
             topic = str(topic)
             dataToPlot = get_allSimpleProgression_dataToPlot(averageDataset, 
@@ -1584,7 +1587,7 @@ def create_allComplexProgression_lineplot(dataToPlot, outfolder, fontscale,
 
 
 def complexProgression(averageDataset, firstWordsFile, outfolder, 
-                           numberOfTopics, 
+                           numOfTopics, 
                            fontscale, dpi, height, mode, topics):
     """Function to plot topic development over textual progression."""
     print("Launched textualProgression.")
@@ -1598,8 +1601,8 @@ def complexProgression(averageDataset, firstWordsFile, outfolder,
                                           fontscale, topics, 
                                           dpi, height)
     elif mode == "all": 
-        entriesShown = numberOfTopics
-        topics = list(range(0, numberOfTopics))
+        entriesShown = numOfTopics
+        topics = list(range(0, numOfTopics))
         for topic in topics:
             topic = str(topic)
             dataToPlot = get_allComplexProgression_dataToPlot(averageDataset, 

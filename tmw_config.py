@@ -12,6 +12,7 @@
 # For information on requirements and usage, see the README file.
 
 # This config file is structured as follows: 
+# 0. General Settings
 # 1. Preprocessing Texts
 # 2. Topic Modeling
 # 3. Posprocessing Data
@@ -22,8 +23,19 @@
 import tmw
 #print(help(topmod))
 
-### Set the general working directory.
+
+################################
+### GENERAL SETTINGS         ###
+################################
+
+### The following settings depend on the system used.
+### Path to the working directory.
 wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf10/" # end with slash.
+### Path to the TreeTagger file (language-dependent!)
+tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-spanish"
+### Path to Mallet installation directory
+mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
+
 
 ################################
 ###    PREPROCESSING TEXTS   ###
@@ -64,7 +76,7 @@ substitutionsFile = "./extras/fr_pretokenize_subs.csv"
 ### Perform lemmatization and POS tagging.
 infolder = wdir + "3_tokens/"
 outfolder = wdir + "4_tagged/"
-tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
+tagger = tagger
 #tmw.call_treetagger(infolder, outfolder, tagger) 
 
 ### make_lemmatext
@@ -83,7 +95,7 @@ stoplist_errors = wdir+"extras/fr_stopwords_errors.txt" # in tmw folder
 
 ### call_mallet_import
 ### Imports text data into the Mallet corpus format.
-mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
+mallet_path = mallet_path
 infolder = wdir + "5_lemmata/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
@@ -97,7 +109,7 @@ stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
 ### num_iterations: How many times the model is improved. 
 ### num_top_words: Number of words to save and display for each topic.
 ### num_threads: Number of parallel processing threads to use. 
-mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
+mallet_path = mallet_path
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
 num_topics = "50" # string

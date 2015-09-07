@@ -1591,7 +1591,7 @@ def create_allComplexProgression_lineplot(dataToPlot, targetCategories,
     plt.figure()
     plt.figure(figsize=(15,10))
     for i in range(0, numPartialData):
-        print(completeData[i])
+        #print(completeData[i])
         label = completeData[i].columns.values.tolist()
         label = str(label[0])
         plt.plot(completeData[i], lw=4, marker="o", label=label)

@@ -20,8 +20,9 @@
 # 5. Advanced Visualizations
 # 6. Other / Obsolete / in development
 
-import tmw
-#print(help(topmod))
+# You may find a tutorial explaining the purpose of each function 
+# as well as its input, output and other parameters at: 
+# https://www.penflip.com/c.schoech/tmw-tutorial
 
 
 ################################
@@ -38,6 +39,10 @@ mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
 ### Path to the font for wordle generation
 font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
 
+import tmw
+#print(help(topmod))
+
+
 
 ################################
 ###    PREPROCESSING TEXTS   ###
@@ -51,9 +56,6 @@ outfolder = wdir + "1_txt/"
 
 ### segmenter
 ### Split entire texts into smaller segments.
-### target: The desired length of each text segment in words. 
-### sizetolerancefactor: 1=exact target; >1 = some tolerance, e.g. 1.1= +/-10%.
-### preserveparagraphs: True|False, whether \n from input are kept in output.
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
 target = 2000
@@ -62,6 +64,7 @@ preserveparagraphs = True
 #tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins
+### Assign each segment to one bin over textual progression.
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "7_aggregates/"
 binsnb = 5 # number of bins
@@ -106,11 +109,6 @@ stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
 
 ### call_mallet_model
 ### Performs the actual topic modeling. 
-### num_topics: Number of different topics the model should find.
-### optimize_interval: interval between hypermarameter optimization.
-### num_iterations: How many times the model is improved. 
-### num_top_words: Number of words to save and display for each topic.
-### num_threads: Number of parallel processing threads to use. 
 mallet_path = mallet_path
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
@@ -228,8 +226,7 @@ averageDatasets = wdir+"7_aggregates/avg*.csv"
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 outfolder = wdir+"8_visuals/distinctiveness/"
 targetCategories = ["author", "subgenre", "binID"] 
-# one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
-numOfTopics = numOfTopics # must be actual number of topics modeled.
+numOfTopics = numOfTopics # actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
 dpi = 300
@@ -240,7 +237,7 @@ dpi = 300
 averageDatasets = wdir+"7_aggregates/avgtopicscores_by-decade.csv" 
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 outfolder = wdir+"8_visuals/overTime/"
-numOfTopics = numOfTopics # must be actual number of topics modeled.
+numOfTopics = numOfTopics # actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
@@ -278,37 +275,30 @@ outfolder = wdir+"8_visuals/progression/simple/"
 numOfTopics = numOfTopics # must be actual number of topics modeled.
 fontscale = 1.0
 dpi = 300
-height = 0 # for lineplot; 0=automatic
+height = 0 # 0=automatic
 mode = "sel" # all|sel 
 topics = ["25", "44", "12"] # if mode="sel": list of topics
 #tmw.simpleProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, fontscale, dpi, height, mode, topics)
 
+### complexProgression ###
+### Creates a lineplot of topic development over textual progression, 
+### but does so separatedly for different target categories.
+averageDataset = wdir+"7_aggregates/complex-avgtopicscores_by-subgenre+binID.csv" 
+firstWordsFile = wdir+"7_aggregates/firstWords.csv"
+outfolder = wdir+"8_visuals/progression/complex/"
+numOfTopics = numOfTopics # must be actual number of topics modeled.
+targetCategories = ["subgenre","binID"] # two values, corresponding to averageDataset
+fontscale = 1.0
+dpi = 300
+height = 0 # for lineplot; 0=automatic
+mode = "all" # all|sel ### only "all" is implemented ##
+tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, targetCategories, fontscale, dpi, height, mode, topics)
 
 
 
 ################################
 ###  OTHER / OBSOLETE / DEV  ###
 ################################
-
-
-### complexProgression ###
-### Creates a lineplot of topic development over textual progression, 
-### but does so separatedly for different target categories.
-averageDataset = wdir+"7_aggregates/complex-avgtopicscores_by-decade+binID.csv" 
-firstWordsFile = wdir+"7_aggregates/firstWords.csv"
-outfolder = wdir+"8_visuals/progression/complex/"
-numOfTopics = 3 # for testing.
-#numOfTopics = numOfTopics # must be actual number of topics modeled.
-targetCategories = ["decade","binID"] # two values, corresponding to averageDataset
-fontscale = 1.0
-dpi = 300
-height = 0 # for lineplot; 0=automatic
-mode = "all" # all|sel ### only all is implemented ##
-topics = ["25", "44", "12"] # if mode="sel": list of topics
-tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, targetCategories, fontscale, dpi, height, mode, topics)
-
-
-
 
 ### 5c show segment
 ## To read a specific segment, better than looking in the folder.

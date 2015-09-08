@@ -176,7 +176,7 @@ words = 40
 outfolder = wdir+"8_visuals/wordles/"
 font_path = font_path
 dpi = 300
-#tmw.make_wordle_from_mallet(word_weights_file,numOfTopics,words,outfolder,font_path,dpi)
+tmw.make_wordle_from_mallet(word_weights_file,numOfTopics,words,outfolder,font_path,dpi)
 
 ### crop_images
 ### Optional. Crops the wordle image files.
@@ -292,7 +292,7 @@ fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "all" # all|sel ### only "all" is implemented ##
-tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, targetCategories, fontscale, dpi, height, mode, topics)
+#tmw.complexProgression(averageDataset, firstWordsFile, outfolder, numOfTopics, targetCategories, fontscale, dpi, height, mode, topics)
 
 
 

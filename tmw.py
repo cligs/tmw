@@ -1013,7 +1013,7 @@ import seaborn as sns
 # TODO: This next function could be merged with above.
 def get_heatmap_firstWords(firstWordsFile):
     """Function to load list of top topic words into dataframe."""
-    #print("  Getting firstWords.")
+    print("- getting firstWords...")
     with open(firstWordsFile, "r") as infile: 
         firstWords = pd.read_csv(infile, header=None)
         firstWords.drop(0, axis=1, inplace=True)
@@ -1024,14 +1024,20 @@ def get_heatmap_firstWords(firstWordsFile):
 def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown, 
                            numOfTopics):
     """From average topic score data, select data to be plotted."""
-    #print("  Getting dataToPlot.")
+    print("- getting dataToPlot...")
     with open(average, "r") as infile:
         ## Read the average topic score data
         allScores = pd.DataFrame.from_csv(infile, sep=",")
         allScores = allScores.T
-        ## Create subset of data based on target.
+        ## Add top topic words to table for display later
+        firstWords = get_heatmap_firstWords(firstWordsFile)
+        allScores.index = allScores.index.astype(np.int64)        
+        allScores = pd.concat([allScores, firstWords], axis=1, join="inner")
+        #print(allScores)
+        ## Sort by standard deviation
         standardDeviations = allScores.std(axis=1)
         standardDeviations.name = "std"
+        allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, standardDeviations], axis=1)
         allScores = allScores.sort(columns="std", axis=0, ascending=False)
         allScores = allScores.drop("std", axis=1)
@@ -1041,11 +1047,7 @@ def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown,
         #print("dtype firstWords: ", type(firstWords.index))
         #print("dtype someScores: ", type(someScores.index))
         #print("\n==intersection==\n",someScores.index.intersection(firstWords.index))
-        ## Add top topic words to table for display later
-        firstWords = get_heatmap_firstWords(firstWordsFile)
-        dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
-        dataToPlot = dataToPlot.set_index("topicwords")
-        #print(dataToPlot)
+        dataToPlot = someScores.set_index("topicwords")
         ## Optionally, limit display to part of the columns
         #dataToPlot = dataToPlot.iloc[:,0:40]
         #print(dataToPlot)
@@ -1057,7 +1059,7 @@ def create_distinctiveness_heatmap(dataToPlot,
                                    fontscale,
                                    dpi, 
                                    outfolder):
-
+    print("- doing the plotting...")
     sns.set_context("poster", font_scale=fontscale)
     sns.heatmap(dataToPlot, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
@@ -1089,7 +1091,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
     for average in glob.glob(averageDatasets):
         for targetCategory in targetCategories: 
             if targetCategory in average and targetCategory != "segmentID":
-                print(" Plotting for: "+targetCategory)
+                print("- working on: "+targetCategory)
                 dataToPlot = get_heatmap_dataToPlot(average, 
                                                     firstWordsFile, 
                                                     topTopicsShown,
@@ -1100,7 +1102,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                                                fontscale,
                                                dpi, 
                                                outfolder)
-
+    print("Done.")
 
 
 #################################

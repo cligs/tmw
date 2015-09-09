@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Filename: tmw.py
 # Author: #cf
 
@@ -347,8 +348,7 @@ def perform_multipleSubs(substitutionsFile, text):
     ## Load table and turn into dict
     with open(substitutionsFile, "r") as subsFile: 
         subs = csv.reader(subsFile)
-        for rows in subs:
-            subsDict = {rows[0]:rows[1] for rows in subs}
+        subsDict = {rows[0]:rows[1] for rows in subs}
         #print(subsDict)
         ## Create a regular expression  from the dictionary keys
         regex = re.compile("(%s)" % "|".join(map(re.escape, subsDict.keys())))

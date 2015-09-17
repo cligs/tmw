@@ -1603,7 +1603,7 @@ def create_allComplexProgression_lineplot(dataToPlot, targetCategories,
     plt.ylabel("Topic scores (absolut)", fontsize=16)
     plt.xlabel("Textabschnitte", fontsize=16)
     plt.legend()
-    plt.locator_params(axis = 'x', nbins = 5)
+    plt.locator_params(axis = 'x', nbins = 10)
     plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
     if height != 0:
         plt.ylim((0.000,height))

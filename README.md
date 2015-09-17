@@ -22,5 +22,5 @@ Most of the code has been written by Christof Schöch, with significant contribu
 
 ## Contact
 
-Christof Schöch, c.schoech@gmail.com
-See also: http://github.com/cligs
+* Christof Schöch, c.schoech@gmail.com
+* See also: http://github.com/cligs

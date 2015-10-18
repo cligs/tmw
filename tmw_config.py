@@ -31,13 +31,13 @@
 
 ### The following settings depend on the system used.
 ### Path to the working directory.
-wdir = "/home/christof/Dropbox/0-Analysen/2015/hybrid/rf10/" # end with slash.
+wdir = "/home/" # end with slash.
 ### Path to the TreeTagger file (language-dependent!)
-tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
+tagger = "/home/[USER]/Programs/TreeTagger/cmd/tree-tagger-french"
 ### Path to Mallet installation directory
-mallet_path = "/home/christof/Programs/Mallet/bin/mallet"
+mallet_path = "/home/[USER]/Programs/Mallet/bin/mallet"
 ### Path to the font for wordle generation
-font_path = "/home/christof/.fonts/AlegreyaSans-Regular.otf"
+font_path = "/home/[USER]/.fonts/AlegreyaSans-Regular.otf"
 
 import tmw
 #print(help(topmod))
@@ -58,7 +58,7 @@ outfolder = wdir + "1_txt/"
 ### Split entire texts into smaller segments.
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
-target = 2000
+target = 600
 sizetolerancefactor = 1.1
 preserveparagraphs = True
 #tmw.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
@@ -67,7 +67,7 @@ preserveparagraphs = True
 ### Assign each segment to one bin over textual progression.
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "7_aggregates/"
-binsnb = 5 # number of bins
+binsnb = 3 # number of bins
 #tmw.segments_to_bins(inpath,outfolder, binsnb)
 
 ### pretokenize
@@ -79,7 +79,7 @@ substitutionsFile = wdir+"extras/fr_pretokenize_subs.csv"
 
 ### call_treetagger
 ### Perform lemmatization and POS tagging.
-infolder = wdir + "3_tokens/"
+infolder = wdir + "2_segs/"
 outfolder = wdir + "4_tagged/"
 tagger = tagger
 #tmw.call_treetagger(infolder, outfolder, tagger) 
@@ -89,9 +89,15 @@ tagger = tagger
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "frN" # frN=nouns, esN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs 
-stoplist_errors = wdir+"extras/fr_stopwords_errors.txt" # in tmw folder
+stoplist_errors = wdir+"extras/fr_stopwords_errors.txt" # wdir
 #tmw.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
+### substitute
+### Perform some preliminary tokenization.
+inpath = wdir + "5_lemmata/*.txt"
+outfolder = wdir + "5_substituted/"
+substitutionsFile = wdir+"extras/fr_argot-substitutions.csv"
+#tmw.substitute(inpath, substitutionsFile, outfolder)
 
 
 ################################
@@ -101,7 +107,7 @@ stoplist_errors = wdir+"extras/fr_stopwords_errors.txt" # in tmw folder
 ### call_mallet_import
 ### Imports text data into the Mallet corpus format.
 mallet_path = mallet_path
-infolder = wdir + "5_lemmata/"
+infolder = wdir + "5_substituted/"
 outfolder = wdir + "6_mallet/" 
 outfile = outfolder + "corpus.mallet"
 stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
@@ -112,9 +118,9 @@ stoplist_project = wdir+"extras/fr_stopwords_project.txt" # in tmw folder
 mallet_path = mallet_path
 inputfile = wdir + "6_mallet/corpus.mallet"
 outfolder = wdir + "6_mallet/"
-numOfTopics = "50" # string
+numOfTopics = "250" # string
 optimize_interval = "100" # string
-num_iterations = "1000" # string
+num_iterations = "5000" # string
 num_top_words = "100" # string
 doc_topics_max = numOfTopics
 num_threads = "4" # string
@@ -129,21 +135,22 @@ num_threads = "4" # string
 ### create_mastermatrix
 ### Creates a matrix with all information (metadata and topic scores for 
 ### each segment) in one place.
-corpuspath = wdir+"/2_segs/*.txt"
+corpuspath = wdir+"2_segs/*.txt"
 outfolder = wdir+"7_aggregates/"
 mastermatrixfile = "mastermatrix.csv"
-metadatafile = wdir+"/metadata.csv"
-topics_in_texts = wdir+"/6_mallet/topics-in-texts.csv"
+metadatafile = wdir+"metadata.csv"
+topics_in_texts = wdir+"6_mallet/topics-in-texts.csv"
 numOfTopics = int(numOfTopics)
 useBins = True # True|False
 binDataFile = wdir+"7_aggregates/segs-and-bins.csv"
-#tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, numOfTopics, useBins, binDataFile)
+###tmw.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, numOfTopics, useBins, binDataFile)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
-targets = ["author", "subgenre", "binID", "decade"] 
+targets = ["segmentID"] 
+#targets = ["subgenre", "author-name", "subsubgenre","decade", "narration", "setting", "author-gender", "title", "protagonist-policier"] 
 #targets = ["author", "author-gender", "title", "decade", "subgenre", 
 #           "idno", "segmentID", "narration", "protagonist-policier", "binID"] 
 #tmw.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
@@ -153,7 +160,7 @@ targets = ["author", "subgenre", "binID", "decade"]
 mastermatrixfile = wdir+"/7_aggregates/mastermatrix.csv"
 outfolder = wdir+"7_aggregates/"
 targets = ["decade", "binID"] # 2 targets to combine
-tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
+#tmw.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
@@ -172,11 +179,11 @@ filename = "firstWords.csv"
 ### Creates a wordle for each topic.
 word_weights_file = wdir+"6_mallet/" + "word-weights.txt"
 numOfTopics = numOfTopics
-words = 40
+words = 30
 outfolder = wdir+"8_visuals/wordles/"
 font_path = font_path
 dpi = 300
-tmw.make_wordle_from_mallet(word_weights_file,numOfTopics,words,outfolder,font_path,dpi)
+#tmw.make_wordle_from_mallet(word_weights_file,numOfTopics,words,outfolder,font_path,dpi)
 
 ### crop_images
 ### Optional. Crops the wordle image files.
@@ -192,14 +199,15 @@ lower = 1310 # image end at the bottom
 ### For each item from a category, creates a barchart of the top topics.
 averageDatasets = wdir+"7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
-targetCategories = ["author", "subgenre", "binID"] 
-topTopicsShown = 30 
+targetCategories = ["title"]
+topTopicsShown = 16 
 numOfTopics = numOfTopics 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
+mode = "normalized" #normalized|zscores|absolute
 outfolder = wdir+"/8_visuals/topTopics/"
-#tmw.plot_topTopics(averageDatasets, firstWordsFile, numOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
+tmw.plot_topTopics(averageDatasets, firstWordsFile, numOfTopics, targetCategories, mode, topTopicsShown, fontscale, height, dpi, outfolder)
 
 ### plot_topItems ###
 ### For each topic, creates a barchart with top items from a category. 
@@ -207,8 +215,8 @@ averageDatasets = wdir+"7_aggregates/avg*.csv"
 outfolder = wdir+"8_visuals/topItems/"
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 numOfTopics = numOfTopics # must be actual number of topics modeled. 
-targetCategories = ["author", "subgenre", "binID"] 
-topItemsShown = 30 
+targetCategories = ["segmentID"] 
+topItemsShown = 20 
 fontscale = 0.8
 height = 0 # 0=automatic and flexible
 dpi = 300
@@ -225,7 +233,7 @@ dpi = 300
 averageDatasets = wdir+"7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 outfolder = wdir+"8_visuals/distinctiveness/"
-targetCategories = ["subgenre"] 
+targetCategories = ["protagonist-policier"] 
 numOfTopics = numOfTopics # actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
@@ -242,7 +250,7 @@ fontscale = 1.0
 dpi = 300
 height = 0 # for lineplot; 0=automatic
 mode = "line" # area|line for areaplot or lineplot
-topics = ["25", "44"] # list of one or several topics
+topics = ["190", "6"] # list of one or several topics
 #tmw.plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numOfTopics, fontscale, dpi, height, mode, topics)
 
 ### topicClustering ###
@@ -257,12 +265,12 @@ metrics=["cosine"] # list
 
 ### itemClustering ###
 # This function creates a dendrogram of items in a category (authors, titles).
-averageDatasets = wdir+"7_aggregates/avg*author.csv" 
-figsize = (10,80) # width,height
+averageDatasets = wdir+"7_aggregates/avg*.csv" 
+figsize = (15,10) # width,height
 outfolder = wdir+"8_visuals/clustering/"
-topicsPerItem = 40 # can be set
-sortingCriterium = "std" # std|mean
-targetCategories = ["author"] # list
+topicsPerItem = 50 # can be set
+sortingCriterium = "mean" # std|mean
+targetCategories = ["author-name"] # list
 methods=["weighted"] # list
 metrics=["cosine"] # list
 #tmw.itemClustering(averageDatasets, figsize, outfolder, topicsPerItem, targetCategories, methods, metrics, sortingCriterium)
@@ -302,7 +310,7 @@ mode = "all" # all|sel ### only "all" is implemented ##
 
 ### 5c show segment
 ## To read a specific segment, better than looking in the folder.
-segmentID = "rf0166§0118" # indicate here, manually
+segmentID = "rf1246§0048" # indicate here, manually
 outfolder = wdir+"/9_sel-segs/"
 #tmw.show_segment(wdir,segmentID, outfolder)
 

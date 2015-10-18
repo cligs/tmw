@@ -349,11 +349,16 @@ def perform_multipleSubs(substitutionsFile, text):
     with open(substitutionsFile, "r") as subsFile: 
         subs = csv.reader(subsFile)
         subsDict = {rows[0]:rows[1] for rows in subs}
-        #print(subsDict)
+        for key, value in subsDict.items(): 
+            text = re.sub(key, value, text)
+            #print(text)
+        return text
+
         ## Create a regular expression  from the dictionary keys
-        regex = re.compile("(%s)" % "|".join(map(re.escape, subsDict.keys())))
+        #regex = re.compile("(%s)" % "|".join(map(re.escape, subsDict.keys())))
         ## For each match, look-up corresponding value in dictionary
-        return regex.sub(lambda mo: subsDict[mo.string[mo.start():mo.end()]], text) 
+        #result = regex.sub(lambda mo: subsDict[mo.string[mo.start():mo.end()]], text)
+        #print(result)
 
 def pretokenize(inpath, substitutionsFile, outfolder):
     """Deletion of unwanted elided and hyphenated words for better tokenization in TreeTagger. Optional."""
@@ -363,6 +368,8 @@ def pretokenize(inpath, substitutionsFile, outfolder):
             text = text.read()
             text = perform_multipleSubs(substitutionsFile, text)
             basename = os.path.basename(file)
+            if "truc" in text or "type" in text or "flic" in text: 
+                print("Found bad word in", basename)
             cleanfilename = basename
             if not os.path.exists(outfolder):
                 os.makedirs(outfolder)
@@ -455,6 +462,12 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                             lemmata.append(token.lower())
                         elif "NC" in pos and "|" not in lemma and "<unknown>" not in lemma:
                             lemmata.append(lemma.lower())
+                    elif mode == "enNV":
+                        if "NN" in pos or "VB" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
+                    elif mode == "enN":
+                        if "NN" in pos and "|" not in lemma and "<unknown>" not in lemma:
+                            lemmata.append(lemma.lower())
             ## Continue with list of lemmata, but remove undesired leftover words         
             lemmata = ' '.join([word for word in lemmata if word not in stoplist])
             lemmata = re.sub("[ ]{1,4}"," ", lemmata)
@@ -468,11 +481,59 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
 
 
 
+
+
+#################################
+# substitute                    #
+#################################
+
+import csv
+
+def multipleSubs(substitutionsFile, text):
+    """Search and replace from a table of string pairs."""
+    ## With code from http://stackoverflow.com/users/735204/emmett-j-butler
+    ## Load table and turn into dict
+    with open(substitutionsFile, "r") as subsFile: 
+        subs = csv.reader(subsFile)
+        subsDict = {rows[0]:rows[1] for rows in subs}
+        for key, value in subsDict.items(): 
+            text = re.sub(key, value, text)
+            #print(text)
+        return text
+
+        ## Create a regular expression  from the dictionary keys
+        #regex = re.compile("(%s)" % "|".join(map(re.escape, subsDict.keys())))
+        ## For each match, look-up corresponding value in dictionary
+        #result = regex.sub(lambda mo: subsDict[mo.string[mo.start():mo.end()]], text)
+        #print(result)
+
+def substitute(inpath, substitutionsFile, outfolder):
+    """Deletion of unwanted elided and hyphenated words for better tokenization in TreeTagger. Optional."""
+    print("\nLaunched substitute.")
+    for file in glob.glob(inpath):
+        with open(file,"r") as text:
+            text = text.read()
+            text = multipleSubs(substitutionsFile, text)
+            basename = os.path.basename(file)
+            counter = 0
+            if " truc " in text or " type " in text or " flic " in text: 
+                counter +=1
+            print(counter)
+            cleanfilename = basename
+            if not os.path.exists(outfolder):
+                os.makedirs(outfolder)
+        with open(os.path.join(outfolder, cleanfilename),"w") as output:
+            output.write(text)
+    print("Done.")
+
+
+
+
+
+
 ##################################################################
 ### TOPIC MODELLING WITH MALLET                                ###
 ##################################################################
-
-# TODO: Concatenate two stoplists first, one for errors, one for deliberate ommissions.
 
 
 #################################
@@ -480,7 +541,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
 #################################
 
 
-def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist_project):
+def call_mallet_import(mallet_path, infolder, outfolder, outfile, stoplist_project):
     """Function to import text data into Mallet."""
     print("\nLaunched call_mallet_import.")    
     import subprocess
@@ -861,12 +922,21 @@ def get_targetItems(average, targetCategory):
         #print(targetItems)
         return(targetItems)    
      
-def get_dataToPlot(average, firstWordsFile, topTopicsShown, item):
+def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
     """From average topic score data, select data to be plotted."""
     #print("  Getting dataToPlot.")
     with open(average, "r") as infile:
         ## Read the average topic score data
         allData = pd.DataFrame.from_csv(infile, sep=",")
+        if mode == "normalized": # mean normalization
+            colmeans = allData.mean(axis=0)
+            allData = allData / colmeans
+        elif mode == "zscores": # zscore transformation
+            colmeans = allData.mean(axis=0) # mean for each topic
+            allstd = allData.stack().std() #std for entire df
+            allData = (allData - colmeans) / allstd # = zscore transf.
+        elif mode == "absolute": # absolute values
+            allData = allData
         allData = allData.T
         ## Add top topic words to table for display later
         firstWords = get_firstWords(firstWordsFile)
@@ -879,15 +949,19 @@ def get_dataToPlot(average, firstWordsFile, topTopicsShown, item):
         #print(dataToPlot)         
         return dataToPlot
 
-def create_barchart_topTopics(dataToPlot, targetCategory, item, 
+def create_barchart_topTopics(dataToPlot, targetCategory, mode, item, 
                               fontscale, height, dpi, outfolder):
     """Function to make a topTopics barchart."""
     print("  Creating plot for: "+str(item))
     ## Doing the plotting.
     dataToPlot.plot(kind="bar", legend=None) 
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 11)   
-    plt.title("Top-Topics für: "+str(item), fontsize=15)
-    plt.ylabel("Scores", fontsize=13)
+    if mode == "normalized": 
+        plt.title("Top-distinctive Topics für: "+str(item), fontsize=15)
+        plt.ylabel("normalized scores", fontsize=13)
+    elif mode == "absolute":
+        plt.title("Top-wichtigste Topics für: "+str(item), fontsize=15)
+        plt.ylabel("absolute scores", fontsize=13)
     plt.xlabel("Topics", fontsize=13)
     plt.tight_layout() 
     if height != 0:
@@ -897,12 +971,12 @@ def create_barchart_topTopics(dataToPlot, targetCategory, item,
     outfolder = outfolder+targetCategory+"/"
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"tT_"+str(item)+".png"
+    figure_filename = outfolder+"tT_"+mode+"-"+str(item)+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
 def plot_topTopics(averageDatasets, firstWordsFile, numOfTopics, 
-                   targetCategories, topTopicsShown, fontscale, 
+                   targetCategories, mode, topTopicsShown, fontscale, 
                    height, dpi, outfolder): 
     """For each item in a category, plot the top n topics as a barchart."""
     print("Launched plot_topTopics.")
@@ -911,8 +985,8 @@ def plot_topTopics(averageDatasets, firstWordsFile, numOfTopics,
             if targetCategory in average:
                 targetItems = get_targetItems(average, targetCategory)
                 for item in targetItems:
-                    dataToPlot = get_dataToPlot(average, firstWordsFile, topTopicsShown, item)
-                    create_barchart_topTopics(dataToPlot, targetCategory, item, fontscale, height, dpi, outfolder)
+                    dataToPlot = get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item)
+                    create_barchart_topTopics(dataToPlot, targetCategory, mode, item, fontscale, height, dpi, outfolder)
     print("Done.")
 
 
@@ -1034,6 +1108,30 @@ def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown,
         allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, firstWords], axis=1, join="inner")
         #print(allScores)
+        ## Remove undesired columns: subsubgenre
+        #allScores = allScores.drop("adventure", axis=1)
+        #allScores = allScores.drop("autobiographical", axis=1)
+        #allScores = allScores.drop("blanche", axis=1)
+        #allScores = allScores.drop("education", axis=1)
+        #allScores = allScores.drop("fantastic", axis=1)
+        #allScores = allScores.drop("fantastique", axis=1)
+        #allScores = allScores.drop("historical", axis=1)
+        #allScores = allScores.drop("n.av.", axis=1)
+        #allScores = allScores.drop("nouveau-roman", axis=1)
+        #allScores = allScores.drop("sciencefiction", axis=1)
+        #allScores = allScores.drop("social", axis=1)
+        #allScores = allScores.drop("other", axis=1)
+        #allScores = allScores.drop("espionnage", axis=1)
+        #allScores = allScores.drop("thriller", axis=1)
+        #allScores = allScores.drop("neopolar", axis=1)
+        ## Remove undesired columns: protagonist-policier
+        #allScores = allScores.drop("crminal", axis=1)
+        #allScores = allScores.drop("mixed", axis=1)
+        #allScores = allScores.drop("witness", axis=1)
+        #allScores = allScores.drop("criminel", axis=1)
+        #allScores = allScores.drop("detection", axis=1)
+        #allScores = allScores.drop("victime", axis=1)
+        #allScores = allScores.drop("n.av.", axis=1)
         ## Sort by standard deviation
         standardDeviations = allScores.std(axis=1)
         standardDeviations.name = "std"
@@ -1065,14 +1163,14 @@ def create_distinctiveness_heatmap(dataToPlot,
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
     plt.title("Verteilung der Topic Scores", fontsize=20)
     plt.xlabel(targetCategory, fontsize=16)
-    plt.ylabel("Top topics (stdev)", fontsize=16)
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 12)   
+    plt.ylabel("Top topics (stdev)", fontsize=14)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 14)   
     plt.tight_layout() 
 
     ## Saving the plot to disk.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"dist-heatmap_by-"+str(targetCategory)+".png"
+    figure_filename = outfolder+"dist-heatmap_by-"+str(targetCategory)+".jpg"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
@@ -1302,6 +1400,75 @@ def build_itemScoreMatrix(averageDatasets, targetCategory,
             itemScores = itemScores.sort(columns=["sorting"], axis=0, ascending=False)
             itemScoreMatrix = itemScores.iloc[0:topicsPerItem,0:-1]
             itemScoreMatrix = itemScoreMatrix.T
+            itemScoreMatrix = itemScoreMatrix.drop("Allais", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Audoux", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Barbara", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Barjavel", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Beckett", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Bernanos", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Bosco", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Bourget", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Butor", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Camus", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Carco", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Celine", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Colette", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Darien", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Daudet", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Delly", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Dombre", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Duras", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("ErckChat", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("FevalPP", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("MduGard", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Mirbeau", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Ohnet", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Perec", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Proust", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Queneau", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Rodenbach", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Rolland", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Roussel", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("SaintExupery", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Sand", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Aimard", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("AimardAuriac", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Balzac", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Bon", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Echenoz", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Flaubert", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Fleuriot", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("France", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Galopin", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Gary", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("GaryAjar", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("GaryBogat", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("GarySinibaldi", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Gautier", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Giono", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Gouraud", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Huysmans", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Hugo", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("LeClezio", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Loti", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Malot", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Mary", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Maupassant", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Modiano", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("RobbeGrillet", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Stolz", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Sue", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Tournier", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Verne", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Vian", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("VianSullivan", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Zola", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Malraux", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Simon", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("LeRouge", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("LeRougeGuitton", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Toussaint", axis=0)
+            itemScoreMatrix = itemScoreMatrix.drop("Khadra", axis=0)
             #print(itemScoreMatrix)
             return itemScoreMatrix
 
@@ -1315,10 +1482,10 @@ def perform_itemClustering(itemScoreMatrix, targetCategory, method, metric,
     ## Plot the distance matrix as a dendrogram
     plt.figure(figsize=figsize) # TODO: this could be a a parameter.
     itemLabels = itemScoreMatrix.index.values
-    sc.hierarchy.dendrogram(itemDistanceMatrix, labels=itemLabels, orientation="right")
+    sc.hierarchy.dendrogram(itemDistanceMatrix, labels=itemLabels, orientation="top")
 
     ## Format items labels to x-axis tick labels
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 10)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 14)
     plt.title("Item Clustering Dendrogramm: "+targetCategory, fontsize=20)
     plt.ylabel("Distance", fontsize=16)
     plt.xlabel("Parameter: "+method+" clustering - "+metric+" distance - "+str(topicsPerItem)+" topics", fontsize=16)
@@ -1328,7 +1495,7 @@ def perform_itemClustering(itemScoreMatrix, targetCategory, method, metric,
     print("- saving image file.")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = "item-clustering_"+targetCategory+"_"+metric+"-"+method+"-"+str(topicsPerItem)+"topics"+"-"+sortingCriterium+".svg"
+    figure_filename = "item-clustering_"+targetCategory+"_"+metric+"-"+method+"-"+sortingCriterium+"-"+str(topicsPerItem)+"topics"+".jpg"
     plt.savefig(outfolder + figure_filename, dpi=600)
     plt.close()
     

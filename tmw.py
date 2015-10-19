@@ -1095,13 +1095,22 @@ def get_heatmap_firstWords(firstWordsFile):
         #print(firstWords)
         return(firstWords)
 
-def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown, 
+def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown, 
                            numOfTopics):
     """From average topic score data, select data to be plotted."""
     print("- getting dataToPlot...")
     with open(average, "r") as infile:
         ## Read the average topic score data
         allScores = pd.DataFrame.from_csv(infile, sep=",")
+        if mode == "normalized": # mean normalization
+            colmeans = allScores.mean(axis=0)
+            allScores = allScores / colmeans
+        elif mode == "zscores": # zscore transformation
+            colmeans = allScores.mean(axis=0) # mean for each topic
+            allstd = allScores.stack().std() #std for entire df
+            allScores = (allScores - colmeans) / allstd # = zscore transf.
+        elif mode == "absolute": # absolute values
+            allScores = allScores
         allScores = allScores.T
         ## Add top topic words to table for display later
         firstWords = get_heatmap_firstWords(firstWordsFile)
@@ -1154,6 +1163,7 @@ def get_heatmap_dataToPlot(average, firstWordsFile, topTopicsShown,
 def create_distinctiveness_heatmap(dataToPlot, 
                                    topTopicsShown,
                                    targetCategory, 
+                                   mode,
                                    fontscale,
                                    dpi, 
                                    outfolder):
@@ -1163,21 +1173,20 @@ def create_distinctiveness_heatmap(dataToPlot,
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
     plt.title("Verteilung der Topic Scores", fontsize=20)
     plt.xlabel(targetCategory, fontsize=16)
-    plt.ylabel("Top topics (stdev)", fontsize=14)
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 14)   
+    plt.ylabel("Top topics (stdev)", fontsize=16)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 12)   
     plt.tight_layout() 
 
     ## Saving the plot to disk.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"dist-heatmap_by-"+str(targetCategory)+".jpg"
+    figure_filename = outfolder+"dist-heatmap_"+mode+"-by-"+str(targetCategory)+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-
-
 def plot_distinctiveness_heatmap(averageDatasets, 
                                  firstWordsFile, 
+                                 mode,
                                  outfolder, 
                                  targetCategories, 
                                  numOfTopics, 
@@ -1190,13 +1199,15 @@ def plot_distinctiveness_heatmap(averageDatasets,
         for targetCategory in targetCategories: 
             if targetCategory in average and targetCategory != "segmentID":
                 print("- working on: "+targetCategory)
-                dataToPlot = get_heatmap_dataToPlot(average, 
+                dataToPlot = get_heatmap_dataToPlot(average,
+                                                    mode,
                                                     firstWordsFile, 
                                                     topTopicsShown,
                                                     numOfTopics)
                 create_distinctiveness_heatmap(dataToPlot, 
                                                topTopicsShown,
                                                targetCategory, 
+                                               mode,
                                                fontscale,
                                                dpi, 
                                                outfolder)

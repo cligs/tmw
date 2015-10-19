@@ -234,11 +234,12 @@ averageDatasets = wdir+"7_aggregates/avg*.csv"
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 outfolder = wdir+"8_visuals/distinctiveness/"
 targetCategories = ["protagonist-policier"] 
+mode = "zscores" #normalized|zscores|absolute
 numOfTopics = numOfTopics # actual number of topics modeled.
 topTopicsShown = 20 
 fontscale = 1.0
 dpi = 300
-#tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numOfTopics, topTopicsShown, fontscale, dpi)
+#tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, mode, outfolder, targetCategories, numOfTopics, topTopicsShown, fontscale, dpi)
 
 ### plot_topicsOverTime ###
 ###     

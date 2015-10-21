@@ -808,6 +808,30 @@ def save_firstWords(topicWordFile, outfolder, filename):
         print("Done.")
 
 
+#################################
+# save_topicRanks               #
+#################################
+
+def save_topicRanks(topicWordFile, outfolder, filename):
+    """Save a list of topics with their rank by topic score."""
+    print("Launched save_topicRanks.")
+    with open(topicWordFile, "r") as infile:
+        topicRanks = pd.read_csv(infile, sep="\t", header=None)
+        topicRanks = topicRanks.drop(2, axis=1)
+        topicRanks.rename(columns={0:"Number"}, inplace=True)
+        topicRanks.rename(columns={1:"Score"}, inplace=True)
+        #topicRanks.sort(columns=["Score"], ascending=False, inplace=True)
+        topicRanks["Rank"] = topicRanks["Score"].rank(ascending=False)
+        #print(topicRanks.head())
+        ## Saving the file.
+        if not os.path.exists(outfolder):
+            os.makedirs(outfolder)
+        outfile = outfolder + filename
+        with open(outfile, "w") as outfile: 
+            topicRanks.to_csv(outfile)
+        print("Done.")
+
+
 
 ##################################################################
 ###    VISUALIZATION                                           ###

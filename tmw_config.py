@@ -169,6 +169,13 @@ outfolder = wdir+"7_aggregates/"
 filename = "firstWords.csv"
 #tmw.save_firstWords(topicWordFile, outfolder, filename)
 
+### save_topicRanks
+### Saves the rank (in the overall scores) of each topic to a separate file.
+topicWordFile = wdir+"6_mallet/topics-with-words.csv"
+outfolder = wdir+"7_aggregates/"
+filename = "topicRanks.csv"
+tmw.save_topicRanks(topicWordFile, outfolder, filename)
+
 
 
 ################################

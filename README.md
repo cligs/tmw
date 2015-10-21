@@ -1,7 +1,7 @@
 tmw - Topic Modeling Workflow
 =============================
 
-![DOI](https://zenodo.org/badge/1105/cligs/tmw.svg)
+<a href="https://zenodo.org/badge/latestdoi/1105/cligs/tmw"><img src="https://zenodo.org/badge/1105/cligs/tmw.svg" alt="10.5281/zenodo.32490"></a>
 
 ## What is tmw?
 

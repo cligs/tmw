@@ -1,6 +1,10 @@
 tmw - Topic Modeling Workflow
 =============================
 
+[![DOI](https://zenodo.org/badge/1105/cligs/tmw.svg)](https://zenodo.org/badge/latestdoi/1105/cligs/tmw) 
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" 
+
 ## What is tmw?
 
 tmw is a python module for topic modeling, including some preprocessing of texts and some postprocessing of topic model data. This set of functions is experimental in nature and quality.

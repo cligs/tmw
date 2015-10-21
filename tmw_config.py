@@ -185,12 +185,13 @@ tmw.save_topicRanks(topicWordFile, outfolder, filename)
 ### make_wordle_from_mallet
 ### Creates a wordle for each topic.
 word_weights_file = wdir+"6_mallet/" + "word-weights.txt"
+topicRanksFile = wdir + "7_aggregates/" + "topicRanks.csv"
 numOfTopics = numOfTopics
-words = 30
+words = 40
 outfolder = wdir+"8_visuals/wordles/"
 font_path = font_path
 dpi = 300
-#tmw.make_wordle_from_mallet(word_weights_file,numOfTopics,words,outfolder,font_path,dpi)
+#tmw.make_wordle_from_mallet(word_weights_file,numOfTopics, words,outfolder, topicRanksFile, font_path,dpi)
 
 ### crop_images
 ### Optional. Crops the wordle image files.

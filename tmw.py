@@ -876,21 +876,31 @@ def get_color_scale(word, font_size, position, orientation, font_path, random_st
     #return "hsl(0, 00%, %d%%)" % random.randint(80, 100) # Greys for black background.
     #return "hsl(221, 65%%, %d%%)" % random.randint(30, 35) # Dark blues for white background
 
+def get_topicRank(topic, topicRanksFile):
+    #print("getting topic rank.")
+    with open(topicRanksFile, "r") as infile:
+        topicRanks = pd.read_csv(infile, sep=",", index_col=0)
+        rank = int(topicRanks.iloc[topic]["Rank"])
+        return rank
+
+
 def make_wordle_from_mallet(word_weights_file, 
-                            numOfTopics,words,outfolder, 
+                            numOfTopics,words,outfolder,
+                            topicRanksFile,
                             font_path, dpi):
     """Generate wordles from Mallet output, using the wordcloud module."""
     print("\nLaunched make_wordle_from_mallet.")
     for topic in range(0,numOfTopics):
         ## Gets the text for one topic.
         text = get_wordlewords(words, word_weights_file, topic)
-        wordcloud = WordCloud(font_path=font_path, background_color="white", margin=5).generate(text)
+        wordcloud = WordCloud(font_path=font_path, width=600, height=400, background_color="white", margin=4).generate(text)
         default_colors = wordcloud.to_array()
-        figure_title = "topic "+ str(topic)        
+        rank = get_topicRank(topic, topicRanksFile)
+        figure_title = "topic "+ str(topic) + " ("+str(rank)+"/"+str(numOfTopics)+")"       
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
-        plt.title(figure_title, fontsize=24)
+        plt.title(figure_title, fontsize=28)
         plt.axis("off")
         
         ## Saving the image file.

@@ -900,7 +900,7 @@ def make_wordle_from_mallet(word_weights_file,
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
-        plt.title(figure_title, fontsize=28)
+        plt.title(figure_title, fontsize=30)
         plt.axis("off")
         
         ## Saving the image file.

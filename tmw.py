@@ -846,7 +846,7 @@ def get_wordlewords(words, word_weights_file, topic):
         wordlewords = wordlewords + ((word + " ") * score)
     return wordlewords
         
-def get_color_scale(word, font_size, position, orientation, random_state=None):
+def get_color_scale(word, font_size, position, orientation, font_path, random_state=None):
     """ Create color scheme for wordle."""
     return "hsl(245, 58%, 25%)" # Default. Uniform dark blue.
     #return "hsl(0, 00%, %d%%)" % random.randint(80, 100) # Greys for black background.

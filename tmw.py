@@ -1095,16 +1095,19 @@ def get_heatmap_firstWords(firstWordsFile):
         #print(firstWords)
         return(firstWords)
 
-def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown, 
+def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShown, 
                            numOfTopics):
     """From average topic score data, select data to be plotted."""
     print("- getting dataToPlot...")
     with open(average, "r") as infile:
         ## Read the average topic score data
         allScores = pd.DataFrame.from_csv(infile, sep=",")
-        if mode == "normalized": # mean normalization
+        if mode == "divbymean": # mean normalization1
             colmeans = allScores.mean(axis=0)
             allScores = allScores / colmeans
+        elif mode == "minusmean": # mean normalization2
+            colmeans = allScores.mean(axis=0)
+            allScores = allScores - colmeans
         elif mode == "zscores": # zscore transformation
             colmeans = allScores.mean(axis=0) # mean for each topic
             allstd = allScores.stack().std() #std for entire df
@@ -1117,36 +1120,15 @@ def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown,
         allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, firstWords], axis=1, join="inner")
         #print(allScores)
-        ## Remove undesired columns: subsubgenre
-        #allScores = allScores.drop("adventure", axis=1)
-        #allScores = allScores.drop("autobiographical", axis=1)
-        #allScores = allScores.drop("blanche", axis=1)
-        #allScores = allScores.drop("education", axis=1)
-        #allScores = allScores.drop("fantastic", axis=1)
-        #allScores = allScores.drop("fantastique", axis=1)
-        #allScores = allScores.drop("historical", axis=1)
-        #allScores = allScores.drop("n.av.", axis=1)
-        #allScores = allScores.drop("nouveau-roman", axis=1)
-        #allScores = allScores.drop("sciencefiction", axis=1)
-        #allScores = allScores.drop("social", axis=1)
-        #allScores = allScores.drop("other", axis=1)
-        #allScores = allScores.drop("espionnage", axis=1)
-        #allScores = allScores.drop("thriller", axis=1)
-        #allScores = allScores.drop("neopolar", axis=1)
-        ## Remove undesired columns: protagonist-policier
-        #allScores = allScores.drop("crminal", axis=1)
-        #allScores = allScores.drop("mixed", axis=1)
-        #allScores = allScores.drop("witness", axis=1)
-        #allScores = allScores.drop("criminel", axis=1)
-        #allScores = allScores.drop("detection", axis=1)
-        #allScores = allScores.drop("victime", axis=1)
-        #allScores = allScores.drop("n.av.", axis=1)
         ## Sort by standard deviation
         standardDeviations = allScores.std(axis=1)
         standardDeviations.name = "std"
         allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, standardDeviations], axis=1)
-        allScores = allScores.sort(columns="std", axis=0, ascending=False)
+        if sorting == "std": 
+            allScores = allScores.sort(columns="std", axis=0, ascending=False)
+        else: 
+            allScores = allScores.sort(columns=sorting, axis=0, ascending=False)            
         allScores = allScores.drop("std", axis=1)
         someScores = allScores[0:topTopicsShown]
         ## Necessary step to align dtypes of indexes for concat.
@@ -1164,6 +1146,7 @@ def create_distinctiveness_heatmap(dataToPlot,
                                    topTopicsShown,
                                    targetCategory, 
                                    mode,
+                                   sorting,
                                    fontscale,
                                    dpi, 
                                    outfolder):
@@ -1171,22 +1154,32 @@ def create_distinctiveness_heatmap(dataToPlot,
     sns.set_context("poster", font_scale=fontscale)
     sns.heatmap(dataToPlot, annot=False, cmap="YlOrRd", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
-    plt.title("Verteilung der Topic Scores", fontsize=20)
+    plt.title("Topic Score Distribution", fontsize=20)
     plt.xlabel(targetCategory, fontsize=16)
-    plt.ylabel("Top topics (stdev)", fontsize=16)
-    plt.setp(plt.xticks()[1], rotation=90, fontsize = 12)   
+    if mode == "absolute" and sorting == "std":         
+        plt.ylabel("Most prevalent topics (sorted by decreasing std)", fontsize=14)
+    elif mode == "absolute" and sorting != "std":         
+        plt.ylabel("Most prevalent topics (sorted by target "+sorting+")", fontsize=14)
+    elif mode == "normalized" and sorting == "std":         
+        plt.ylabel("Most distinctive topics (sorted by decreasing std)", fontsize=14)
+    elif mode == "normalized" and sorting != "std":         
+        plt.ylabel("Most distinctive topics (sorted by target "+sorting+")", fontsize=14)
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 14)   
     plt.tight_layout() 
 
     ## Saving the plot to disk.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"dist-heatmap_"+mode+"-by-"+str(targetCategory)+".png"
+    figure_filename = outfolder+"dist-heatmap_"+str(targetCategory)+"_mode-"+mode+"_sortedby-"+sorting+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
+
+
 
 def plot_distinctiveness_heatmap(averageDatasets, 
                                  firstWordsFile, 
                                  mode,
+                                 sorting,
                                  outfolder, 
                                  targetCategories, 
                                  numOfTopics, 
@@ -1201,6 +1194,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                 print("- working on: "+targetCategory)
                 dataToPlot = get_heatmap_dataToPlot(average,
                                                     mode,
+                                                    sorting,
                                                     firstWordsFile, 
                                                     topTopicsShown,
                                                     numOfTopics)
@@ -1208,6 +1202,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                                                topTopicsShown,
                                                targetCategory, 
                                                mode,
+                                               sorting,
                                                fontscale,
                                                dpi, 
                                                outfolder)

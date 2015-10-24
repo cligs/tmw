@@ -228,18 +228,23 @@ dpi = 300
 ###  ADVANCED VISUALIZATION  ###
 ################################
 
+################################
+###  ADVANCED VISUALIZATION  ###
+################################
+
 ### plot_distinctiveness_heatmap ###
 ### For each category, make a heatmap of most distinctive topics. 
 averageDatasets = wdir+"7_aggregates/avg*.csv" 
 firstWordsFile = wdir+"7_aggregates/firstWords.csv"
 outfolder = wdir+"8_visuals/distinctiveness/"
-targetCategories = ["protagonist-policier"] 
-mode = "zscores" #normalized|zscores|absolute
+targetCategories = ["subgenre"] 
+mode = "minusmean" #minusmean|divbymean|zscores|absolute
+sorting = "std" # std|target
 numOfTopics = numOfTopics # actual number of topics modeled.
-topTopicsShown = 20 
+topTopicsShown = 16 
 fontscale = 1.0
 dpi = 300
-#tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, mode, outfolder, targetCategories, numOfTopics, topTopicsShown, fontscale, dpi)
+tmw.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, mode, sorting, outfolder, targetCategories, numOfTopics, topTopicsShown, fontscale, dpi)
 
 ### plot_topicsOverTime ###
 ###     

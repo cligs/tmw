@@ -966,9 +966,10 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
             colmeans = allData.mean(axis=0)
             allData = allData / colmeans
         elif mode == "zscores": # zscore transformation
-            colmeans = allData.mean(axis=0) # mean for each topic
-            allstd = allData.stack().std() #std for entire df
-            allData = (allData - colmeans) / allstd # = zscore transf.
+            colmeans = allData.mean(axis=0) # ???
+            colstd = allData.std(axis=0) #std for each topic
+            allData = (allData - colmeans) / colstd # = zscore transf.
+            
         elif mode == "absolute": # absolute values
             allData = allData
         allData = allData.T
@@ -1141,7 +1142,7 @@ def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown,
             allScores = allScores / colmeans
         elif mode == "zscores": # zscore transformation
             colmeans = allScores.mean(axis=0) # mean for each topic
-            allstd = allScores.stack().std() #std for entire df
+            allstd = allScores.std(axis=0) #std for entire df
             allScores = (allScores - colmeans) / allstd # = zscore transf.
         elif mode == "absolute": # absolute values
             allScores = allScores
@@ -1203,7 +1204,7 @@ def create_distinctiveness_heatmap(dataToPlot,
                                    outfolder):
     print("- doing the plotting...")
     sns.set_context("poster", font_scale=fontscale)
-    sns.heatmap(dataToPlot, annot=False, cmap="YlOrRd", square=False)
+    sns.heatmap(dataToPlot, annot=False, cmap="RdBu_r", square=False)
     # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
     plt.title("Verteilung der Topic Scores", fontsize=20)
     plt.xlabel(targetCategory, fontsize=16)
@@ -1445,6 +1446,7 @@ def build_itemScoreMatrix(averageDatasets, targetCategory,
             itemScores = itemScores.sort(columns=["sorting"], axis=0, ascending=False)
             itemScoreMatrix = itemScores.iloc[0:topicsPerItem,0:-1]
             itemScoreMatrix = itemScoreMatrix.T
+            """
             itemScoreMatrix = itemScoreMatrix.drop("Allais", axis=0)
             itemScoreMatrix = itemScoreMatrix.drop("Audoux", axis=0)
             itemScoreMatrix = itemScoreMatrix.drop("Barbara", axis=0)
@@ -1514,6 +1516,7 @@ def build_itemScoreMatrix(averageDatasets, targetCategory,
             itemScoreMatrix = itemScoreMatrix.drop("LeRougeGuitton", axis=0)
             itemScoreMatrix = itemScoreMatrix.drop("Toussaint", axis=0)
             itemScoreMatrix = itemScoreMatrix.drop("Khadra", axis=0)
+            """
             #print(itemScoreMatrix)
             return itemScoreMatrix
 

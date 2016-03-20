@@ -1158,6 +1158,7 @@ def create_distinctiveness_heatmap(dataToPlot,
                                    topTopicsShown,
                                    targetCategory, 
                                    mode,
+                                   sorting,
                                    fontscale,
                                    dpi, 
                                    outfolder):
@@ -1183,6 +1184,7 @@ def create_distinctiveness_heatmap(dataToPlot,
 def plot_distinctiveness_heatmap(averageDatasets, 
                                  firstWordsFile, 
                                  mode,
+                                 sorting,
                                  outfolder, 
                                  targetCategories, 
                                  numOfTopics, 
@@ -1197,6 +1199,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                 print("- working on: "+targetCategory)
                 dataToPlot = get_heatmap_dataToPlot(average,
                                                     mode,
+                                                    sorting,
                                                     firstWordsFile, 
                                                     topTopicsShown,
                                                     numOfTopics)
@@ -1204,6 +1207,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
                                                topTopicsShown,
                                                targetCategory, 
                                                mode,
+                                               sorting,
                                                fontscale,
                                                dpi, 
                                                outfolder)
@@ -1667,7 +1671,7 @@ def simpleProgression(averageDataset, firstWordsFile, outfolder,
 
 
 ##################################################################
-###    OTHER / OBSOLETE                                        ###
+###    OTHER / OBSOLETE / DEV                                  ###
 ##################################################################
 
 

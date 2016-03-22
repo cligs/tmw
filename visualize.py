@@ -17,43 +17,36 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-import random
+import numpy as np
+import seaborn as sns
 
 
 #################################
 # make_wordle_from_mallet       #
 #################################
 
-def make_wordle_from_mallet(word_weights_file,topics,words,outfolder, 
-                            font_path, dpi):
-    """Generate wordles from Mallet output, using the wordcloud module."""
-    print("\nLaunched make_wordle_from_mallet.")
+def read_mallet_output(word_weights_file):
+    """Reads Mallet output (topics with words and word weights) into dataframe.""" 
+    word_scores = pd.read_table(word_weights_file, header=None, sep="\t")
+    word_scores = word_scores.sort(columns=[0,2], axis=0, ascending=[True, False])
+    word_scores_grouped = word_scores.groupby(0)
+    #print(word_scores.head())
+    return word_scores_grouped
 
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    
-    def read_mallet_output(word_weights_file):
-        """Reads Mallet output (topics with words and word weights) into dataframe.""" 
-        word_scores = pd.read_table(word_weights_file, header=None, sep="\t")
-        word_scores = word_scores.sort(columns=[0,2], axis=0, ascending=[True, False])
-        word_scores_grouped = word_scores.groupby(0)
-        #print(word_scores.head())
-        return word_scores_grouped
-
-    def get_wordlewords(words,topic):
-        """Transform Mallet output for wordle generation."""
-        topic_word_scores = read_mallet_output(word_weights_file).get_group(topic)
-        top_topic_word_scores = topic_word_scores.iloc[0:words]
-        topic_words = top_topic_word_scores.loc[:,1].tolist()
-        word_scores = top_topic_word_scores.loc[:,2].tolist()
-        wordlewords = ""
-        j = 0
-        for word in topic_words:
-            word = word
-            score = word_scores[j]
-            j += 1
-            wordlewords = wordlewords + ((word + " ") * score)
-        return wordlewords
+def get_wordlewords(words, word_weights_file, topic):
+    """Transform Mallet output for wordle generation."""
+    topic_word_scores = read_mallet_output(word_weights_file).get_group(topic)
+    top_topic_word_scores = topic_word_scores.iloc[0:words]
+    topic_words = top_topic_word_scores.loc[:,1].tolist()
+    word_scores = top_topic_word_scores.loc[:,2].tolist()
+    wordlewords = ""
+    j = 0
+    for word in topic_words:
+        word = word
+        score = word_scores[j]
+        j += 1
+        wordlewords = wordlewords + ((word + " ") * score)
+    return wordlewords
         
 def get_color_scale(word, font_size, position, orientation, font_path, random_state=None):
     """ Create color scheme for wordle."""
@@ -69,20 +62,23 @@ def get_topicRank(topic, topicRanksFile):
         return rank
 
 def make_wordle_from_mallet(word_weights_file, 
-                            numOfTopics,words,outfolder,
+                            num_topics, 
+                            words,
                             topicRanksFile,
-                            font_path, dpi):
+                            outfolder,
+                            font_path, 
+                            dpi):
     """
     # Generate wordles from Mallet output, using the wordcloud module.
     """
     print("\nLaunched make_wordle_from_mallet.")
-    for topic in range(0,numOfTopics):
+    for topic in range(0,num_topics):
         ## Gets the text for one topic.
         text = get_wordlewords(words, word_weights_file, topic)
-        wordcloud = WordCloud(font_path=font_path, width=600, height=400, background_color="white", margin=4).generate(text)
+        wordcloud = WordCloud(font_path=font_path, width=1600, height=1200, background_color="white", margin=4).generate(text)
         default_colors = wordcloud.to_array()
         rank = get_topicRank(topic, topicRanksFile)
-        figure_title = "topic "+ str(topic) + " ("+str(rank)+"/"+str(numOfTopics)+")"       
+        figure_title = "topic "+ str(topic) + " ("+str(rank)+"/"+str(num_topics)+")"       
         plt.imshow(wordcloud.recolor(color_func=get_color_scale, random_state=3))
         plt.imshow(default_colors)
         plt.imshow(wordcloud)
@@ -154,7 +150,6 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
             colmeans = allData.mean(axis=0) # ???
             colstd = allData.std(axis=0) #std for each topic
             allData = (allData - colmeans) / colstd # = zscore transf.
-            
         elif mode == "absolute": # absolute values
             allData = allData
         allData = allData.T
@@ -195,7 +190,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, mode, item,
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
-def plot_topTopics(averageDatasets, firstWordsFile, numOfTopics, 
+def plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, 
                    targetCategories, mode, topTopicsShown, fontscale, 
                    height, dpi, outfolder): 
     """For each item in a category, plot the top n topics as a barchart."""
@@ -302,7 +297,6 @@ def plot_topItems(averageDatasets,
 # topic_distribution_heatmap    #
 #################################
 
-import seaborn as sns
 
 # TODO: This next function could be merged with above.
 def get_heatmap_firstWords(firstWordsFile):
@@ -315,7 +309,7 @@ def get_heatmap_firstWords(firstWordsFile):
         #print(firstWords)
         return(firstWords)
 
-def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown, 
+def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShown, 
                            numOfTopics):
     """From average topic score data, select data to be plotted."""
     print("- getting dataToPlot...")
@@ -339,28 +333,6 @@ def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown,
         #print(allScores)
         ## Remove undesired columns: subsubgenre
         #allScores = allScores.drop("adventure", axis=1)
-        #allScores = allScores.drop("autobiographical", axis=1)
-        #allScores = allScores.drop("blanche", axis=1)
-        #allScores = allScores.drop("education", axis=1)
-        #allScores = allScores.drop("fantastic", axis=1)
-        #allScores = allScores.drop("fantastique", axis=1)
-        #allScores = allScores.drop("historical", axis=1)
-        #allScores = allScores.drop("n.av.", axis=1)
-        #allScores = allScores.drop("nouveau-roman", axis=1)
-        #allScores = allScores.drop("sciencefiction", axis=1)
-        #allScores = allScores.drop("social", axis=1)
-        #allScores = allScores.drop("other", axis=1)
-        #allScores = allScores.drop("espionnage", axis=1)
-        #allScores = allScores.drop("thriller", axis=1)
-        #allScores = allScores.drop("neopolar", axis=1)
-        ## Remove undesired columns: protagonist-policier
-        #allScores = allScores.drop("crminal", axis=1)
-        #allScores = allScores.drop("mixed", axis=1)
-        #allScores = allScores.drop("witness", axis=1)
-        #allScores = allScores.drop("criminel", axis=1)
-        #allScores = allScores.drop("detection", axis=1)
-        #allScores = allScores.drop("victime", axis=1)
-        #allScores = allScores.drop("n.av.", axis=1)
         ## Sort by standard deviation
         standardDeviations = allScores.std(axis=1)
         standardDeviations.name = "std"
@@ -369,15 +341,16 @@ def get_heatmap_dataToPlot(average, mode, firstWordsFile, topTopicsShown,
         allScores = allScores.sort(columns="std", axis=0, ascending=False)
         allScores = allScores.drop("std", axis=1)
         someScores = allScores[0:topTopicsShown]
-        someScores = someScores.drop(0, axis=1)
+        #someScores = someScores.drop(0, axis=1)
         ## Necessary step to align dtypes of indexes for concat.
         someScores.index = someScores.index.astype(np.int64)        
         #print("dtype firstWords: ", type(firstWords.index))
         #print("dtype someScores: ", type(someScores.index))
         #print("\n==intersection==\n",someScores.index.intersection(firstWords.index))
         ## Add top topic words to table for display later
-        firstWords = get_heatmap_firstWords(firstWordsFile)
-        dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
+        #firstWords = get_heatmap_firstWords(firstWordsFile)
+        #print(firstWords)
+        dataToPlot = someScores
         dataToPlot = dataToPlot.set_index("topicwords")
         #print(dataToPlot)
         ## Optionally, limit display to part of the columns
@@ -625,8 +598,6 @@ def topicClustering(wordWeightsFile, wordsPerTopic, outfolder,
 
 # TOOD: Add orientation to parameters.
 
-import scipy.cluster as sc
-
 def build_itemScoreMatrix(averageDatasets, targetCategory, 
                           topicsPerItem, sortingCriterium):
     """Reads Mallet output (topics with words and word weights) into dataframe.""" 
@@ -642,77 +613,7 @@ def build_itemScoreMatrix(averageDatasets, targetCategory,
             itemScores = itemScores.sort(columns=["sorting"], axis=0, ascending=False)
             itemScoreMatrix = itemScores.iloc[0:topicsPerItem,0:-1]
             itemScoreMatrix = itemScoreMatrix.T
-            """
-            itemScoreMatrix = itemScoreMatrix.drop("Allais", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Audoux", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Barbara", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Barjavel", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Beckett", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Bernanos", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Bosco", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Bourget", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Butor", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Camus", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Carco", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Celine", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Colette", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Darien", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Daudet", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Delly", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Dombre", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Duras", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("ErckChat", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("FevalPP", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("MduGard", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Mirbeau", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Ohnet", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Perec", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Proust", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Queneau", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Rodenbach", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Rolland", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Roussel", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("SaintExupery", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Sand", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Aimard", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("AimardAuriac", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Balzac", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Bon", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Echenoz", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Flaubert", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Fleuriot", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("France", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Galopin", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Gary", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("GaryAjar", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("GaryBogat", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("GarySinibaldi", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Gautier", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Giono", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Gouraud", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Huysmans", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Hugo", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("LeClezio", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Loti", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Malot", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Mary", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Maupassant", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Modiano", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("RobbeGrillet", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Stolz", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Sue", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Tournier", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Verne", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Vian", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("VianSullivan", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Zola", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Malraux", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Simon", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("LeRouge", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("LeRougeGuitton", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Toussaint", axis=0)
-            itemScoreMatrix = itemScoreMatrix.drop("Khadra", axis=0)
-            """
+            #itemScoreMatrix = itemScoreMatrix.drop("Allais", axis=0)
             #print(itemScoreMatrix)
             return itemScoreMatrix
 
@@ -896,246 +797,20 @@ def simpleProgression(averageDataset, firstWordsFile, outfolder,
         print("Please select a valid value for 'mode'.")
     print("Done.")
 
-
-
-
-
-
-##################################################################
-###    OTHER / OBSOLETE / DEV                                  ###
-##################################################################
-
-
-###########################
-## complex progression  ###        IN DEVELOPMENT
-###########################
-
-
-def get_selComplexProgression_dataToPlot(averageDataset, firstWordsFile, 
-                               entriesShown, topics): 
-    """Function to build a dataframe with all data necessary for plotting."""
-    print("- getting data to plot...")
-    with open(averageDataset, "r") as infile:
-        allScores = pd.DataFrame.from_csv(infile, sep=",")
-        allScores = allScores.T        
-        #print(allScores.head())
-        ## Select the data for selected topics
-        someScores = allScores.loc[topics,:]
-        someScores.index = someScores.index.astype(np.int64)        
-        ## Add information about the firstWords of topics
-        firstWords = get_progression_firstWords(firstWordsFile)
-        dataToPlot = pd.concat([someScores, firstWords], axis=1, join="inner")
-        dataToPlot = dataToPlot.set_index("topicwords")
-        dataToPlot = dataToPlot.T
-        #print(dataToPlot)
-        return dataToPlot
+def main(word_weights_file, num_topics, words, topicRanksFile, outfolder, font_path, dpi):
+    make_wordle_from_mallet(word_weights_file, num_topics, words, topicRanksFile, outfolder, font_path, dpi)
+#    crop_images(inpath, outfolder, left, upper, right, lower)
+#    plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
+#   plot_topItems(averageDatasets, outfolder, firstWordsFile, numberOfTopics, targetCategories, topItemsShown, fontscale, height, dpi)
+#    plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, fontscale, dpi)    
+#    plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, numberOfTopics, fontscale, dpi, height, mode, topics)
     
-    
-def create_selComplexProgression_lineplot(dataToPlot, outfolder, fontscale, 
-                                topics, dpi, height):
-    """This function does the actual plotting and saving to disk."""
-    print("- creating the plot...")
-    ## Plot the selected data
-    dataToPlot.plot(kind="line", lw=3, marker="o")
-    plt.title("Entwicklung ausgewählter Topics über den Textverlauf", fontsize=20)
-    plt.ylabel("Topic scores (absolut)", fontsize=16)
-    plt.xlabel("Textabschnitte", fontsize=16)
-    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
-    if height != 0:
-        plt.ylim((0.000,height))
+if __name__ == "__main__":
+    import sys
+    make_wordle_from_mallet(int(sys.argv[1]))
+    crop_images(int(sys.argv[1]))
+    plot_topTopics(int(sys.argv[1]))
+    plot_topItems(int(sys.argv[1]))
+    plot_distinctiveness_heatmap(int(sys.argv[1]))
+    plot_topicsOverTime(int(sys.argv[1]))
 
-    ## Saving the plot to disk.
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    ## Format the topic information for display
-    topicsLabel = "-".join(str(topic) for topic in topics)
-    figure_filename = outfolder+"sel_"+topicsLabel+".png"
-    plt.savefig(figure_filename, dpi=dpi)
-    plt.close()
-
-def get_allComplexProgression_dataToPlot(averageDataset, firstWordsFile, 
-                                         entriesShown, topic, targetCategories): 
-    """Function to build a dataframe with all data necessary for plotting."""
-    print("- getting data to plot...")
-    with open(averageDataset, "r") as infile:
-        allScores = pd.DataFrame.from_csv(infile, sep=",", index_col=None)
-        #print(allScores)
-        ## Select the data for current topics
-        target1 = targetCategories[0]
-        target2 = targetCategories[1]
-        target1data = allScores.loc[:,target1]
-        target2data = allScores.loc[:,target2]
-        topicScores = allScores.loc[:,topic]
-        #print(target1data)
-        #print(target2data)
-        #print(topicScores)
-        dataToPlot = pd.concat([target1data, target2data], axis=1)
-        dataToPlot = pd.concat([dataToPlot, topicScores], axis=1)
-        #print(dataToPlot)
-        return dataToPlot
-        
-# TODO: Make sure this is only read once and then select when plotting.
-
-        
-def create_allComplexProgression_lineplot(dataToPlot, targetCategories, 
-                                          outfolder, fontscale, 
-                                firstWordsFile, topic, dpi, height):
-    """This function does the actual plotting and saving to disk."""
-    print("- creating the plot for topic " + topic)
-    ## Get the first words info for the topic
-    firstWords = get_progression_firstWords(firstWordsFile)
-    topicFirstWords = firstWords.iloc[int(topic),0]
-    #print(topicFirstWords)
-    ## Split plotting data into parts (for target1)
-    target1data = dataToPlot.iloc[:,0]
-    #print(target1data)
-    numPartialData = len(set(target1data))
-    ## Initialize plot for several lines
-    completeData = []
-    #print(dataToPlot)
-    for target in set(target1data):
-        #print("  - plotting "+target)
-        partialData = dataToPlot.groupby(targetCategories[0])
-        partialData = partialData.get_group(target)
-        partialData.rename(columns={topic:target}, inplace=True)
-        partialData = partialData.iloc[:,2:3]
-        completeData.append(partialData)
-    #print(completeData)
-    ## Plot the selected data, one after the other
-    plt.figure()
-    plt.figure(figsize=(15,10))
-    for i in range(0, numPartialData):
-        #print(completeData[i])
-        label = completeData[i].columns.values.tolist()
-        label = str(label[0])
-        plt.plot(completeData[i], lw=4, marker="o", label=label)
-        plt.legend()
-    plt.title("Entwicklung über den Textverlauf für "+topicFirstWords, fontsize=20)
-    plt.ylabel("Topic scores (absolut)", fontsize=16)
-    plt.xlabel("Textabschnitte", fontsize=16)
-    plt.legend()
-    plt.locator_params(axis = 'x', nbins = 10)
-    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
-    if height != 0:
-        plt.ylim((0.000,height))
-
-    ## Saving the plot to disk.
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    ## Format the topic information for display
-    topicsLabel = str(topic)
-    figure_filename = outfolder+"all_"+str(targetCategories[0])+"-"+topicsLabel+".png"
-    plt.savefig(figure_filename, dpi=dpi)
-    plt.close()
-
-
-def complexProgression(averageDataset, 
-                       firstWordsFile, 
-                       outfolder, 
-                       numOfTopics, 
-                       targetCategories, 
-                       fontscale, 
-                       dpi, height, 
-                       mode, topics):
-    """Function to plot topic development over textual progression."""
-    print("Launched complexProgression.")
-    if mode == "sel": 
-        entriesShown = numOfTopics
-        dataToPlot = get_selSimpleProgression_dataToPlot(averageDataset, 
-                                                         firstWordsFile, 
-                                                         entriesShown, 
-                                                         topics)
-        create_selSimpleProgression_lineplot(dataToPlot, 
-                                             outfolder, 
-                                             fontscale, 
-                                             topics, 
-                                             dpi, height)
-    elif mode == "all": 
-        entriesShown = numOfTopics
-        topics = list(range(0, numOfTopics))
-        for topic in topics:
-            topic = str(topic)
-            dataToPlot = get_allComplexProgression_dataToPlot(averageDataset, 
-                                                             firstWordsFile, 
-                                                             entriesShown, 
-                                                             topic,
-                                                             targetCategories)
-            create_allComplexProgression_lineplot(dataToPlot, targetCategories,
-                                                  outfolder, 
-                                                  fontscale, firstWordsFile, 
-                                                  topic, dpi, height)
-    else: 
-        print("Please select a valid value for 'mode'.")
-    print("Done.")
-    
-    
-
-
-###########################
-## show_segment         ###
-###########################
-
-import shutil
-
-def show_segment(wdir,segmentID, outfolder): 
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    shutil.copyfile(wdir+"2_segs/"+segmentID+".txt",outfolder+segmentID+".txt")
-
-
-
-
-###########################
-## itemPCA              ###            IN DEVELOPMENT
-###########################
-
-from sklearn.decomposition import PCA
-
-#def build_itemScoreMatrix(averageDatasets, targetCategory, 
-#                          topicsPerItem, sortingCriterium):
-#    """Reads Mallet output (topics with words and word weights) into dataframe.""" 
-#    print("- building item score matrix...")
-#    for averageFile in glob.glob(averageDatasets): 
-#        if targetCategory in averageFile:
-#            itemScores = pd.read_table(averageFile, header=0, index_col=0, sep=",")
-#            itemScores = itemScores.T 
-#            if sortingCriterium == "std": 
-#                itemScores["sorting"] = itemScores.std(axis=1)
-#            elif sortingCriterium == "mean": 
-#                itemScores["sorting"] = itemScores.mean(axis=1)
-#            itemScores = itemScores.sort(columns=["sorting"], axis=0, ascending=False)
-#            itemScoreMatrix = itemScores.iloc[0:topicsPerItem,0:-1]
-#            itemScoreMatrix = itemScoreMatrix.T
-#            #print(itemScoreMatrix)
-#            return itemScoreMatrix
-
-def perform_itemPCA(itemScoreMatrix, targetCategory, topicsPerItem, 
-                    sortingCriterium, figsize, outfolder):
-    print("- doing the PCA...")
-    itemScoreMatrix = itemScoreMatrix.T
-    targetDimensions = 2
-    pca = PCA(n_components=targetDimensions)
-    pca = pca.fit(itemScoreMatrix)
-    pca = pca.transform(itemScoreMatrix)
-#   plt.scatter(pca[0,0:20], pca[1,0:20])
-    for i in list(range(0,len(pca)-1)):
-        plt.scatter(pca[i,:], pca[i+1,:])
-
-
-def itemPCA(averageDatasets, targetCategories, 
-            topicsPerItem, sortingCriterium, figsize, outfolder): 
-    """Function to perform PCA on per-item topic scores and plot the result."""
-    print("Launched itemPCA.")
-    for targetCategory in targetCategories: 
-        ## Load topic scores per item and turn into score matrix
-        ## (Using the function from itemClustering above!)
-        itemScoreMatrix = build_itemScoreMatrix(averageDatasets, targetCategory, 
-                                            topicsPerItem, sortingCriterium)
-        ## Do clustering on the dataframe
-        perform_itemPCA(itemScoreMatrix, targetCategory, topicsPerItem, sortingCriterium, figsize, outfolder)
-    print("Done.")
-
-    
-    
-
-    

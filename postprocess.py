@@ -22,57 +22,75 @@ import numpy as np
 # create_mastermatrix        #
 ##############################
 
-
 def get_metadata(metadatafile):
-    print("  Getting metadata...")
+    print("- getting metadata...")
     """Read metadata file and create DataFrame."""
     metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=",")
     #print("metadata\n", metadata)
     return metadata
 
-def get_topicscores(topics_in_texts, numOfTopics): 
+def get_topicscores(topics_in_texts, numOfTopics, version): 
     """Create a matrix of segments x topics, with topic score values, from Mallet output.""" 
-    print("  Getting topicscores...")   
-    ## Load Mallet output (strange format)
-    topicsintexts = pd.read_csv(topics_in_texts, header=None, skiprows=[0], sep="\t", index_col=0)
-    #topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
-    #print("topicsintexts\n", topicsintexts.head())
-    listofsegmentscores = []
-    idnos = []
-    i = -1
-    ## For each row, collect segment and idno
-    for row_index, row in topicsintexts.iterrows():
-        segment = row[1][-15:-4]
-        idno = row[1][-15:-11]
-        #print(segment, idno)
-        idnos.append(idno)
-        topics = []
-        scores = []
-        ## For each segment, get the topic number and its score
-        i +=1
-        for j in range(1,numOfTopics,2):
-            k = j+1
-            topic = topicsintexts.iloc[i,j]
-            score = topicsintexts.iloc[i,k]
-            #score = round(score, 4) ## round off for smaller file.
-            topics.append(topic)
-            scores.append(score)
-        ## Create dictionary of topics and scores for one segment
-        persegment = dict(zip(topics, scores))
-        segmentscores = pd.DataFrame.from_dict(persegment, orient="index")
-        segmentscores.columns = [segment]
-        segmentscores = segmentscores.T
-        listofsegmentscores.append(segmentscores)
-    ## Putting it all together
-    topicscores = pd.concat(listofsegmentscores)
-    topicscores["segmentID"] = topicscores.index
-    topicscores.fillna(0,inplace=True)
-    #print("topicscores\n", topicscores)
-    return topicscores
+    print("- getting topicscores...")  
+    
+    if version == "207":
+        print("(Warning: With Mallet 2.0.7 output, this is very memory-intensive.)")
+        ## Load Mallet 2.0.7 output (strange format)
+        topicsintexts = pd.read_csv(topics_in_texts, header=None, skiprows=[0], sep="\t", index_col=0)
+        topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
+        #print("topicsintexts\n", topicsintexts.head())
+        listofsegmentscores = []
+        idnos = []
+        i = -1
+        ## For each row, collect segment and idno
+        for row_index, row in topicsintexts.iterrows():
+            segment = row[1][-15:-4]
+            idno = row[1][-15:-11]
+            #print(segment, idno)
+            idnos.append(idno)
+            topics = []
+            scores = []
+            ## For each segment, get the topic number and its score
+            i +=1
+            for j in range(1,numOfTopics,2):
+                k = j+1
+                topic = topicsintexts.iloc[i,j]
+                score = topicsintexts.iloc[i,k]
+                #score = round(score, 4) ## round off for smaller file.
+                topics.append(topic)
+                scores.append(score)
+            ## Create dictionary of topics and scores for one segment
+            persegment = dict(zip(topics, scores))
+            segmentscores = pd.DataFrame.from_dict(persegment, orient="index")
+            segmentscores.columns = [segment]
+            segmentscores = segmentscores.T
+            listofsegmentscores.append(segmentscores)
+        ## Putting it all together
+        topicscores = pd.concat(listofsegmentscores)
+        topicscores["segmentID"] = topicscores.index
+        topicscores.fillna(0,inplace=True)
+        print("topicscores\n", topicscores.head())
+        return topicscores
+
+    if version == "208+":
+        ## Load Mallet output (new, not so strange format)
+        header = list(range(0,numOfTopics)) ## for use as column headers in dataframe
+        header = ["segmentID"] + header
+        #print(header)
+        topicsintexts = pd.read_csv(topics_in_texts, header=None, sep="\t", index_col=0)
+        topicsintexts.columns = header
+        #print(topicsintexts)
+        ##topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
+        segmentIDs = topicsintexts.iloc[:,0].str[-15:-4]
+        topicsintexts["segmentID"] = segmentIDs
+        topicscores = topicsintexts
+        #print("topicscores\n", topicscores.head())
+        return topicscores
+
         
 def get_docmatrix(corpuspath):
     """Create a matrix containing segments with their idnos."""
-    print("  Getting docmatrix...")
+    print("- getting docmatrix...")
     ## Create dataframe with filenames of segments and corresponding idnos.
     segs = []
     idnos = []
@@ -88,18 +106,18 @@ def get_docmatrix(corpuspath):
     return docmatrix
     
 def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile, 
-               numOfTopics):
+               numOfTopics, version):
     """Merges the three dataframes into one mastermatrix."""
-    print("  Getting data...")
+    print("- getting data...")
     ## Get all necessary data.
     metadata = get_metadata(metadatafile)
     docmatrix = get_docmatrix(corpuspath)
-    topicscores = get_topicscores(topics_in_texts, numOfTopics)
+    topicscores = get_topicscores(topics_in_texts, numOfTopics, version)
     ## For inspection only.
     #print("Metadata\n", metadata.head())
     #print("Docmatrix\n", docmatrix.head())
     #print("topicscores\n", topicscores.head())
-    print("  Merging data...")    
+    print("- merging data...")    
     ## Merge metadata and docmatrix, matching each segment to its metadata.
     mastermatrix = pd.merge(docmatrix, metadata, how="inner", on="idno")  
     #print("mastermatrix: metadata and docmatrix\n", mastermatrix)
@@ -122,14 +140,13 @@ def add_binData(mastermatrix, binDataFile):
     return mastermatrix
 
 def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, 
-                        topics_in_texts, numOfTopics, useBins, binDataFile):
+                        topics_in_texts, numOfTopics, useBins, binDataFile, version):
     """Builds the mastermatrix uniting all information about texts and topic scores."""
     print("\nLaunched create_mastermatrix.")
-    print("(Warning: This is very memory-intensive and may take a while.)")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     mastermatrix = merge_data(corpuspath, metadatafile, topics_in_texts, 
-                              mastermatrixfile, numOfTopics)
+                              mastermatrixfile, numOfTopics, version)
     if useBins == True: 
         mastermatrix = add_binData(mastermatrix, binDataFile)
     mastermatrix.to_csv(outfolder+mastermatrixfile, sep=",", encoding="utf-8")
@@ -152,10 +169,10 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
-        if target != "year":
-            avg_topicscores = avg_topicscores.drop(["year"], axis=1)
-        if target != "binID":
-            avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
+        if target != "$pubyear":
+            avg_topicscores = avg_topicscores.drop(["$pubyear"], axis=1)
+        #if target != "binID":
+        #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"

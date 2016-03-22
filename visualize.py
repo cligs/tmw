@@ -334,12 +334,15 @@ def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShow
         ## Remove undesired columns: subsubgenre
         #allScores = allScores.drop("adventure", axis=1)
         ## Sort by standard deviation
-        standardDeviations = allScores.std(axis=1)
-        standardDeviations.name = "std"
-        allScores.index = allScores.index.astype(np.int64)        
-        allScores = pd.concat([allScores, standardDeviations], axis=1)
-        allScores = allScores.sort(columns="std", axis=0, ascending=False)
-        allScores = allScores.drop("std", axis=1)
+        if sorting == "std":
+            standardDeviations = allScores.std(axis=1)
+            standardDeviations.name = "std"
+            allScores.index = allScores.index.astype(np.int64)        
+            allScores = pd.concat([allScores, standardDeviations], axis=1)
+            allScores = allScores.sort(columns="std", axis=0, ascending=False)
+            allScores = allScores.drop("std", axis=1)
+        else: 
+            allScores = allScores
         someScores = allScores[0:topTopicsShown]
         #someScores = someScores.drop(0, axis=1)
         ## Necessary step to align dtypes of indexes for concat.
@@ -368,8 +371,8 @@ def create_distinctiveness_heatmap(dataToPlot,
                                    outfolder):
 
     sns.set_context("poster", font_scale=fontscale)
-    sns.heatmap(dataToPlot, annot=False, cmap="YlOrRd", square=False)
-    # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd
+    sns.heatmap(dataToPlot, annot=False, cmap="RdBu_r", square=False)
+    # Nice: bone_r, copper_r, PuBu, OrRd, GnBu, BuGn, YlOrRd, RdBu_r
     plt.title("Verteilung der Topic Scores", fontsize=20)
     plt.xlabel(targetCategory, fontsize=16)
     plt.ylabel("Top topics (stdev)", fontsize=16)
@@ -379,7 +382,7 @@ def create_distinctiveness_heatmap(dataToPlot,
     ## Saving the plot to disk.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"dist-heatmap_by-"+str(targetCategory)+".png"
+    figure_filename = outfolder+"dist-heatmap_by-"+str(targetCategory)+"-"+str(mode)+".png"
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
@@ -495,14 +498,14 @@ def create_overTime_areaplot(dataToPlot, outfolder, fontscale, topics, dpi):
     plt.close()
 
 def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder, 
-                        numOfTopics, fontscale, dpi, height,  
+                        numberOfTopics, fontscale, dpi, height,  
                         mode, topics):
     """Function to plot development of topics over time using lineplots or areaplots."""
     print("Launched plot_topicsOverTime.")
     if mode == "line": 
         for average in glob.glob(averageDatasets):
             if "decade" in average:
-                entriesShown = numOfTopics
+                entriesShown = numberOfTopics
                 dataToPlot = get_overTime_dataToPlot(average, firstWordsFile, 
                                                      entriesShown, topics)
                 create_overTime_lineplot(dataToPlot, outfolder, fontscale, 
@@ -510,7 +513,7 @@ def plot_topicsOverTime(averageDatasets, firstWordsFile, outfolder,
     elif mode == "area":
         for average in glob.glob(averageDatasets):
             if "decade" in average:
-                entriesShown = numOfTopics
+                entriesShown = numberOfTopics
                 dataToPlot = get_overTime_dataToPlot(average, firstWordsFile, 
                                                      entriesShown, topics)
                 create_overTime_areaplot(dataToPlot, outfolder, fontscale, 

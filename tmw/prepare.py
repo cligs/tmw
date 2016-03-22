@@ -102,7 +102,6 @@ def read_tei5(teiPath, txtFolder, xpath):
 
 # Utility function for writing segments
 def writesegment(segment, outfolder, filename, counter, mode="w"):
-    from os.path import join
     segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
     with open(segname, mode) as output:
         output.write(' '.join(segment))
@@ -258,7 +257,6 @@ def segments_to_bins(inpath, outfolder, binsnb):
     import os
     import glob
     from collections import Counter
-    import pandas as pd
 
     ### Define various objects for later use.
     txtids = []

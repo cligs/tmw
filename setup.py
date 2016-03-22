@@ -10,6 +10,6 @@ setup(name="tmw",
     packages=["tmw"],
     install_requires=[
     "pandas>==0.17.0",
-    "numpy>==1.9.0A",
+    "numpy>==1.9.0A"
     ]
     zip_safe=False)

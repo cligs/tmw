@@ -19,7 +19,7 @@ sys.path.append(os.path.abspath("/home/christof/Repos/cligs/"))
 
 ## Optional: Activate to remove a (mistaken or redundant path)    
 #sys.path.remove(os.path.abspath("/usr/local/lib/python3.4/dist-packages/"))
-#sys.path.remove(os.path.abspath("/home/christof/Repos/cligs/"))
+#sys.path.remove(os.path.abspath("/home/christof/Repos/cligs/tmw"))
 #sys.path.remove(os.path.abspath("/usr/lib/python3.4/"))
 #sys.path.remove(os.path.abspath("/usr/local/lib/python3.4/dist-packages/numpy-1.10.4.egg"))
 

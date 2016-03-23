@@ -24,8 +24,6 @@ import subprocess
 def call_mallet_import(mallet_path, infolder,outfolder, outfile, stoplist_project):
     """Function to import text data into Mallet."""
     print("\nLaunched call_mallet_import.")    
-    import subprocess
-    import os
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)    
     ### Fixed parameters.

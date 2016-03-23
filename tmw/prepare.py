@@ -355,7 +355,6 @@ def call_treetagger(infolder, outfolder, tagger):
 
     import os
     import glob
-    import subprocess
 
     inpath = infolder + "*.txt"
     infiles = glob.glob(inpath)

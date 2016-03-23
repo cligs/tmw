@@ -22,6 +22,8 @@ import matplotlib
 print("  matplotlib: current = ", matplotlib.__version__, " | required =  1.4.3")
 import nltk
 print("        nltk: current = ", nltk.__version__, " | required =  3.0.4")
+#import PIL
+#print("         PIL: current = ", PIL.__version__, " | required =  3.0.4")
 #import subprocess
 #print("  subprocess: current version: ", subprocess.__version__, " | required: 1.4.3")
 #import lxml
@@ -36,6 +38,7 @@ print("        nltk: current = ", nltk.__version__, " | required =  3.0.4")
 # Recent subprocess
 # Recent lxml
 # Recent wordcloud
+# Recent PIL
 
 
 

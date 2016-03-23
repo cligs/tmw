@@ -97,8 +97,6 @@ def crop_images(inpath, outfolder, left, upper, right, lower):
     """ Function to crop wordle files."""
     print("Launched crop_images.")
     from PIL import Image
-    import glob
-    import os
 
     counter = 0
     for file in glob.glob(inpath): 

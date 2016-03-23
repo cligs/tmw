@@ -88,7 +88,7 @@ def read_tei5(teiPath, txtFolder, xpath):
             text = re.sub("\t{1,8}", "\t", text)
 
             outtext = str(text)
-            outfile = txtFolder + filename + ".txt"
+            outfile = os.path.join(txtFolder, filename +".txt")
         with open(outfile,"w") as output:
             output.write(outtext)
             
@@ -254,8 +254,6 @@ def segments_to_bins(inpath, outfolder, binsnb):
     print("\nLaunched segments_to_bins.")
 
     import math, sys
-    import os
-    import glob
     from collections import Counter
 
     ### Define various objects for later use.
@@ -352,28 +350,21 @@ def segments_to_bins(inpath, outfolder, binsnb):
 def call_treetagger(infolder, outfolder, tagger):
     """Function to call TreeTagger from Python"""
     print("\nLaunched call_treetagger.")
-
-    import os
-    import glob
-
     inpath = infolder + "*.txt"
     infiles = glob.glob(inpath)
     counter = 0
-    
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-
     for infile in infiles: 
         #print(os.path.basename(infile))
         counter+=1
-        outfile = outfolder + os.path.basename(infile)[:-4] + ".trt"
+        outfile = os.path.join(outfolder, os.path.basename(infile)[:-4] + ".trt")
         #print(outfile)
         command = tagger + " < " + infile + " > " + outfile
         subprocess.call(command, shell=True)
     print("Files treated: ", counter)
     print("Done.")
-
-
+    
 
 #################################
 # make_lemmatext                #
@@ -382,10 +373,6 @@ def call_treetagger(infolder, outfolder, tagger):
 def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
     """Function to extract lemmas from TreeTagger output."""
     print("\nLaunched make_lemmatext.")
-
-    import re
-    import os
-    import glob
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)

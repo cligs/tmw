@@ -11,7 +11,7 @@
 import sys
 import os
 
-# Enter the path to the folder in which your toolbox folder is located.
+# Enter the path to the folder in which your tmw folder is located.
 sys.path.append(os.path.abspath("/home/christof/Repos/cligs/tmw/"))
 
 # Optional: Activate to remove a (mistaken or redundant path)    

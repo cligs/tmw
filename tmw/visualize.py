@@ -151,8 +151,10 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
         elif mode == "absolute": # absolute values
             allData = allData
         allData = allData.T
+        print(allData)
         ## Add top topic words to table for display later
         firstWords = get_firstWords(firstWordsFile)
+        print(len(firstWords))
         allData["firstWords"] = firstWords.iloc[:,0].values
         ## Create subset of data based on target.
         dataToPlot = allData[[item,"firstWords"]]
@@ -326,6 +328,8 @@ def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShow
         allScores = allScores.T
         ## Add top topic words to table for display later
         firstWords = get_heatmap_firstWords(firstWordsFile)
+        allScores = allScores.drop("century")        #TODO: fix underlying issue
+        allScores = allScores.drop("decade")         #TODO: fix underlying issue
         allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, firstWords], axis=1, join="inner")
         #print(allScores)

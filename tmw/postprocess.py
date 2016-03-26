@@ -169,8 +169,9 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
-        if target != "$pubyear":
-            avg_topicscores = avg_topicscores.drop(["$pubyear"], axis=1)
+        #print(avg_topicscores)
+        if target != "year":
+            avg_topicscores = avg_topicscores.drop(["year"], axis=1)
         #if target != "binID":
         #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)

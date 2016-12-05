@@ -11,31 +11,27 @@ import model
 
 
 ### Set the general working directory. End with slash.
-WorkDir = "/media/christof/data/Dropbox/0-Analysen/2016/gddh-dhq/tc391zz/"
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/"
 
 
 ### Shared parameters
-MalletPath = "/media/christof/data/repos/other/Mallet/bin/mallet"
-TextFolder = WorkDir + "5_lemmata/"
-MalletFolder = WorkDir + "6_mallet/" 
+MalletPath = "/home/ulrike/Programme/mallet-2.0.8RC3/bin/mallet"
+TextFolder = wdir + "5_lemmata/"
+MalletFolder = wdir + "6_mallet/" 
 CorpusFile = MalletFolder + "tc.mallet"
 
 
 ### Import parameters (call_mallet_import)
-StoplistProject = "./extras/fr-lemma_stopwords-project.txt"
-model.call_mallet_import(MalletPath, TextFolder, 
-                         MalletFolder, CorpusFile, StoplistProject)
+StoplistProject = wdir + "/extras/stopwords_pt.txt"
+#model.call_mallet_import(MalletPath, TextFolder, MalletFolder, CorpusFile, StoplistProject)
 
 
 ### Modeling parameters (call_mallet_model)
-NumTopics = [50, 60, 70, 80, 90, 100]
-NumIterations = [6000]
-OptimizeIntervals = [50, 100, 300, 500, 1000, 2000, 3000, 7000]
+NumTopics = [30]
+NumIterations = [1000]
+OptimizeIntervals = [100]
 NumTopWords = 50
 NumThreads = 4
-ModelFolder = WorkDir + "7_model/"
+ModelFolder = wdir + "7_model/"
 
-model.call_mallet_modeling(MalletPath, CorpusFile, ModelFolder, 
-                           NumTopics, NumIterations, OptimizeIntervals, 
-                           NumTopWords, NumThreads)
-
+#model.call_mallet_modeling(MalletPath, CorpusFile, ModelFolder, NumTopics, NumIterations, OptimizeIntervals, NumTopWords, NumThreads)

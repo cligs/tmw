@@ -6,22 +6,22 @@
 import prepare
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/" # end with slash.
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/" # end with slash.
 
 
 ### segmenter
 ### Split entire texts into smaller segments.
 inpath = wdir + "1_txt/*.txt"
 outfolder = wdir + "2_segs/"
-target = 1200
-sizetolerancefactor = 1.1 # 1 = exact target; >1 = with some tolerance (1.1 = +/- 10%).
-preserveparagraphs = True # True|False
+target = 5000
+sizetolerancefactor = 1 # 1 = exact target; >1 = with some tolerance (1.1 = +/- 10%).
+preserveparagraphs = False # True|False
 #prepare.segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs)
 
 ### segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_bins/" 
-binsnb = 3	
+binsnb = 5	
 #prepare.segments_to_bins(inpath, outfolder, binsnb)
 
 
@@ -36,7 +36,7 @@ tagger = "/home/ulrike/Programme/tree-tagger-linux-3.2.1/cmd/tree-tagger-portugu
 ### Extract selected lemmata from tagged text.
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
-mode = "ptNV" # frN=nouns, esN=nouns, ptN=nouns, frNV=nouns+verbs, ptNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs, ptNVAA=nouns+verbs+adj+adverbs 
+mode = "ptN" # frN=nouns, esN=nouns, ptN=nouns, frNV=nouns+verbs, ptNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs, ptNVAA=nouns+verbs+adj+adverbs 
 stoplist_errors = wdir + "extras/stopwords_errors_pt.txt" # in tmw folder
 prepare.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 

@@ -22,7 +22,7 @@ import numpy as np
 def get_metadata(metadatafile):
     print("- getting metadata...")
     """Read metadata file and create DataFrame."""
-    metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=";")
+    metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=",")
     #print("metadata\n", metadata)
     return metadata
 
@@ -168,8 +168,8 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
         avg_topicscores = grouped.agg(np.mean)
         #avg_topicscores = grouped.agg(np.median)
         #print(avg_topicscores)
-        if target != "year_reference":
-            avg_topicscores = avg_topicscores.drop(["year_reference"], axis=1)
+        #if target != "year_reference":
+        #    avg_topicscores = avg_topicscores.drop(["year_reference"], axis=1)
         #if target != "binID":
         #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)

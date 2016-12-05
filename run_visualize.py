@@ -7,31 +7,28 @@
 import visualize
 
 ### Set the general working directory.
-wdir = "/media/christof/data/Dropbox/0-Analysen/2016/gddh-dhq/tc391zz/" # end with slash.
-number_of_topics = 60
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/" # end with slash.
+### Set parameters as used in the topic model
+NumTopics = 30
+NumIterations = 1000
+OptimizeIntervals = 100
+param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
 
 ### make_wordle_from_mallet
 ### Creates a wordle for each topic.
-word_weights_file = wdir + "7_model/word-weights_060tp-6000it-0300in.csv"
-topics = 60
+word_weights_file = wdir + "7_model/word-weights_" + param_settings + ".csv"
 words = 40
-outfolder = wdir + "9_visuals/060tp-0300in/wordles/"
+outfolder = wdir + "9_visuals/" + param_settings + "/wordles/"
 font_path = wdir + "extras/AlegreyaSans-Regular.otf"
 dpi = 300
-num_topics = number_of_topics
-TopicRanksFile = wdir + "9_aggregates/060tp-0300in/topicRanks.csv"
-#visualize.make_wordle_from_mallet(word_weights_file,
-#                                  num_topics, 
-#                                  words,
-#                                  TopicRanksFile,                                  
-#                                  outfolder,
-#                                  font_path,
-#                                  dpi)
+num_topics = NumTopics
+TopicRanksFile = wdir + "8_aggregates/" + param_settings + "/topicRanks.csv"
+#visualize.make_wordle_from_mallet(word_weights_file, num_topics, words, TopicRanksFile, outfolder, font_path, dpi)
 
 ### crop_images
 ### Crops the wordle image files, use if needed.
-inpath = wdir + "9_visuals/060tp-0300in/wordles/*.png"
-outfolder = wdir + "9_visuals/060tp-0300in/wordles/"
+inpath = wdir + "8_visuals/" + param_settings + "/wordles/*.png"
+outfolder = wdir + "8_visuals/" + param_settings + "/wordles/"
 left = 500 # image start at the left
 upper = 50 # image start at the top
 right = 3400 # image end on the right
@@ -40,46 +37,47 @@ lower = 2350 # image end at the bottom
 
 ### plot_topTopics
 ### For each item from a category, creates a barchart of the top topics.
-averageDatasets = wdir+"/7_aggregates/060tp-0300in/avg*.csv" 
-firstWordsFile = wdir+"/7_aggregates/060tp-0300in/firstWords.csv"
-numberOfTopics = 250 # must be actual number of topics modeled.
-targetCategories = ["author-name", "author-gender", "decade", "subgenre", "title"] 
+averageDatasets = wdir+"/8_aggregates/" + param_settings + "/avg*.csv" 
+firstWordsFile = wdir+"/8_aggregates/" + param_settings + "/firstWords.csv"
+numberOfTopics = NumTopics # must be actual number of topics modeled.
+targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "decade", "segmentID"] 
 # one or several: "author-name", "author-gender", "decade", "subgenre", "title"
 topTopicsShown = 30 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
-outfolder = wdir+"/8_visuals/060tp-0300in/topTopics/"
-#tmw.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, topTopicsShown, fontscale, height, dpi, outfolder)
+outfolder = wdir+"/9_visuals/" + param_settings + "/topTopics/"
+mode = "normalized" # normalized, z-scores, absolute???
+#visualize.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, mode, topTopicsShown, fontscale, height, dpi, outfolder)
 
 ### plot_topItems
 ### For each topic, creates a barchart with top items from a category. 
-averageDatasets = wdir+"/9_aggregates/060tp-0300in/avg*.csv" 
-outfolder = wdir+"/9_visuals/060tp-0300in/topItems/"
-firstWordsFile = wdir+"9_aggregates/060tp-0300in/firstWords.csv"
-numberOfTopics = 60 # must be actual number of topics modeled. 
-targetCategories = ["tc_author-short", "tc_subgenre", "idno",] 
+averageDatasets = wdir+"/8_aggregates/" + param_settings + "/avg*.csv" 
+outfolder = wdir+"/9_visuals/" + param_settings + "/topItems/"
+firstWordsFile = wdir+"8_aggregates/" + param_settings + "/firstWords.csv"
+numberOfTopics = NumTopics # must be actual number of topics modeled. 
+targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "decade", "segmentID"]
 # choose one or several from: author-name, decade, subgenre, gender, idno, title, segmentID
 topItemsShown = 20 
 fontscale = 0.8
 height = 0 # 0=automatic and flexible
 dpi = 300
-visualize.plot_topItems(averageDatasets, outfolder, firstWordsFile, numberOfTopics, targetCategories, topItemsShown, fontscale, height, dpi)
+#visualize.plot_topItems(averageDatasets, outfolder, firstWordsFile, numberOfTopics, targetCategories, topItemsShown, fontscale, height, dpi)
 
 ### plot_distinctiveness_heatmap
 ### For each category, make a heatmap of most distinctive topics. 
-averageDatasets = wdir+"9_aggregates/060tp-0300in/avg*.csv" 
-firstWordsFile = wdir+"9_aggregates/060tp-0300in/firstWords.csv"
-outfolder = wdir+"9_visuals/060tp-0300in/distinctiveness/"
-targetCategories = ["tc_subgenre"] 
+averageDatasets = wdir+"8_aggregates/" + param_settings + "/avg*.csv" 
+firstWordsFile = wdir+"8_aggregates/" + param_settings + "/firstWords.csv"
+outfolder = wdir+"9_visuals/" + param_settings + "/distinctiveness/"
+targetCategories = ["subgenre"] 
 # one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
-numberOfTopics = 60 # must be actual number of topics modeled.
+numberOfTopics = NumTopics # must be actual number of topics modeled.
 topTopicsShown = 20 
-mode = "meannorm" # meannorm|mediannorm|zscores|absolute
+mode = "zscores" # meannorm|mediannorm|zscores|absolute
 sorting = "std"
 fontscale = 1.0
 dpi = 300
-#visualize.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, mode, sorting, fontscale, dpi)
+visualize.plot_distinctiveness_heatmap(averageDatasets, firstWordsFile, outfolder, targetCategories, numberOfTopics, topTopicsShown, mode, sorting, fontscale, dpi)
 
 ### plot_topicsOverTime
 ### Creates lineplots or areaplots for topic development over time.

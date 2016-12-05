@@ -7,45 +7,49 @@
 import postprocess
 
 ### Set the general working directory.
-wdir = "/media/christof/data/Dropbox/0-Analysen/2016/gddh-dhq/tc391zz/" # end with slash.
-
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/" # end with slash.
+### Set parameters as used in the topic model
+NumTopics = 30
+NumIterations = 1000
+OptimizeIntervals = 100
+param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
 
 ### create_mastermatrix
 ### Creates the mastermatrix with all information in one place.
 corpuspath = wdir+"/2_segs/*.txt"
-outfolder = wdir+"9_aggregates/060tp-0300in/"
+outfolder = wdir+"8_aggregates/" + param_settings + "/"
 mastermatrixfile = "mastermatrix.csv"
 metadatafile = wdir+"metadata.csv"
-topics_in_texts = wdir+"7_model/topics-in-texts_060tp-6000it-0300in.csv"
-number_of_topics = 60
+topics_in_texts = wdir+"7_model/topics-in-texts_" + param_settings + ".csv"
+number_of_topics = NumTopics
 useBins = True
 binDataFile = wdir + "3_bins/segs-and-bins.csv"
-version  = "208+"
-postprocess.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile, version)
+version  = "208+" # which MALLET version is in use?
+#postprocess.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile, version)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
-mastermatrixfile = wdir+"/9_aggregates/060tp-0300in/mastermatrix.csv"
-outfolder = wdir+"9_aggregates/060tp-0300in/"
-# targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration
-targets = ["idno", "tc_subgenre", "tc_author-short"] 
-postprocess.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
+mastermatrixfile = wdir+"/8_aggregates/" + param_settings + "/mastermatrix.csv"
+outfolder = wdir+"8_aggregates/" + param_settings + "/"
+# targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration|narrative-perspective (according to available metadata)
+targets = ["idno", "author-name", "title", "narrative-perspective", "subgenre", "decade", "segmentID"] 
+#postprocess.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
-topicWordFile = wdir+"7_model/topics-with-words_060tp-6000it-0300in.csv"
-outfolder = wdir+"9_aggregates/060tp-0300in/"
+topicWordFile = wdir+"7_model/topics-with-words_" + param_settings + ".csv"
+outfolder = wdir+"8_aggregates/" + param_settings + "/"
 filename = "firstWords.csv"
-postprocess.save_firstWords(topicWordFile, outfolder, filename)
+#postprocess.save_firstWords(topicWordFile, outfolder, filename)
 
 ### Save topic ranks
-topicWordFile = wdir+"7_model/topics-with-words_060tp-6000it-0300in.csv"
-outfolder = wdir+"9_aggregates/060tp-0300in/"
+topicWordFile = wdir+"7_model/topics-with-words_" + param_settings + ".csv"
+outfolder = wdir+"8_aggregates/" + param_settings + "/"
 filename = "topicRanks.csv"
-postprocess.save_topicRanks(topicWordFile, outfolder, filename)
+#postprocess.save_topicRanks(topicWordFile, outfolder, filename)
 
 ### Average topic scores for two criteria (binID + subgenre)
-mastermatrixfile = wdir+"/9_aggregates/060tp-0300in/mastermatrix.csv"
-targets = ["binID", "tc_subgenre"]
-outfolder = wdir+"9_aggregates/060tp-0300in/"
+mastermatrixfile = wdir+"/8_aggregates/" + param_settings + "/mastermatrix.csv"
+targets = ["binID", "subgenre"]
+outfolder = wdir+"8_aggregates/" + param_settings + "/"
 postprocess.calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder)

@@ -331,7 +331,10 @@ def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShow
         ## Add top topic words to table for display later
         firstWords = get_heatmap_firstWords(firstWordsFile)
         #allScores = allScores.drop("century")        #TODO: fix underlying issue
-        #allScores = allScores.drop("decade")         #TODO: fix underlying issue
+        allScores = allScores.drop("decade")         #TODO: fix underlying issue
+        allScores = allScores.drop("year")
+        allScores = allScores.drop("words")
+        allScores = allScores.drop("binID")
         allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, firstWords], axis=1, join="inner")
         #print(allScores)

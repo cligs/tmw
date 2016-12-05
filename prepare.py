@@ -412,6 +412,8 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                         elif "NC" in pos:
                             if "<unknown>" not in lemma:
                                 lemmata.append(lemma.lower())
+                            #else:
+                            #    lemmata.append(token.lower())
                     if mode == "ptNV":
                         if "|" in lemma:
                             lemmata.append(token.lower())

@@ -6,7 +6,7 @@
 import prepare
 
 ### Set the general working directory.
-wdir = "/media/christof/data/Dropbox/0-Analysen/2016/gddh-dhq/tc391zz/" # end with slash.
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/" # end with slash.
 
 
 ### segmenter
@@ -21,23 +21,23 @@ preserveparagraphs = True # True|False
 ### segments_to_bins: inpath, outfile
 inpath = wdir + "2_segs/*.txt"
 outfolder = wdir + "3_bins/" 
-binsnb = 5
-prepare.segments_to_bins(inpath, outfolder, binsnb)
+binsnb = 3	
+#prepare.segments_to_bins(inpath, outfolder, binsnb)
 
 
 ### call_treetagger
 ### Perform lemmatization and POS tagging.
 infolder = wdir + "2_segs/"
 outfolder = wdir + "4_tagged/"
-tagger = "/home/christof/Programs/TreeTagger/cmd/tree-tagger-french"
+tagger = "/home/ulrike/Programme/tree-tagger-linux-3.2.1/cmd/tree-tagger-portuguese"
 #prepare.call_treetagger(infolder, outfolder, tagger) 
 
 ### make_lemmatext
 ### Extract selected lemmata from tagged text.
 inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
-mode = "frNVA" # frN=nouns, esN=nouns, frNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs 
-stoplist_errors = "./extras/fr-lemma_stopwords-errors.txt" # in tmw folder
-#prepare.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
+mode = "ptNV" # frN=nouns, esN=nouns, ptN=nouns, frNV=nouns+verbs, ptNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs, ptNVAA=nouns+verbs+adj+adverbs 
+stoplist_errors = wdir + "extras/stopwords_errors_pt.txt" # in tmw folder
+prepare.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
 

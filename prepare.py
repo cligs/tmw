@@ -338,7 +338,7 @@ def segments_to_bins(inpath, outfolder, binsnb):
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    outfile = outfolder+"segs-and-bins.csv"
+    outfile = join(outfolder, "segs-and-bins.csv")
     with open(outfile, "w") as outfile:
         files_and_bins.to_csv(outfile, index=False)
 
@@ -350,7 +350,7 @@ def segments_to_bins(inpath, outfolder, binsnb):
 def call_treetagger(infolder, outfolder, tagger):
     """Function to call TreeTagger from Python"""
     print("\nLaunched call_treetagger.")
-    inpath = infolder + "*.txt"
+    inpath = join(infolder, "*.txt")
     infiles = glob.glob(inpath)
     counter = 0
     if not os.path.exists(outfolder):
@@ -358,7 +358,7 @@ def call_treetagger(infolder, outfolder, tagger):
     for infile in infiles: 
         #print(os.path.basename(infile))
         counter+=1
-        outfile = os.path.join(outfolder, os.path.basename(infile)[:-4] + ".trt")
+        outfile = join(outfolder, os.path.basename(infile)[:-4] + ".trt")
         #print(outfile)
         command = tagger + " < " + infile + " > " + outfile
         subprocess.call(command, shell=True)
@@ -436,7 +436,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
             #lemmata = re.sub("dorer","doré/dorer", lemmata)
             newfilename = os.path.basename(file)[:-4] + ".txt"
             #print(outfolder, newfilename)
-            with open(os.path.join(outfolder, newfilename),"w") as output:
+            with open(join(outfolder, newfilename),"w") as output:
                 output.write(str(lemmata))
     print("Files treated: ", counter)
     print("Done.")

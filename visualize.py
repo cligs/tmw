@@ -13,6 +13,7 @@
 ##################################################################
 
 import os
+from os.path import join
 import glob
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -187,10 +188,10 @@ def create_barchart_topTopics(dataToPlot, targetCategory, mode, item,
         plt.ylim((0.000,height))
    
     ## Saving the plot to disk.
-    outfolder = outfolder+targetCategory+"/"
+    outfolder = join(outfolder, targetCategory)
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"tT_"+mode+"-"+str(item)+".png"
+    figure_filename = join(outfolder, "tT_"+mode+"-"+str(item)+".png")
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
@@ -254,10 +255,10 @@ def create_topItems_barchart(dataToPlot, firstWords, targetCategory, topic,
     plt.tight_layout() 
 
     ## Saving the plot to disk.
-    outfolder = outfolder+targetCategory+"/"
+    outfolder = join(outfolder, targetCategory)
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"tI_by-"+targetCategory+"-{:03d}".format(topic)+".png"
+    figure_filename = join(outfolder, "tI_by-"+targetCategory+"-{:03d}".format(topic)+".png")
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 
@@ -394,7 +395,7 @@ def create_distinctiveness_heatmap(dataToPlot,
     ## Saving the plot to disk.
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    figure_filename = outfolder+"dist-heatmap_by-"+str(targetCategory)+"-"+str(mode)+".png"
+    figure_filename = join(outfolder, "dist-heatmap_by-"+str(targetCategory)+"-"+str(mode)+".png")
     plt.savefig(figure_filename, dpi=dpi)
     plt.close()
 

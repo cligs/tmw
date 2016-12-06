@@ -15,6 +15,7 @@
 
 import os
 import subprocess
+from os.path import join
 
 #################################
 # call_mallet_import            #
@@ -69,12 +70,12 @@ def call_mallet_modeling(MalletPath,
                 print("Now modeling with:", Params)
                 DocTopicsMax = Topics
                 ### Output parameters                
-                word_topics_counts_file = ModelFolder + "words-by-topics_"+Params+".txt"
-                topic_word_weights_file = ModelFolder + "word-weights_"+Params+".csv"
-                output_topic_keys = ModelFolder + "topics-with-words_"+Params+".csv"
-                output_doc_topics = ModelFolder + "topics-in-texts_"+Params+".csv"
-                output_topic_state = ModelFolder + "topic_state_"+Params+".gz"
-                DiagnosticsFile = ModelFolder + "diagnostics_"+Params+".xml"
+                word_topics_counts_file = join(ModelFolder, "words-by-topics_" + Params + ".txt")
+                topic_word_weights_file = join(ModelFolder, "word-weights_" + Params + ".csv")
+                output_topic_keys = join(ModelFolder, "topics-with-words_" + Params + ".csv")
+                output_doc_topics = join(ModelFolder, "topics-in-texts_" + Params + ".csv")
+                output_topic_state = join(ModelFolder, "topic_state_" + Params + ".gz")
+                DiagnosticsFile = join(ModelFolder, "diagnostics_" + Params + ".xml")
                 # Building the call
                 command = (MalletPath +" train-topics" +
                           " --input "+ CorpusFile +

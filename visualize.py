@@ -90,7 +90,7 @@ def make_wordle_from_mallet(word_weights_file,
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         figure_filename = "wordle_tp"+"{:03d}".format(topic) + ".png"
-        plt.savefig(outfolder + figure_filename, dpi=dpi)
+        plt.savefig(join(outfolder, figure_filename), dpi=dpi)
         plt.close()
     print("Done.")
     

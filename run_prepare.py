@@ -38,6 +38,6 @@ inpath = wdir + "4_tagged/*.trt"
 outfolder = wdir + "5_lemmata/"
 mode = "ptN" # frN=nouns, esN=nouns, ptN=nouns, frNV=nouns+verbs, ptNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs, ptNVAA=nouns+verbs+adj+adverbs 
 stoplist_errors = wdir + "extras/stopwords_errors_pt.txt" # in tmw folder
-prepare.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
+#prepare.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
 

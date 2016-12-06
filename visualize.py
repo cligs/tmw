@@ -151,7 +151,11 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
         elif mode == "absolute": # absolute values
             allData = allData
         allData = allData.T
-        print(allData)
+        allData = allData.drop("decade")         #TODO: fix underlying issue
+        allData = allData.drop("year")
+        allData = allData.drop("words")
+        allData = allData.drop("binID")
+        print(allData.shape)
         ## Add top topic words to table for display later
         firstWords = get_firstWords(firstWordsFile)
         print(len(firstWords))
@@ -169,7 +173,7 @@ def create_barchart_topTopics(dataToPlot, targetCategory, mode, item,
     """Function to make a topTopics barchart."""
     print("  Creating plot for: "+str(item))
     ## Doing the plotting.
-    dataToPlot.plot(kind="bar", legend=None) 
+    dataToPlot.plot(kind="bar", legend=None, color="#003399") 
     plt.setp(plt.xticks()[1], rotation=90, fontsize = 11)   
     if mode == "normalized": 
         plt.title("Top-distinctive Topics für: "+str(item), fontsize=15)
@@ -240,7 +244,7 @@ def create_topItems_barchart(dataToPlot, firstWords, targetCategory, topic,
     """Function to make a topItems barchart."""
     print("  Creating plot for topic: "+str(topic))
     ## Doing the plotting.
-    dataToPlot.plot(kind="bar", legend=None) 
+    dataToPlot.plot(kind="bar", legend=None, color="#003399") 
     plt.title("Top "+targetCategory+" für topic: "+str(firstWords), fontsize=15)
     plt.ylabel("Scores", fontsize=13)
     plt.xlabel(targetCategory, fontsize=13)
@@ -383,7 +387,8 @@ def create_distinctiveness_heatmap(dataToPlot,
     plt.title("Topic Score Distribution", fontsize=20)
     plt.xlabel(targetCategory, fontsize=14)
     plt.ylabel("Most distinctive topics", fontsize=14)
-    plt.setp(plt.xticks()[1], rotation=0, fontsize = 14)   
+    plt.setp(plt.xticks()[1], rotation=90, fontsize = 14)   
+    plt.setp(plt.yticks()[1], rotation=0, fontsize = 14)
     plt.tight_layout() 
 
     ## Saving the plot to disk.

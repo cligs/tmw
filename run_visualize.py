@@ -40,14 +40,14 @@ lower = 2350 # image end at the bottom
 averageDatasets = wdir+"/8_aggregates/" + param_settings + "/avg*.csv" 
 firstWordsFile = wdir+"/8_aggregates/" + param_settings + "/firstWords.csv"
 numberOfTopics = NumTopics # must be actual number of topics modeled.
-targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "decade", "segmentID"] 
+targetCategories = ["author-name", "title", "narrative-perspective", "subgenre"]
 # one or several: "author-name", "author-gender", "decade", "subgenre", "title"
 topTopicsShown = 30 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
 outfolder = wdir+"/9_visuals/" + param_settings + "/topTopics/"
-mode = "normalized" # normalized, z-scores, absolute???
+mode = "normalized" # normalized, absolute
 #visualize.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, mode, topTopicsShown, fontscale, height, dpi, outfolder)
 
 ### plot_topItems
@@ -56,7 +56,7 @@ averageDatasets = wdir+"/8_aggregates/" + param_settings + "/avg*.csv"
 outfolder = wdir+"/9_visuals/" + param_settings + "/topItems/"
 firstWordsFile = wdir+"8_aggregates/" + param_settings + "/firstWords.csv"
 numberOfTopics = NumTopics # must be actual number of topics modeled. 
-targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "decade", "segmentID"]
+targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "decade"]
 # choose one or several from: author-name, decade, subgenre, gender, idno, title, segmentID
 topItemsShown = 20 
 fontscale = 0.8

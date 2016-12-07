@@ -192,7 +192,7 @@ def calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder):
     print("\nLaunched calculate_complexAverageTopicScores.")
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    with open(mastermatrixfile, "r") as infile:
+    with open(mastermatrixfile, "r", encoding="utf-8") as infile:
         mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
     ## Calculate average topic scores for each target category 
     grouped = mastermatrix.groupby(targets, axis=0)
@@ -218,7 +218,7 @@ def calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder):
 def save_firstWords(topicWordFile, outfolder, filename):
     """Save a table of topics with their three most important words for each topic."""
     print("Launched save_someFirstWords.")
-    with open(topicWordFile, "r") as infile:
+    with open(topicWordFile, "r", encoding="utf-8") as infile:
         firstWords = {}
         topicWords = pd.read_csv(infile, sep="\t", header=None)
         topicWords = topicWords.drop(1, axis=1)
@@ -241,7 +241,7 @@ def save_firstWords(topicWordFile, outfolder, filename):
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         outfile = join(outfolder, filename)
-        with open(outfile, "w") as outfile: 
+        with open(outfile, "w", encoding="utf-8") as outfile: 
             firstWordsSeries.to_csv(outfile)
         print("Done.")
 
@@ -253,7 +253,7 @@ def save_firstWords(topicWordFile, outfolder, filename):
 def save_topicRanks(topicWordFile, outfolder, filename):
     """Save a list of topics with their rank by topic score."""
     print("Launched save_topicRanks.")
-    with open(topicWordFile, "r") as infile:
+    with open(topicWordFile, "r", encoding="utf-8") as infile:
         topicRanks = pd.read_csv(infile, sep="\t", header=None)
         topicRanks = topicRanks.drop(2, axis=1)
         topicRanks.rename(columns={0:"Number"}, inplace=True)
@@ -265,7 +265,7 @@ def save_topicRanks(topicWordFile, outfolder, filename):
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         outfile = join(outfolder, filename)
-        with open(outfile, "w") as outfile: 
+        with open(outfile, "w", encoding="utf-8") as outfile: 
             topicRanks.to_csv(outfile)
         print("Done.")
 

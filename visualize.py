@@ -57,7 +57,7 @@ def get_color_scale(word, font_size, position, orientation, font_path, random_st
 
 def get_topicRank(topic, TopicRanksFile):
     #print("getting topic rank.")
-    with open(TopicRanksFile, "r") as infile:
+    with open(TopicRanksFile, "r", encoding="utf-8") as infile:
         topicRanks = pd.read_csv(infile, sep=",", index_col=0)
         rank = int(topicRanks.iloc[topic]["Rank"])
         return rank
@@ -119,7 +119,7 @@ def crop_images(inpath, outfolder, left, upper, right, lower):
 def get_firstWords(firstWordsFile):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
+    with open(firstWordsFile, "r", encoding="utf-8") as infile: 
         firstWords = pd.read_csv(infile, header=None)
         firstWords.drop(0, axis=1, inplace=True)
         firstWords.rename(columns={1:"topicwords"}, inplace=True)
@@ -129,7 +129,7 @@ def get_firstWords(firstWordsFile):
 def get_targetItems(average, targetCategory):
     """Get a list of items included in the target category."""
     print(" Getting targetItems for: "+targetCategory)
-    with open(average, "r") as infile:
+    with open(average, "r", encoding="utf-8") as infile:
         averageTopicScores = pd.DataFrame.from_csv(infile, sep=",")
         #print(averageTopicScores.head())
         targetItems = list(averageTopicScores.index.values)
@@ -139,7 +139,7 @@ def get_targetItems(average, targetCategory):
 def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
     """From average topic score data, select data to be plotted."""
     #print("  Getting dataToPlot.")
-    with open(average, "r") as infile:
+    with open(average, "r", encoding="utf-8") as infile:
         ## Read the average topic score data
         allData = pd.DataFrame.from_csv(infile, sep=",")
         if mode == "normalized": # mean normalization
@@ -218,7 +218,7 @@ def plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics,
 def get_topItems_firstWords(firstWordsFile, topic):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
+    with open(firstWordsFile, "r", encoding="utf-8") as infile: 
         firstWords = pd.DataFrame.from_csv(infile, header=None)
         firstWords.columns = ["firstWords"]
         # Only the words for one topic are needed.
@@ -229,7 +229,7 @@ def get_topItems_firstWords(firstWordsFile, topic):
 def get_topItems_dataToPlot(average, firstWordsFile, topItemsShown, topic):
     """From average topic score data, select data to be plotted."""
     #print("  Getting dataToPlot.")
-    with open(average, "r") as infile:
+    with open(average, "r", encoding="utf-8") as infile:
         ## Read the average topic score data
         allData = pd.DataFrame.from_csv(infile, sep=",")
         allData = allData.T
@@ -307,7 +307,7 @@ def plot_topItems(averageDatasets,
 def get_heatmap_firstWords(firstWordsFile):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
+    with open(firstWordsFile, "r", encoding="utf-8") as infile: 
         firstWords = pd.read_csv(infile, header=None)
         firstWords.drop(0, axis=1, inplace=True)
         firstWords.rename(columns={1:"topicwords"}, inplace=True)
@@ -318,7 +318,7 @@ def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShow
                            numOfTopics):
     """From average topic score data, select data to be plotted."""
     print("- getting dataToPlot...")
-    with open(average, "r") as infile:
+    with open(average, "r", encoding="utf-8") as infile:
         ## Read the average topic score data
         allScores = pd.DataFrame.from_csv(infile, sep=",")
         colmeans = allScores.mean(axis=0) # mean for each topic
@@ -441,7 +441,7 @@ def plot_distinctiveness_heatmap(averageDatasets,
 def get_overTime_firstWords(firstWordsFile):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
+    with open(firstWordsFile, "r", encoding="utf-8") as infile: 
         firstWords = pd.read_csv(infile, header=None)
         firstWords.drop(0, axis=1, inplace=True)
         firstWords.rename(columns={1:"topicwords"}, inplace=True)
@@ -452,7 +452,7 @@ def get_overTime_firstWords(firstWordsFile):
 def get_overTime_dataToPlot(average, firstWordsFile, entriesShown, topics): 
     """Function to build a dataframe with all data necessary for plotting."""
     #print("  Getting data to plot.")
-    with open(average, "r") as infile:
+    with open(average, "r", encoding="utf-8") as infile:
         allScores = pd.DataFrame.from_csv(infile, sep=",")
         allScores = allScores.T        
         #print(allScores.head())
@@ -687,7 +687,7 @@ def itemClustering(averageDatasets, figsize, outfolder, topicsPerItem,
 def get_progression_firstWords(firstWordsFile):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
-    with open(firstWordsFile, "r") as infile: 
+    with open(firstWordsFile, "r", encoding="utf-8") as infile: 
         firstWords = pd.read_csv(infile, header=None)
         firstWords.drop(0, axis=1, inplace=True)
         firstWords.rename(columns={1:"topicwords"}, inplace=True)
@@ -700,7 +700,7 @@ def get_selSimpleProgression_dataToPlot(averageDataset, firstWordsFile,
                                entriesShown, topics): 
     """Function to build a dataframe with all data necessary for plotting."""
     print("- getting data to plot...")
-    with open(averageDataset, "r") as infile:
+    with open(averageDataset, "r", encoding="utf-8") as infile:
         allScores = pd.DataFrame.from_csv(infile, sep=",")
         allScores = allScores.T        
         #print(allScores.head())

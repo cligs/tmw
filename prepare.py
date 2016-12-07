@@ -37,7 +37,7 @@ def read_tei5(teiPath, txtFolder, xpath):
     ## Do the following for each file in the inpath.
     counter = 0
     for file in glob.glob(teiPath):
-        with open(file, "r"):
+        with open(file, "r", encoding="utf8"):
             filename = os.path.basename(file)[:-4]
             idno = filename[:6] # assumes idno is at the start of filename.
             #print("Treating " + idno)
@@ -103,7 +103,7 @@ def read_tei5(teiPath, txtFolder, xpath):
 # Utility function for writing segments
 def writesegment(segment, outfolder, filename, counter, mode="w"):
     segname = join(outfolder, filename + "§{:04d}".format(counter) + ".txt")
-    with open(segname, mode) as output:
+    with open(segname, mode, encoding="utf-8") as output:
         output.write(' '.join(segment))
     output.close()
 
@@ -111,7 +111,7 @@ def writesegment(segment, outfolder, filename, counter, mode="w"):
 
 # Utility function for writing into files
 def write(segment, file, mode = "w"):
-    with open(file, mode) as output:
+    with open(file, mode, encoding="utf-8") as output:
         output.write(' '.join(segment))
         output.close()
 
@@ -339,7 +339,7 @@ def segments_to_bins(inpath, outfolder, binsnb):
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     outfile = join(outfolder, "segs-and-bins.csv")
-    with open(outfile, "w") as outfile:
+    with open(outfile, "w", encoding="utf-8") as outfile:
         files_and_bins.to_csv(outfile, index=False)
 
 
@@ -376,12 +376,12 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
 
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
-    with open(stoplist_errors, "r") as infile: 
+    with open(stoplist_errors, "r", encoding="utf-8") as infile: 
         stoplist = infile.read()
     counter = 0
     for file in glob.glob(inpath):
         #print(os.path.basename(file))
-        with open(file,"r") as infile:
+        with open(file,"r", encoding="utf-8") as infile:
             counter+=1
             text = infile.read()
             splittext = re.split("\n",text)
@@ -442,7 +442,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
             #lemmata = re.sub("dorer","doré/dorer", lemmata)
             newfilename = os.path.basename(file)[:-4] + ".txt"
             #print(outfolder, newfilename)
-            with open(join(outfolder, newfilename),"w") as output:
+            with open(join(outfolder, newfilename),"w", encoding="utf-8") as output:
                 output.write(str(lemmata))
     print("Files treated: ", counter)
     print("Done.")

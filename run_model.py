@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Filename: run_model.py
 # Author: #cf
 # Version 0.1.0 (2016-10-17)
@@ -12,7 +13,7 @@ from os.path import join
 
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/"
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/WS16-17_Praxisworkshop"
 
 
 ### Shared parameters
@@ -23,14 +24,14 @@ CorpusFile = join(MalletFolder, "tc.mallet")
 
 
 ### Import parameters (call_mallet_import)
-StoplistProject = join(wdir, "extras", "stopwords_pt.txt")
+StoplistProject = join(wdir, "extras", "stopwords_es.txt")
 #model.call_mallet_import(MalletPath, TextFolder, MalletFolder, CorpusFile, StoplistProject)
 
 
 ### Modeling parameters (call_mallet_model)
-NumTopics = [30]
+NumTopics = [50]
 NumIterations = [1000]
-OptimizeIntervals = [100]
+OptimizeIntervals = [50]
 NumTopWords = 50
 NumThreads = 4
 ModelFolder = join(wdir, "7_model")

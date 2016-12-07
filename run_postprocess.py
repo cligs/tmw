@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Filename: my_tmw.py
 # Author: #cf
 # Version 0.2.0 (2015-08-27)

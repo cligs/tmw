@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Filename: my_tmw.py
 # Author: #cf
 # Version 0.2.0 (2015-08-27)
@@ -10,7 +11,7 @@ from os.path import join
 ### Set the general working directory.
 wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/"
 ### Set parameters as used in the topic model
-NumTopics = 30
+NumTopics = 50
 NumIterations = 1000
 OptimizeIntervals = 100
 param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
@@ -41,7 +42,7 @@ lower = 2350 # image end at the bottom
 averageDatasets = join(wdir, "8_aggregates", param_settings, "avg*.csv") 
 firstWordsFile = join(wdir, "8_aggregates", param_settings, "firstWords.csv")
 numberOfTopics = NumTopics # must be actual number of topics modeled.
-targetCategories = ["author-name", "title", "narrative-perspective", "subgenre"]
+targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "binId"]
 # one or several: "author-name", "author-gender", "decade", "subgenre", "title"
 topTopicsShown = 30 
 fontscale = 1.0

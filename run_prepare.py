@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Filename: my_tmw.py
 # Author: #cf
 # Version 0.2.0 (2015-08-27)
@@ -7,7 +8,7 @@ import prepare
 from os.path import join
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/"
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/WS16-17_Praxisworkshop"
 
 
 ### segmenter
@@ -30,15 +31,15 @@ binsnb = 5
 ### Perform lemmatization and POS tagging.
 infolder = join(wdir, "2_segs")
 outfolder = join(wdir, "4_tagged")
-tagger = "/home/ulrike/Programme/tree-tagger-linux-3.2.1/cmd/tree-tagger-portuguese"
+tagger = "/home/ulrike/Programme/tree-tagger-linux-3.2.1/cmd/tree-tagger-spanish"
 #prepare.call_treetagger(infolder, outfolder, tagger) 
 
 ### make_lemmatext
 ### Extract selected lemmata from tagged text.
 inpath = join(wdir, "4_tagged", "*.trt")
 outfolder = join(wdir, "5_lemmata")
-mode = "ptN" # frN=nouns, esN=nouns, ptN=nouns, frNV=nouns+verbs, ptNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs, ptNVAA=nouns+verbs+adj+adverbs 
-stoplist_errors = join(wdir, "extras", "stopwords_errors_pt.txt") # in tmw folder
+mode = "esN" # frN=nouns, esN=nouns, ptN=nouns, frNV=nouns+verbs, ptNV=nouns+verbs, frNVAA=nouns+verbs+adj+adverbs, ptNVAA=nouns+verbs+adj+adverbs 
+stoplist_errors = join(wdir, "extras", "stopwords_errors_es.txt") # in tmw folder
 #prepare.make_lemmatext(inpath, outfolder, mode, stoplist_errors)
 
 

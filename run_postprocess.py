@@ -9,7 +9,7 @@ import postprocess
 from os.path import join
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/WS16-17_Praxisworkshop" # end with slash.
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/WS16-17_Praxisworkshop"
 ### Set parameters as used in the topic model
 NumTopics = 50
 NumIterations = 1000

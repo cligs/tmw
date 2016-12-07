@@ -11,6 +11,7 @@ POSTPROCESSING OF RAW TMW DATA
 
 
 import os
+from os.path import join
 import glob
 import pandas as pd
 import numpy as np
@@ -146,7 +147,7 @@ def create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile,
                               mastermatrixfile, numOfTopics, version)
     if useBins == True: 
         mastermatrix = add_binData(mastermatrix, binDataFile)
-    mastermatrix.to_csv(outfolder+mastermatrixfile, sep=",", encoding="utf-8")
+    mastermatrix.to_csv(join(outfolder, mastermatrixfile), sep=",", encoding="utf-8")
     print("Done. Saved mastermatrix. Segments and columns:", mastermatrix.shape)    
 
 
@@ -175,7 +176,7 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
-        resultfilepath = outfolder+resultfilename
+        resultfilepath = join(outfolder, resultfilename)
         ## TODO: Some reformatting here, or adapt make_heatmaps.
         avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
         print("  Saved average topic scores for:", target)    
@@ -204,7 +205,7 @@ def calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder):
     ## Save grouped averages to CSV file for visualization.
     identifierstring = '+'.join(map(str, targets))
     resultfilename = "complex-avgtopicscores_by-"+identifierstring+".csv"
-    resultfilepath = outfolder+resultfilename
+    resultfilepath = join(outfolder, resultfilename)
     avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
     print("Done. Saved average topic scores for: "+identifierstring)    
 
@@ -239,7 +240,7 @@ def save_firstWords(topicWordFile, outfolder, filename):
         ## Saving the file.
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
-        outfile = outfolder + filename
+        outfile = join(outfolder, filename)
         with open(outfile, "w") as outfile: 
             firstWordsSeries.to_csv(outfile)
         print("Done.")
@@ -263,7 +264,7 @@ def save_topicRanks(topicWordFile, outfolder, filename):
         ## Saving the file.
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
-        outfile = outfolder + filename
+        outfile = join(outfolder, filename)
         with open(outfile, "w") as outfile: 
             topicRanks.to_csv(outfile)
         print("Done.")

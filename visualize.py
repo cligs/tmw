@@ -153,8 +153,10 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
             allData = allData
         allData = allData.T
         allData = allData.drop("decade")         #TODO: fix underlying issue
+        '''
         allData = allData.drop("year")
         allData = allData.drop("words")
+        '''
         allData = allData.drop("binID")
         print(allData.shape)
         ## Add top topic words to table for display later
@@ -335,11 +337,14 @@ def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShow
         allScores = allScores.T
         ## Add top topic words to table for display later
         firstWords = get_heatmap_firstWords(firstWordsFile)
-        #allScores = allScores.drop("century")        #TODO: fix underlying issue
-        allScores = allScores.drop("decade")         #TODO: fix underlying issue
+        '''
+        allScores = allScores.drop("century")        #TODO: fix underlying issue
         allScores = allScores.drop("year")
         allScores = allScores.drop("words")
+        '''
+        allScores = allScores.drop("decade")         #TODO: fix underlying issue
         allScores = allScores.drop("binID")
+        
         allScores.index = allScores.index.astype(np.int64)        
         allScores = pd.concat([allScores, firstWords], axis=1, join="inner")
         #print(allScores)

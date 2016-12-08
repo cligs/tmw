@@ -18,6 +18,7 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+from PIL import Image
 import numpy as np
 import seaborn as sns
 
@@ -46,7 +47,7 @@ def get_wordlewords(words, word_weights_file, topic):
         word = word
         score = word_scores[j]
         j += 1
-        wordlewords = wordlewords + ((word + " ") * score)
+        wordlewords = wordlewords + ((word + " ") * int(score))
     return wordlewords
         
 def get_color_scale(word, font_size, position, orientation, font_path, random_state=None):
@@ -97,7 +98,6 @@ def make_wordle_from_mallet(word_weights_file,
 def crop_images(inpath, outfolder, left, upper, right, lower):
     """ Function to crop wordle files."""
     print("Launched crop_images.")
-    from PIL import Image
 
     counter = 0
     for file in glob.glob(inpath): 

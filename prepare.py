@@ -432,6 +432,18 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                         elif "NC" in pos or "NMEA" in pos:
                             if "<unknown>" not in lemma:
                                 lemmata.append(lemma.lower())
+                    if mode == "esNAAPP":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "ADJ" in pos or "ADV" in pos or "NC" in pos or "NMEA" in pos or "PPC" in pos or "PPO" in pos or "PPX" in pos or "PREP" in pos or "PREP/DEL" in pos or "REL" in pos:
+                            if "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
+                    if mode == "esNVAAPP":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "ADJ" in pos or "ADV" in pos or "NC" in pos or "NMEA" in pos or "PPC" in pos or "PPO" in pos or "PPX" in pos or "PREP" in pos or "PREP/DEL" in pos or "REL" in pos or "VM" in pos or "VA" in pos or "VS" in pos:
+                            if "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
             ## Continue with list of lemmata, but remove undesired leftover words         
             lemmata = ' '.join([word for word in lemmata if word not in stoplist])
             lemmata = re.sub("[ ]{1,4}"," ", lemmata)

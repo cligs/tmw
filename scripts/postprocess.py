@@ -169,8 +169,8 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
         avg_topicscores = grouped.agg(np.mean)
         #avg_topicscores = grouped.agg(np.median)
         #print(avg_topicscores)
-        #if target != "year_reference":
-        #    avg_topicscores = avg_topicscores.drop(["year_reference"], axis=1)
+        if target != "pub-year":
+            avg_topicscores = avg_topicscores.drop(["pub-year"], axis=1)
         #if target != "binID":
         #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
@@ -181,6 +181,36 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
         avg_topicscores.to_csv(resultfilepath, sep=",", encoding="utf-8")
         print("  Saved average topic scores for:", target)    
     print("Done.")
+
+
+
+# ==============================
+# build_gephitable
+# ==============================
+
+def build_gephitable(aggregationfile, gephifile, target):
+    """
+    Uses an average topic score file and transforms it for import into Gephi.
+    This allows visualization of bimodal networks of, e.g. authors and topics.
+    The resulting CSV file needs to be imported as an edge table into Gephi.
+    """
+    with open(aggregationfile, "r") as infile:
+        data = pd.DataFrame.from_csv(infile, header=0, sep=",")
+        print(data)
+        rows = list(data.index.values)
+        cols = list(data.columns.values)
+        print(rows)
+        print(cols)
+        entries = []
+        for row in rows:
+            for col in cols:
+                val = data.loc[row,col]
+                entry = [row, "t"+str(col), "Undirected", val]
+                entries.append(entry)
+        headers = ["source", "target", "type", "weight"]
+        entries = pd.DataFrame(entries, columns=headers)
+        print(entries)
+        entries.to_csv(gephifile, sep=";", encoding="utf-8")
 
 
 ################################

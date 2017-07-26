@@ -28,15 +28,22 @@ number_of_topics = NumTopics
 useBins = False
 binDataFile = join(wdir, "3_bins", "segs-and-bins.csv")
 version  = "208+" # which MALLET version is in use?
-postprocess.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile, version)
+#postprocess.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile, version)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
-mastermatrixfile = join(wdir, "8_aggregates", param_settings, "mastermatrix.csv")
-outfolder = join(wdir, "8_aggregates", param_settings)
+mastermatrixfile = join(wdir, "model", "aggregates", param_settings, "mastermatrix.csv")
+outfolder = join(wdir, "model", "aggregates", param_settings)
 # targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration|narrative-perspective (according to available metadata)
-targets = ["idno", "author-name", "title", "narrative-perspective", "subgenre", "decade", "binID"]
+targets = ["idno", "author-name", "book-title", "subgenre", "pub-decade"]
 #postprocess.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
+
+### build_gephitable
+target = "subgenre"
+aggregationfile = join(wdir, "model", "aggregates", param_settings, "avgtopicscores_by-" + target + ".csv")
+gephifile = join(wdir, "model", "aggregates", param_settings, "gephi-input-" + "target" + ".csv")
+postprocess.build_gephitable(aggregationfile, gephifile, target)
+
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.

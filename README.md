@@ -11,7 +11,7 @@ tmw is a python module for topic modeling, including some preprocessing of texts
 
 * tmw has been developed for and tested only on Linux (Ubuntu 14.04).
 * Python 3 (tested with 3.4), Mallet (tested with 2.0.7) and TreeTagger with the desired parameter files.
-* Python 3 packages numpy, pandas, matplotlib, lxml, scipy, seaborn, wordcloud.
+* Python 3 packages numpy, pandas, matplotlib, lxml, scipy, seaborn, wordcloud, pygal.
 
 ## Usage
 
@@ -20,7 +20,7 @@ tmw is a python module for topic modeling, including some preprocessing of texts
 
 ## Acknowledgements
 
-Most of the code has been written by Christof Schöch, with significant contributions by Daniel Schlör. The project is inspired by Allan Riddell's TaTOM tutorials. We are grateful to all the existing packages and code this project reuses.
+Most of the code has been written by Christof Schöch, with significant contributions by Daniel Schlör and smaller ones by Ulrike Henny-Krahmer. The project is inspired by Allan Riddell's TaTOM tutorials. We are grateful to all the existing packages and code this project reuses.
 
 ## Contact
 

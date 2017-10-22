@@ -9,11 +9,11 @@ import visualize
 from os.path import join
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/TM-Workshop-CCeH/Daten-pt/N/"
+wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/WS16-17_Praxisworkshop/TMW"
 ### Set parameters as used in the topic model
 NumTopics = 50
 NumIterations = 1000
-OptimizeIntervals = 100
+OptimizeIntervals = 50
 param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
 
 ### make_wordle_from_mallet

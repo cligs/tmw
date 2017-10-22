@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Filename: visualize.py
-# Authors: christofs, daschloer
+# Authors: christofs, daschloer, hennyu
 # Version 0.3.0 (2016-03-20)
+# Update: 2017-10-22
 
 ##################################################################
 ###  Topic Modeling Workflow (tmw)                             ###
@@ -21,6 +22,7 @@ from wordcloud import WordCloud
 from PIL import Image
 import numpy as np
 import seaborn as sns
+import pygal
 
 
 #################################
@@ -817,6 +819,60 @@ def simpleProgression(averageDataset, firstWordsFile, outfolder,
     else: 
         print("Please select a valid value for 'mode'.")
     print("Done.")
+    
+    
+#################################
+# plot_words_in_topics_treemap  #
+#################################
+
+
+def plot_words_in_topics_treemap(num_topics, words_to_plot, word_weights_file, wordsintopics_treemap_out):
+    """
+    author: hennyu
+    
+    Arguments:
+    num_topics (int): number of topics
+    words_to_plot (int): how many words to consider for each topic
+    word_weights_file (str): path to the word weights file
+    wordsintopics_treemap_out (str): output directory for the treemaps
+    """
+    
+    print("\nLaunched plot_words_in_topics_treemap.")
+    
+    """
+    Check directory.
+    """
+    if not(os.path.exists(wordsintopics_treemap_out)):
+        os.makedirs(wordsintopics_treemap_out)
+    
+    word_weights = pd.read_csv(word_weights_file, sep="\t", encoding="utf-8", header=None)
+    
+    for topic in word_weights.iloc[:,0].unique():
+		
+        topic_words = word_weights.loc[word_weights.iloc[:,0] == topic].sort_values(by=2,ascending=False)
+        top_words = topic_words[:words_to_plot]
+        
+        """
+        Plot treemaps of how the top words are distributed in each topic.
+        """
+        treemap = pygal.Treemap(print_values=True, print_labels=True)
+        treemap.title = 'Words-in-topics treemap for topic ' + str(topic)
+        
+        for idx_word, word in top_words.iterrows():
+            treemap.add(word.iloc[1], [{"label" : word.iloc[1], "value": round(word.iloc[2])}])
+            
+        treemap.render_to_file(join(wordsintopics_treemap_out, "treemap_tp" + str(topic) + ".svg"))
+    
+    print("Done.")
+    
+	
+
+
+#####################################
+# plot_topics_in_documents_treemap  #
+#####################################
+
+
 
 
 

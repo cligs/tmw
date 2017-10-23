@@ -17,7 +17,7 @@ wdir = "/media/christof/data/repos/cligs/tmw/"
 
 
 ### Shared parameters
-MalletPath = "/home/christof/Programs/mallet-2.0.8/bin/mallet"
+MalletPath = "/home/ulrike/Programme/mallet-2.0.8RC3/bin/mallet"
 #MalletPath = "/media/christof/data/repos/other/Mallet/bin/mallet" # doesn't work right now.
 TextFolder = join(wdir, "data", "5_lemmata")
 MalletFolder = join(wdir, "data", "6_mallet") 

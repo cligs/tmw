@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Filename: prepare.py
-# Authors: christofs, daschloer
+# Authors: christofs, daschloer, hennyu
 # Version 0.3.0 (2016-03-20)
 
 ##################################################################
@@ -400,6 +400,12 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                                 lemmata.append(token.lower())
                             elif "<unknown>" not in lemma:
                                 lemmata.append(lemma.lower())
+                    if mode == "enNV":
+                        if "NN" in pos or "VB" in pos:
+                            if "|" in lemma:
+                                lemmata.append(token.lower())
+                            elif "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
                     if mode == "frNVAA":
                         if "|" in lemma:
                             lemmata.append(token.lower())
@@ -430,6 +436,18 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                         if "|" in lemma:
                             lemmata.append(token.lower())
                         elif "NC" in pos or "VM" in pos or "VA" in pos or "VS" in pos or "RG" in pos or "RN" in pos or "AQ" in pos or "AO" in pos or "A0" in pos:
+                            if "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
+                    if mode == "itN":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos:
+                            if "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
+                    if mode == "itNV":
+                        if "|" in lemma:
+                            lemmata.append(token.lower())
+                        elif "NOM" in pos or "VER" in pos:
                             if "<unknown>" not in lemma:
                                 lemmata.append(lemma.lower())
                     if mode == "esN":   
@@ -464,3 +482,43 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                 output.write(str(lemmata))
     print("Files treated: ", counter)
     print("Done.")
+
+
+#################################
+# create_stopword_list          #
+#################################
+
+def create_stopword_list(mfw, corpus_dir, stopwords_out):
+    """
+    Creates a stop word list for a collection of text files.
+    The most frequent words of the collection are used as stop words.
+    How many of the MFW should be used, can be indicated with the mfw parameter.
+
+    author: uhk
+
+    Arguments:
+    mfw (int): number of MFW to consider as stop words
+    corpus_dir (str): path to the corpus directory
+    stopwords_out (str): path to the output stopwords file 
+    
+    """
+    
+    print("\nLaunched create_stopword_list.")
+    
+    from nltk.corpus import PlaintextCorpusReader
+    from nltk.probability import FreqDist
+    
+    corpus = PlaintextCorpusReader(corpus_dir, '.*')
+    fdist_corpus = FreqDist(corpus.words())
+    
+    with open(stopwords_out, "w", encoding="utf-8") as stopwords_out_file:
+        
+        # get the most frequent words
+        mfw_list = [w[0] for w in fdist_corpus.most_common(mfw)]
+        
+        # write stop word list to file
+        stopwords_out_file.write("\n".join(mfw_list))
+        
+    print("Done.")
+	
+	

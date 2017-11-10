@@ -1,22 +1,25 @@
 tmw - Topic Modeling Workflow
 =============================
 
-This is the "next" branch of tmw.
+This is the "simple" branch of tmw.
 
 ## What is tmw?
 
 tmw is a python module for topic modeling, including some preprocessing of texts and some postprocessing of topic model data. This set of functions is experimental in nature and quality.
 
+The SIMPLE version of tmw includes just the modules for postprocessing and visualization of topic modeling results. To run the modules, jupyter notebooks for postprocessing and visualization are included.
+
 ## Requirements
 
-* tmw has been developed for and tested only on Linux (Ubuntu 14.04).
-* Python 3 (tested with 3.4), Mallet (tested with 2.0.7) and TreeTagger with the desired parameter files.
+* tmw has been developed for and tested only on Linux (Ubuntu 14.04). tmw simple should in principle run on Windows and Mac, as well.
+* Python 3 (tested with 3.4), Mallet (tested with 2.0.7).
 * Python 3 packages numpy, pandas, matplotlib, lxml, scipy, seaborn, wordcloud, pygal.
 
 ## Usage
 
-* Download the "tmw-next" archive and unzip to a convenient location
-* Follow the steps outlined in the twm tutorial: https://www.penflip.com/c.schoech/tmw-tutorial
+* Download the "tmw-simple" archive and unzip to a convenient location
+* Open the jupyter notebooks Run_Postprocess.py and Run_Visualize.py and modify the settings according to your needs
+* See also the twm tutorial: https://www.penflip.com/c.schoech/tmw-tutorial
 
 ## Acknowledgements
 

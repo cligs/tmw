@@ -1,5 +1,5 @@
 tmw - Topic Modeling Workflow
 =============================
 
-This is the "next" branch of tmw.
+This is the "simple" branch of tmw.
 

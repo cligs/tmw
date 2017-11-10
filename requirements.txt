@@ -5,4 +5,5 @@ lxml
 scipy 
 sklearn 
 seaborn 
-wordcloud 
+wordcloud
+pygal

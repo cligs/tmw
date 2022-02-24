@@ -14,7 +14,7 @@ import cluster
 ########################
 ### Working Directory
 ########################
-WorkDir = "/media/christof/data/Dropbox/0-Analysen/2016/gddh-dhq/tc391zz/"
+WorkDir = "/home/ulrike/Git/IDE/novelashispanoamericanas/data/"
 
 
 
@@ -22,18 +22,18 @@ WorkDir = "/media/christof/data/Dropbox/0-Analysen/2016/gddh-dhq/tc391zz/"
 ### topic clustering
 ########################
 
-MastermatrixFile = WorkDir + "9_aggregates/060tp-0300in/mastermatrix.csv"
+MastermatrixFile = WorkDir + "7_aggregates/20tp-5000it-1000in/avgtopicscores_by-idno.csv"
 MetadataFile = WorkDir + "metadata.csv"
-GraphFolder = WorkDir + "9_visuals/060tp-0300in/topiccluster/"
+GraphFolder = WorkDir + "8_visuals/topiccluster/"
 Method = "ward" # ward|average
 Metric = "euclidean"  # euclidean|cosine
 DisplayLevels = 20
-#cluster.topiccluster(MastermatrixFile, 
-#                     MetadataFile,
-#                     Method,
-#                     Metric,
-#                     GraphFolder,
-#                     DisplayLevels)
+cluster.topiccluster(MastermatrixFile, 
+                     MetadataFile,
+                     Method,
+                     Metric,
+                     GraphFolder,
+                     DisplayLevels)
 
 
 
@@ -66,9 +66,9 @@ DisplayLevels = 20
 MastermatrixFile = WorkDir + "9_aggregates/060tp-0300in/mastermatrix.csv"
 MetadataFile = WorkDir + "metadata.csv"
 GraphFolder = WorkDir + "9_visuals/060tp-0300in/topicpca/"
-cluster.topicpca(MastermatrixFile,
-                 MetadataFile,
-                 GraphFolder)
+#cluster.topicpca(MastermatrixFile,
+#                 MetadataFile,
+#                 GraphFolder)
 
 
 ########################

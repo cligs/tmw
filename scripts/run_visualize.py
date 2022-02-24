@@ -9,23 +9,23 @@ import visualize
 from os.path import join
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Dokumente/GS/Veranstaltungen/WS16-17_Praxisworkshop/TMW"
+wdir = "/home/ulrike/Git/papers/family_resemblance_dsrom19/"
 ### Set parameters as used in the topic model
-NumTopics = 50
-NumIterations = 1000
-OptimizeIntervals = 50
+NumTopics = 100
+NumIterations = 5000
+OptimizeIntervals = 100
 param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
 
 ### make_wordle_from_mallet
 ### Creates a wordle for each topic.
-word_weights_file = join(wdir, "7_model", "word-weights_" + param_settings + ".csv")
+word_weights_file = join(wdir, "topicmodel", "mallet", "word-weights_" + param_settings + ".csv")
 words = 40
-outfolder = join(wdir, "9_visuals", param_settings, "wordles")
+outfolder = join(wdir, "topicmodel", "visuals", param_settings, "wordles")
 font_path = join(wdir, "extras", "AlegreyaSans-Regular.otf")
 dpi = 300
 num_topics = NumTopics
-TopicRanksFile = join(wdir, "8_aggregates", param_settings, "topicRanks.csv")
-#visualize.make_wordle_from_mallet(word_weights_file, num_topics, words, TopicRanksFile, outfolder, font_path, dpi)
+TopicRanksFile = join(wdir, "topicmodel", "aggregates", param_settings, "topicRanks.csv")
+#visualize.make_wordle_from_mallet(word_weights_file, num_topics, words, TopicRanksFile, outfolder, dpi) # ggf. font_path
 
 ### crop_images
 ### Crops the wordle image files, use if needed.
@@ -39,16 +39,16 @@ lower = 2350 # image end at the bottom
 
 ### plot_topTopics
 ### For each item from a category, creates a barchart of the top topics.
-averageDatasets = join(wdir, "8_aggregates", param_settings, "avg*.csv") 
-firstWordsFile = join(wdir, "8_aggregates", param_settings, "firstWords.csv")
+averageDatasets = join(wdir, "features/topicmodel/", "aggregates", param_settings, "avg*.csv") 
+firstWordsFile = join(wdir, "features/topicmodel", "aggregates", param_settings, "firstWords.csv")
 numberOfTopics = NumTopics # must be actual number of topics modeled.
-targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "binId"]
+targetCategories = ["idno"]
 # one or several: "author-name", "author-gender", "decade", "subgenre", "title"
 topTopicsShown = 30 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
-outfolder = join(wdir, "9_visuals", param_settings, "topTopics")
+outfolder = join(wdir, "features/topicmodel", "visuals", param_settings, "topTopics")
 mode = "normalized" # normalized, absolute
 #visualize.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, mode, topTopicsShown, fontscale, height, dpi, outfolder)
 
@@ -68,10 +68,10 @@ dpi = 300
 
 ### plot_distinctiveness_heatmap
 ### For each category, make a heatmap of most distinctive topics. 
-averageDatasets = join(wdir, "8_aggregates", param_settings, "avg*.csv") 
-firstWordsFile = join(wdir, "8_aggregates", param_settings, "firstWords.csv")
-outfolder = join(wdir, "9_visuals", param_settings, "distinctiveness")
-targetCategories = ["subgenre"] 
+averageDatasets = join(wdir, "topicmodel/aggregates", param_settings, "avg*.csv") 
+firstWordsFile = join(wdir, "topicmodel/aggregates", param_settings, "firstWords.csv")
+outfolder = join(wdir, "topicmodel/visuals", param_settings, "distinctiveness")
+targetCategories = ["text.genre.subgenre.summary"] 
 # one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
 numberOfTopics = NumTopics # must be actual number of topics modeled.
 topTopicsShown = 20 

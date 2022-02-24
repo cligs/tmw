@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+	#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Filename: prepare.py
 # Authors: christofs, daschloer, hennyu
@@ -21,78 +21,7 @@ from os.path import join
 from nltk.tokenize import word_tokenize
 import glob
 import subprocess
-from lxml import etree
-
-#################################
-# read TEI P5                   #
-#################################
-
-def read_tei5(teiPath, txtFolder, xpath):
-    """
-    Extracts selected text from TEI P5 files and writes TXT files.
-    xpath (string): "alltext", "bodytext, "seg" or "said".
-    """
-    if not os.path.exists(txtFolder):
-        os.makedirs(txtFolder)
-    ## Do the following for each file in the inpath.
-    counter = 0
-    for file in glob.glob(teiPath):
-        with open(file, "r", encoding="utf8"):
-            filename = os.path.basename(file)[:-4]
-            idno = filename[:6] # assumes idno is at the start of filename.
-            #print("Treating " + idno)
-            counter +=1
-            xml = etree.parse(file)
-            namespaces = {'tei':'http://www.tei-c.org/ns/1.0'}
-
-            ### Removes tags but conserves their text content.
-            ### USER: Uncomment as needed.
-            etree.strip_tags(xml, "{http://www.tei-c.org/ns/1.0}seg")
-            #etree.strip_tags(xml, "{http://www.tei-c.org/ns/1.0}said")
-            #etree.strip_tags(xml, "{http://www.tei-c.org/ns/1.0}hi")
-
-            ### Removes elements and their text content.
-            ### USER: Uncomment as needed.
-            #etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}reg", with_tail=False)
-            #etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}orig", with_tail=False)
-            etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}note", with_tail=False)
-            etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}quote", with_tail=False)
-            #etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}l", with_tail=False)
-            #etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}p", with_tail=False)
-            etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}head", with_tail=False)
-            #etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}stage", with_tail=False)
-            etree.strip_elements(xml, "{http://www.tei-c.org/ns/1.0}speaker", with_tail=False)
-
-            ### XPath defining which text to select
-            xp_bodytext = "//tei:body//text()"
-            xp_alltext = "//text()"
-            xp_seg = "//tei:body//tei:seg//text()"
-            xp_said = "//tei:body//tei:said//text()"
-            
-            ### Applying one of the above XPaths, based on parameter passed.
-            ### USER: use on of the xpath values used here in the parameters.
-            if xpath == "bodytext": 
-                text = xml.xpath(xp_bodytext, namespaces=namespaces)
-            if xpath == "alltext": 
-                text = xml.xpath(xp_alltext, namespaces=namespaces)
-            if xpath == "seg": 
-                text = xml.xpath(xp_seg, namespaces=namespaces)
-            if xpath == "said": 
-                text = xml.xpath(xp_said, namespaces=namespaces)
-            text = "\n".join(text)
-
-            ### Some cleaning up
-            text = re.sub("[ ]{2,8}", " ", text)
-            text = re.sub("\n{2,8}", "\n", text)
-            text = re.sub("[ \n]{2,8}", " \n", text)
-            text = re.sub("\t{1,8}", "\t", text)
-
-            outtext = str(text)
-            outfile = os.path.join(txtFolder, filename +".txt")
-        with open(outfile,"w") as output:
-            output.write(outtext)
-            
-    print("Done. Files treated: " + str(counter))
+#from lxml import etree
 
     
 
@@ -242,107 +171,6 @@ def segmenter(inpath, outfolder, target, sizetolerancefactor, preserveparagraphs
     print("Done.")
 
 
-
-#################################
-# Binning                       #
-#################################
-
-def segments_to_bins(inpath, outfolder, binsnb):
-    """
-    Script for sorting text segments into bins.
-    """
-    print("\nLaunched segments_to_bins.")
-
-    import math, sys
-    from collections import Counter
-
-    ### Define various objects for later use.
-    txtids = []
-    segids = []
-
-    filenames = []
-    binids = []
-
-    offset = sys.maxsize # used to track wrong segmenting (i.e. with segment numbering not starting with 0)
-
-    ### Get filenames, text identifiers, segment identifiers.
-    for file in glob.glob(inpath):
-        filename = os.path.basename(file)[:-4]
-        txtid = filename[:6]
-        txtids.append(txtid)
-        segid = filename[-4:]
-        #print(filename, txtid, segid)
-        segids.append(segid)
-        offset = min(offset, int(segid))
-    #txtids_sr = pd.Series(txtids)
-    #segids_sr = pd.Series(segids)
-
-    if offset > 0:
-        print("Warning! Segment numbering should start at 0. Using offset: " + str(offset))
-
-    ### For each text identifier, get number of segments.
-    txtids_ct = Counter(txtids)
-    sum_segnbs = 0
-    for txtid in txtids_ct:
-        segnb = txtids_ct[txtid]
-        #print(segnb)
-        sum_segnbs = sum_segnbs + segnb
-        #print(txtid, segnb)
-    print("Total number of segments: ", sum_segnbs)
-
-    for txtid in txtids_ct:
-        countsegs = txtids_ct[txtid]
-        if binsnb > int(countsegs):
-            print("Warning! You are expecting more bins than segments available! Bins will not be filled continuously!")
-
-    ### Match each filename to the number of segments of the text.
-
-    bcount = dict()
-    for i in range(0, binsnb):
-        bcount[i] = 0
-
-    for file in glob.glob(inpath):
-        filename = os.path.basename(file)[:-4]
-        for txtid in txtids_ct:
-            if txtid in filename:
-                filename = filename + "$" + str(txtids_ct[txtid])
-                #print(filename)
-
-    ### For each filename, compute and append bin number
-        txtid = filename[0:6]
-        segid = filename[7:11]
-        segnb = filename[12:]
-        #print(txtid,segid,segnb)
-        binid = ""
-
-        segprop = (int(segid) - offset) / int(segnb)
-        #print(txtid, segid, segnb, segprop)
-
-
-        binid = math.floor(segprop * binsnb)
-
-        if binid == binsnb: # avoid 1.0 beeing in seperate bin (should never happen due to offset!)
-            print("Error: Segment numbering is wrong! Continuing anyway...")
-            binid -= 1
-
-        bcount[binid] += 1
-
-        #print(segprop, binid)
-
-        filenames.append(filename[:11])
-        binids.append(binid)
-    filenames_sr = pd.Series(filenames, name="segmentID")
-    binids_sr = pd.Series(binids, name="binID")
-    files_and_bins = pd.concat([filenames_sr,binids_sr], axis=1)
-    print("chunks per bin: ", bcount)
-
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder)
-    outfile = join(outfolder, "segs-and-bins.csv")
-    with open(outfile, "w", encoding="utf-8") as outfile:
-        files_and_bins.to_csv(outfile, index=False)
-
-
 #################################
 # call_treetagger               #
 #################################
@@ -365,7 +193,6 @@ def call_treetagger(infolder, outfolder, tagger):
     print("Files treated: ", counter)
     print("Done.")
     
-
 #################################
 # make_lemmatext                #
 #################################
@@ -394,6 +221,24 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                     pos = splitline[1]
                     token = splitline[0]
                     ## Select subset of lemmas according to parameter "mode"
+                    if mode == "deN":
+                        if "NN" in pos:
+                            if "|" in lemma:
+                                lemmata.append(token.lower())
+                            elif "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
+                    if mode == "deNV":
+                        if "NN" in pos or "VV" in pos:
+                            if "|" in lemma:
+                                lemmata.append(token.lower())
+                            elif "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
+                    if mode == "deNVAdj":
+                        if "NN" in pos or "VV" in pos or "ADJ" in pos:
+                            if "|" in lemma:
+                                lemmata.append(token.lower())
+                            elif "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
                     if mode == "enN":
                         if "NN" in pos:
                             if "|" in lemma:
@@ -482,6 +327,7 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                 output.write(str(lemmata))
     print("Files treated: ", counter)
     print("Done.")
+
 
 
 #################################

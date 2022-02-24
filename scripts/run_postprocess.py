@@ -9,54 +9,54 @@ import postprocess
 from os.path import join
 
 ### Set the general working directory.
-wdir = "/media/christof/data/repos/cligs/tmw/"
+wdir = "/home/ulrike/Git/papers/family_resemblance_dsrom19/"
 
 ### Set parameters as used in the topic model
-NumTopics = 20
-NumIterations = 1000
+NumTopics = 100
+NumIterations = 5000
 OptimizeIntervals = 100
 param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
 
 ### create_mastermatrix
 ### Creates the mastermatrix with all information in one place.
-corpuspath = join(wdir, "data", "2_segs", "*.txt")
-outfolder = join(wdir, "model", "aggregates", param_settings)
+corpuspath = join(wdir, "topicmodel", "corpus_segs", "*.txt")
+outfolder = join(wdir, "topicmodel", "aggregates", param_settings)
 mastermatrixfile = "mastermatrix.csv"
-metadatafile = join(wdir, "data", "metadata.csv")
-topics_in_texts = join(wdir, "model", "mallet", "topics-in-texts_" + param_settings + ".csv")
+metadatafile = join(wdir, "corpus_metadata", "metadata_for_tm.csv")
+topics_in_texts = join(wdir, "topicmodel", "mallet", "topics-in-texts_" + param_settings + ".csv")
 number_of_topics = NumTopics
 useBins = False
 binDataFile = join(wdir, "3_bins", "segs-and-bins.csv")
 version  = "208+" # which MALLET version is in use?
-#postprocess.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile, version)
+postprocess.create_mastermatrix(corpuspath, outfolder, mastermatrixfile, metadatafile, topics_in_texts, number_of_topics, useBins, binDataFile, version)
 
 ### calculate_averageTopicScores
 ### Based on the mastermatrix, calculates various average topic score datasets.
-mastermatrixfile = join(wdir, "model", "aggregates", param_settings, "mastermatrix.csv")
-outfolder = join(wdir, "model", "aggregates", param_settings)
+mastermatrixfile = join(wdir, "topicmodel", "aggregates", param_settings, "mastermatrix.csv")
+outfolder = join(wdir, "topicmodel", "aggregates", param_settings)
 # targets: one or several:author|decade|subgenre|author-gender|idno|segmentID|narration|narrative-perspective (according to available metadata)
-targets = ["idno", "author-name", "book-title", "subgenre", "pub-decade"]
-#postprocess.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
+targets = ["idno"]
+postprocess.calculate_averageTopicScores(mastermatrixfile, targets, outfolder)
 
 ### build_gephitable
 target = "subgenre"
-aggregationfile = join(wdir, "model", "aggregates", param_settings, "avgtopicscores_by-" + target + ".csv")
+aggregationfile = join(wdir, "data", "7_aggregates", param_settings, "avgtopicscores_by-" + target + ".csv")
 gephifile = join(wdir, "model", "aggregates", param_settings, "gephi-input-" + "target" + ".csv")
-postprocess.build_gephitable(aggregationfile, gephifile, target)
+#postprocess.build_gephitable(aggregationfile, gephifile, target)
 
 
 ### save_firstWords
 ### Saves the first words of each topic to a separate file.
-topicWordFile = join(wdir, "7_model", "topics-with-words_" + param_settings + ".csv")
-outfolder = join(wdir, "8_aggregates", param_settings)
+topicWordFile = join(wdir, "topicmodel", "mallet", "topics-with-words_" + param_settings + ".csv")
+outfolder = join(wdir, "topicmodel", "aggregates", param_settings)
 filename = "firstWords.csv"
-#postprocess.save_firstWords(topicWordFile, outfolder, filename)
+postprocess.save_firstWords(topicWordFile, outfolder, filename)
 
 ### Save topic ranks
-topicWordFile = join(wdir, "7_model", "topics-with-words_" + param_settings + ".csv")
-outfolder = join(wdir, "8_aggregates", param_settings)
+topicWordFile = join(wdir, "topicmodel", "mallet", "topics-with-words_" + param_settings + ".csv")
+outfolder = join(wdir, "topicmodel", "aggregates", param_settings)
 filename = "topicRanks.csv"
-#postprocess.save_topicRanks(topicWordFile, outfolder, filename)
+postprocess.save_topicRanks(topicWordFile, outfolder, filename)
 
 ### Average topic scores for two criteria (binID + subgenre)
 mastermatrixfile = join(wdir, "8_aggregates", param_settings, "mastermatrix.csv")

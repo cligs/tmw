@@ -83,7 +83,7 @@ tc_style = pygal.style.Style(
 
 def get_labels_tc(Identifiers, MetadataFile): 
     with open(MetadataFile, "r") as InFile: 
-        Metadata = pd.read_csv(InFile, sep=";")
+        Metadata = pd.read_csv(InFile, sep=",")
         Metadata.set_index("idno", inplace=True)
         #print(Metadata.head())
         #print(Identifiers)
@@ -91,6 +91,10 @@ def get_labels_tc(Identifiers, MetadataFile):
         Colors = []
         GroundTruth = []
         for Item in Identifiers:
+            Labels.append(Item)
+            Colors.append("darkred")
+            GroundTruth.append(0)
+            """
             if Metadata.loc[Item,"tc_subgenre"] == "Comédie": 
                 Labels.append(Item+"-CO")
                 Colors.append("darkred")
@@ -103,6 +107,7 @@ def get_labels_tc(Identifiers, MetadataFile):
                 Labels.append(Item+"-TR")
                 Colors.append("darkblue")
                 GroundTruth.append(2)
+            """
         #print(Labels)
         return Labels, Colors, GroundTruth
 

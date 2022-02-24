@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Filename: postprocess.py
-# Authors: christofs, daschloer
+# Authors: christofs, daschloer, hennyu
 # Version 0.3.0 (2016-03-20)
 
 
@@ -15,6 +15,7 @@ from os.path import join
 import glob
 import pandas as pd
 import numpy as np
+import re
 
 ##############################
 # create_mastermatrix        #
@@ -23,7 +24,7 @@ import numpy as np
 def get_metadata(metadatafile):
     print("- getting metadata...")
     """Read metadata file and create DataFrame."""
-    metadata = pd.DataFrame.from_csv(metadatafile, header=0, sep=",")
+    metadata = pd.read_csv(metadatafile, header=0, sep=",")
     #print("metadata\n", metadata)
     return metadata
 
@@ -79,7 +80,10 @@ def get_topicscores(topics_in_texts, numOfTopics, version):
         topicsintexts.columns = header
         #print(topicsintexts)
         ##topicsintexts = topicsintexts.iloc[0:100,]  ### For testing only!!
-        segmentIDs = topicsintexts.iloc[:,0].str[-15:-4]
+        if "§" in topicsintexts.iloc[0,0]:
+            segmentIDs = topicsintexts.iloc[:,0].str[-15:-4]
+        else:
+            segmentIDs = topicsintexts.iloc[:,0].str[-10:-4]
         topicsintexts["segmentID"] = segmentIDs
         topicscores = topicsintexts
         #print("topicscores\n", topicscores.head())
@@ -112,11 +116,16 @@ def merge_data(corpuspath, metadatafile, topics_in_texts, mastermatrixfile,
     docmatrix = get_docmatrix(corpuspath)
     topicscores = get_topicscores(topics_in_texts, numOfTopics, version)
     ## For inspection only.
-    print("Metadata\n", metadata.head())
-    print("Docmatrix\n", docmatrix.head())
-    print("topicscores\n", topicscores.head())
+    ##print("Metadata\n", metadata.head())
+    ##print("Docmatrix\n", docmatrix.head())
+    ##print("topicscores\n", topicscores.head())
+    
     print("- merging data...")    
     ## Merge metadata and docmatrix, matching each segment to its metadata.
+    
+    if not("idno" in metadata.columns):
+        metadata["idno"] = metadata.index
+    
     mastermatrix = pd.merge(docmatrix, metadata, how="inner", on="idno")  
     #print("mastermatrix: metadata and docmatrix\n", mastermatrix)
     ## Merge mastermatrix and topicscores, matching each segment to its topic scores.
@@ -167,13 +176,21 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
         avg_topicscores = grouped.agg(np.mean)
+        
+        for col in avg_topicscores.columns:
+            if not(re.match("\d+", col)):
+                avg_topicscores = avg_topicscores.drop([col], axis=1)
+        
         #avg_topicscores = grouped.agg(np.median)
         #print(avg_topicscores)
-        if target != "pub-year":
-            avg_topicscores = avg_topicscores.drop(["pub-year"], axis=1)
+        
+        #if target != "pub-year":
+        #    avg_topicscores = avg_topicscores.drop(["pub-year"], axis=1)
+        
         #if target != "binID":
         #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
         #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
+        
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
         resultfilepath = join(outfolder, resultfilename)
@@ -183,34 +200,6 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     print("Done.")
 
 
-
-# ==============================
-# build_gephitable
-# ==============================
-
-def build_gephitable(aggregationfile, gephifile, target):
-    """
-    Uses an average topic score file and transforms it for import into Gephi.
-    This allows visualization of bimodal networks of, e.g. authors and topics.
-    The resulting CSV file needs to be imported as an edge table into Gephi.
-    """
-    with open(aggregationfile, "r") as infile:
-        data = pd.DataFrame.from_csv(infile, header=0, sep=",")
-        print(data)
-        rows = list(data.index.values)
-        cols = list(data.columns.values)
-        print(rows)
-        print(cols)
-        entries = []
-        for row in rows:
-            for col in cols:
-                val = data.loc[row,col]
-                entry = [row, "t"+str(col), "Undirected", val]
-                entries.append(entry)
-        headers = ["source", "target", "type", "weight"]
-        entries = pd.DataFrame(entries, columns=headers)
-        print(entries)
-        entries.to_csv(gephifile, sep=";", encoding="utf-8")
 
 
 ################################
@@ -227,10 +216,15 @@ def calculate_complexAverageTopicScores(mastermatrixfile, targets, outfolder):
     ## Calculate average topic scores for each target category 
     grouped = mastermatrix.groupby(targets, axis=0)
     avg_topicscores = grouped.agg(np.mean)
+    
+    for col in avg_topicscores.columns:
+        if not(re.match("\d+", col)):
+            avg_topicscores = avg_topicscores.drop([col], axis=1)
+    
     #if "year" not in targets:
     #    avg_topicscores = avg_topicscores.drop(["year"], axis=1)
-    if "binID" not in targets:
-        avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
+    #if "binID" not in targets:
+    #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
     #print(avg_topicscores)
     ## Save grouped averages to CSV file for visualization.
     identifierstring = '+'.join(map(str, targets))

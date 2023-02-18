@@ -171,7 +171,7 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
     if not os.path.exists(outfolder):
         os.makedirs(outfolder)
     with open(mastermatrixfile, "r") as infile:
-        mastermatrix = pd.DataFrame.from_csv(infile, header=0, sep=",")
+        mastermatrix = pd.read_csv(infile, header=0, sep=",")
     ## Calculate average topic scores for each target category 
     for target in targets:
         grouped = mastermatrix.groupby(target, axis=0)
@@ -181,6 +181,7 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
             if not(re.match("\d+", col)):
                 avg_topicscores = avg_topicscores.drop([col], axis=1)
         
+        
         #avg_topicscores = grouped.agg(np.median)
         #print(avg_topicscores)
         
@@ -189,7 +190,6 @@ def calculate_averageTopicScores(mastermatrixfile, targets, outfolder):
         
         #if target != "binID":
         #    avg_topicscores = avg_topicscores.drop(["binID"], axis=1)
-        #avg_topicscores = avg_topicscores.drop(["tei"], axis=1)
         
         ## Save grouped averages to CSV file for visualization.
         resultfilename = "avgtopicscores_by-"+target+".csv"
@@ -259,14 +259,14 @@ def save_firstWords(topicWordFile, outfolder, filename):
         firstWordsSeries = pd.Series(firstWords, name="firstWords")
         #firstWordsSeries.index.name = "topic"
         #firstWordsSeries = firstWordsSeries.rename(columns = {'two':'new_name'})
-        firstWordsSeries.reindex_axis(["firstwords"])
+        firstWordsSeries.reindex(["firstwords"])
         #print(firstWordsSeries)
         ## Saving the file.
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         outfile = join(outfolder, filename)
         with open(outfile, "w", encoding="utf-8") as outfile: 
-            firstWordsSeries.to_csv(outfile)
+            firstWordsSeries.to_csv(outfile,header=False)
         print("Done.")
 
 

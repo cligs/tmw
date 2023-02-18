@@ -227,6 +227,12 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                                 lemmata.append(token.lower())
                             elif "<unknown>" not in lemma:
                                 lemmata.append(lemma.lower())
+                    if mode == "deNNE":
+                        if "NN" in pos or "NE" in pos:
+                            if "|" in lemma:
+                                lemmata.append(token.lower())
+                            elif "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
                     if mode == "deNV":
                         if "NN" in pos or "VV" in pos:
                             if "|" in lemma:
@@ -235,6 +241,12 @@ def make_lemmatext(inpath, outfolder, mode, stoplist_errors):
                                 lemmata.append(lemma.lower())
                     if mode == "deNVAdj":
                         if "NN" in pos or "VV" in pos or "ADJ" in pos:
+                            if "|" in lemma:
+                                lemmata.append(token.lower())
+                            elif "<unknown>" not in lemma:
+                                lemmata.append(lemma.lower())
+                    if mode == "deNNEVAdj":
+                        if "NN" in pos or "NE" in pos or "VV" in pos or "ADJ" in pos:
                             if "|" in lemma:
                                 lemmata.append(token.lower())
                             elif "<unknown>" not in lemma:

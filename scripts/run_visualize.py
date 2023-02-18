@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+4#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Filename: my_tmw.py
 # Author: #cf
@@ -9,22 +9,22 @@ import visualize
 from os.path import join
 
 ### Set the general working directory.
-wdir = "/home/ulrike/Git/papers/family_resemblance_dsrom19/"
+wdir = "/home/ulrike/Dokumente/Konferenzen/2022_ML-Ed/johnson-topics"
 ### Set parameters as used in the topic model
-NumTopics = 100
+NumTopics = 60
 NumIterations = 5000
 OptimizeIntervals = 100
 param_settings = str(NumTopics) + "tp-" + str(NumIterations) + "it-" + str(OptimizeIntervals) + "in"
 
 ### make_wordle_from_mallet
 ### Creates a wordle for each topic.
-word_weights_file = join(wdir, "topicmodel", "mallet", "word-weights_" + param_settings + ".csv")
+word_weights_file = join(wdir, "tm/mallet_N", "word-weights_" + param_settings + ".csv")
 words = 40
-outfolder = join(wdir, "topicmodel", "visuals", param_settings, "wordles")
-font_path = join(wdir, "extras", "AlegreyaSans-Regular.otf")
+outfolder = join(wdir, "tm/visuals_N", param_settings, "wordles")
+font_path = join(wdir, "data", "AlegreyaSans-Regular.otf")
 dpi = 300
 num_topics = NumTopics
-TopicRanksFile = join(wdir, "topicmodel", "aggregates", param_settings, "topicRanks.csv")
+TopicRanksFile = join(wdir, "tm/aggregates_N", param_settings, "topicRanks.csv")
 #visualize.make_wordle_from_mallet(word_weights_file, num_topics, words, TopicRanksFile, outfolder, dpi) # ggf. font_path
 
 ### crop_images
@@ -39,26 +39,26 @@ lower = 2350 # image end at the bottom
 
 ### plot_topTopics
 ### For each item from a category, creates a barchart of the top topics.
-averageDatasets = join(wdir, "features/topicmodel/", "aggregates", param_settings, "avg*.csv") 
-firstWordsFile = join(wdir, "features/topicmodel", "aggregates", param_settings, "firstWords.csv")
+averageDatasets = join(wdir, "tm/aggregates_N", param_settings, "avg*.csv") 
+firstWordsFile = join(wdir, "tm/aggregates_N", param_settings, "firstWords.csv")
 numberOfTopics = NumTopics # must be actual number of topics modeled.
-targetCategories = ["idno"]
+targetCategories = ["receiver_norm"]
 # one or several: "author-name", "author-gender", "decade", "subgenre", "title"
 topTopicsShown = 30 
 fontscale = 1.0
 height = 0 # 0=automatic and variable
 dpi = 300
-outfolder = join(wdir, "features/topicmodel", "visuals", param_settings, "topTopics")
+outfolder = join(wdir, "tm/visuals_N", param_settings, "topTopics")
 mode = "normalized" # normalized, absolute
-#visualize.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, mode, topTopicsShown, fontscale, height, dpi, outfolder)
+visualize.plot_topTopics(averageDatasets, firstWordsFile, numberOfTopics, targetCategories, mode, topTopicsShown, fontscale, height, dpi, outfolder)
 
 ### plot_topItems
 ### For each topic, creates a barchart with top items from a category. 
-averageDatasets = join(wdir, "8_aggregates", param_settings, "avg*.csv") 
-outfolder = join(wdir, "9_visuals", param_settings, "topItems")
-firstWordsFile = join(wdir, "8_aggregates", param_settings, "firstWords.csv")
+averageDatasets = join(wdir, "tm/aggregates_N", param_settings, "avg*.csv") 
+outfolder = join(wdir, "tm/visuals_N", param_settings, "topItems")
+firstWordsFile = join(wdir, "tm/aggregates_N", param_settings, "firstWords.csv")
 numberOfTopics = NumTopics # must be actual number of topics modeled. 
-targetCategories = ["author-name", "title", "narrative-perspective", "subgenre", "decade"]
+targetCategories = ["idno"]
 # choose one or several from: author-name, decade, subgenre, gender, idno, title, segmentID
 topItemsShown = 20 
 fontscale = 0.8
@@ -68,10 +68,10 @@ dpi = 300
 
 ### plot_distinctiveness_heatmap
 ### For each category, make a heatmap of most distinctive topics. 
-averageDatasets = join(wdir, "topicmodel/aggregates", param_settings, "avg*.csv") 
-firstWordsFile = join(wdir, "topicmodel/aggregates", param_settings, "firstWords.csv")
-outfolder = join(wdir, "topicmodel/visuals", param_settings, "distinctiveness")
-targetCategories = ["text.genre.subgenre.summary"] 
+averageDatasets = join(wdir, "tm/aggregates", param_settings, "avg*.csv") 
+firstWordsFile = join(wdir, "tm/aggregates", param_settings, "firstWords.csv")
+outfolder = join(wdir, "tm/visuals", param_settings, "distinctiveness")
+targetCategories = ["month"] 
 # one or several: "author-name", "decade", "subgenre", "gender", "idno", "title"
 numberOfTopics = NumTopics # must be actual number of topics modeled.
 topTopicsShown = 20 

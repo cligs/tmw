@@ -48,7 +48,7 @@ def get_wordlewords(words, word_weights_file, topic):
     for word in topic_words:
         score = word_scores[j]
         j += 1
-        wordlewords = wordlewords + ((word + " ") * int(score))
+        wordlewords = wordlewords + ((str(word) + " ") * int(score))
     return wordlewords
         
 def get_color_scale(word, font_size, position, orientation, font_path, random_state=None):
@@ -131,7 +131,7 @@ def get_targetItems(average, targetCategory):
     """Get a list of items included in the target category."""
     print(" Getting targetItems for: "+targetCategory)
     with open(average, "r", encoding="utf-8") as infile:
-        averageTopicScores = pd.DataFrame.from_csv(infile, sep=",")
+        averageTopicScores = pd.read_csv(infile, sep=",", index_col=0)
         #print(averageTopicScores.head())
         targetItems = list(averageTopicScores.index.values)
         #print(targetItems)
@@ -142,7 +142,7 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
     #print("  Getting dataToPlot.")
     with open(average, "r", encoding="utf-8") as infile:
         ## Read the average topic score data
-        allData = pd.DataFrame.from_csv(infile, sep=",")
+        allData = pd.read_csv(infile, sep=",", index_col=0)
         if mode == "normalized": # mean normalization
             colmeans = allData.mean(axis=0)
             allData = allData / colmeans
@@ -152,17 +152,17 @@ def get_dataToPlot(average, firstWordsFile, mode, topTopicsShown, item):
             allData = (allData - colmeans) / colstd # = zscore transf.
         elif mode == "absolute": # absolute values
             allData = allData
+        
         allData = allData.T
         
-        '''
-        allData = allData.drop("year")
-        allData = allData.drop("words")
-        '''
-        print(allData.shape)
+        #print(allData.shape)
+        
         ## Add top topic words to table for display later
         firstWords = get_firstWords(firstWordsFile)
-        print(len(firstWords))
+        
+        #print(len(firstWords))
         allData["firstWords"] = firstWords.iloc[:,0].values
+        
         ## Create subset of data based on target.
         dataToPlot = allData[[item,"firstWords"]]
         dataToPlot = dataToPlot.sort_values(by=item, ascending=False)
@@ -221,7 +221,7 @@ def get_topItems_firstWords(firstWordsFile, topic):
     """Function to load list of top topic words into dataframe."""
     #print("  Getting firstWords.")
     with open(firstWordsFile, "r", encoding="utf-8") as infile: 
-        firstWords = pd.DataFrame.from_csv(infile, header=None)
+        firstWords = pd.read_csv(infile, header=None, index_col=0)
         firstWords.columns = ["firstWords"]
         # Only the words for one topic are needed.
         firstWords = firstWords.iloc[topic]
@@ -233,7 +233,7 @@ def get_topItems_dataToPlot(average, firstWordsFile, topItemsShown, topic):
     #print("  Getting dataToPlot.")
     with open(average, "r", encoding="utf-8") as infile:
         ## Read the average topic score data
-        allData = pd.DataFrame.from_csv(infile, sep=",")
+        allData = pd.read_csv(infile, sep=",", index_col=0)
         allData = allData.T
         ## Create subset of data based on target.
         dataToPlot = allData.iloc[topic,:]
@@ -322,7 +322,7 @@ def get_heatmap_dataToPlot(average, mode, sorting, firstWordsFile, topTopicsShow
     print("- getting dataToPlot...")
     with open(average, "r", encoding="utf-8") as infile:
         ## Read the average topic score data
-        allScores = pd.DataFrame.from_csv(infile, sep=",")
+        allScores = pd.read_csv(infile, sep=",", index_col=0)
         colmeans = allScores.mean(axis=0) # mean for each topic
         colmedians = allScores.median(axis=0) # median for each topic
         allstd = allScores.std(axis=0) #std for entire df

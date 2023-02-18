@@ -71,7 +71,9 @@ def call_mallet_modeling(MalletPath,
 		for Topics in NumTopics: 
 			for Iterations in NumIterations: 
 				for Interval in OptimizeIntervals:
-					Params = str(Topics)+"tp-"+str(Iterations)+"it-"+str(Interval)+"in-"+str(Repetition)
+					Params = str(Topics)+"tp-"+str(Iterations)+"it-"+str(Interval)+"in"
+					if NumRepetitions > 1:
+						Params = Params+"-"+str(Repetition)
 					print("Now modeling with:", Params)
 					DocTopicsMax = Topics
 					### Output parameters                
